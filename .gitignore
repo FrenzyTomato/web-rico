@@ -1,0 +1,12 @@
+node_modules/
+dist/
+coverage/
+.pnpm-store/
+*.tsbuildinfo
+.env
+.env.*
+!.env.example
+.DS_Store
+
+# Local Claude/Codex coordination
+.claude-review/
