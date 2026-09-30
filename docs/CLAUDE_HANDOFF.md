@@ -28,3 +28,7 @@ Codex checks the frozen assignment against the specification, reviews changed fi
 ## Runtime coordination
 
 Local session IDs, process IDs, prompts and reports live in ignored .claude-review/. Claude print-mode process completion is the handoff signal; Codex must confirm exit status and examine the report and diff. Never run two Claude writers or start another assignment while a prior process is active. Resume only the recorded pilot session, not an unrelated desktop session. An app heartbeat may check progress and resume Codex review while this chat is idle; it must stay quiet on unchanged status and stop advancing after PR-036 review.
+
+## Review gate log
+
+2026-09-30: Codex approved the PR-034/035 fixes now present at checkpoint 90b03b0. Verified the actual terminal executable with seeded setup, accepted role command, history output and replay. In a disposable clean copy, protocol typecheck, test and build each passed independently after both dist directories were removed. Existing engine549 + protocol3 tests pass. A read-only Claude Opus5.5 handshake confirmed the repository and pilot boundary. Next assignment: PR-036 only; report completion and wait for review.
