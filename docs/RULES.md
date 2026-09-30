@@ -201,7 +201,7 @@ Test families: TS-PRIVACY, TS-SETUP, TS-REPLAY. Sources: S3 p.8 (money visible),
 
 | ID | Rule |
 | --- | --- |
-| VISIBILITY-001 | Public: money, goods, all placed tiles/workers, idle workers, market stock, face-up estates/Quarries, ships, Trading House, role-card coins, seats, Governor, phase, and decision-maker. Legal-action descriptors must not reveal information beyond that view. |
+| VISIBILITY-001 | Public: money, goods, all placed tiles/workers, idle workers, market stock, face-up estates/Quarries, the estate discard pile (every tile was face-up in the market), recorded end triggers, ships, Trading House, role-card coins, seats, Governor, phase, and decision-maker (discard pile and end triggers added by user ruling 2026-10-01). Legal-action descriptors must not reveal information beyond that view. |
 | VISIBILITY-002 | Digital convention: consistently conceal individual earned VP from opponents until final scoring; owners can see their own total. At game over reveal every scoring component and tiebreak value. Physical rules permit face-down VP; V1 chooses that permitted presentation consistently. |
 | VISIBILITY-003 | Keep future estate order, unrevealed identities, RNG seed/state, and session credentials server-only. Publish a hidden draw's identity only when the tile is placed face up. Player logs and events use the same visibility filter as snapshots. Public actions may allow human deduction of concealed VP; do not claim secrecy against inference. |
 | INVARIANT-001 | Goods by type are conserved across supply + players + cargo ships + Personal Ships + Trading House. Estates are conserved across bag + market + discard + players; Quarries across supply + players. Building tiles are conserved across market + players. |

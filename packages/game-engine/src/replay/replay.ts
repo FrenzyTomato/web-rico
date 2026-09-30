@@ -20,8 +20,7 @@ export interface ReplayRecord {
   readonly commands: readonly GameCommand[];
 }
 export type ReplayFailure =
-  | { readonly kind: 'invalid-record' | 'incompatible-version'; readonly path: string }
-  | { readonly kind: 'invalid-snapshot'; readonly path: string; readonly detail?: string }
+  | { readonly kind: 'invalid-record' | 'incompatible-version' | 'invalid-snapshot'; readonly path: string }
   | { readonly kind: 'rejected-command'; readonly index: number; readonly command: unknown; readonly error: RuleError };
 export type ReplayResult =
   | { readonly ok: true; readonly initialState: GameState; readonly state: GameState; readonly events: readonly (readonly GameEvent[])[] }
@@ -48,13 +47,7 @@ export function replay(record: unknown): ReplayResult {
   if (typeof record !== 'object' || record === null || Array.isArray(record)) return fail({ kind: 'invalid-record', path: '$' });
   const input = record as Record<string, unknown>;
   for (const [key, expected] of Object.entries(VERSIONS)) {
-    if (typeof input[key] !== 'string') return fail({ kind: 'invalid-record', path: `$.${key}` });
     if (input[key] !== expected) return fail({ kind: 'incompatible-version', path: `$.${key}` });
-  }
-  for (const key of Object.keys(input)) if (!KEYS.includes(key)) return fail({ kind: 'invalid-record', path: `$.${key}` });
-  const seed = input.seed;
-  if (seed !== null && !(Number.isInteger(seed) && (seed as number) >= 0 && (seed as number) <= 0xffffffff)) {
-    return fail({ kind: 'invalid-record', path: '$.seed' });
   }
   if (!Array.isArray(input.commands)) return fail({ kind: 'invalid-record', path: '$.commands' });
   let initialState: GameState;
@@ -66,7 +59,7 @@ export function replay(record: unknown): ReplayResult {
       const path = `$.initialState${error.path.slice(1)}`;
       return fail(error.code === 'UNSUPPORTED_VERSION' ? { kind: 'incompatible-version', path } : { kind: 'invalid-snapshot', path });
     }
-    if (error instanceof InvariantError) return fail({ kind: 'invalid-snapshot', path: '$.initialState', detail: error.message });
+    if (error instanceof InvariantError) return fail({ kind: 'invalid-snapshot', path: '$.initialState' });
     throw error;
   }
   let state = initialState;

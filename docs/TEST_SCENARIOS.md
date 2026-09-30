@@ -151,3 +151,23 @@ All23 catalog types have explicit ability owners. All23 abilities are now implem
 
 
 PR-033 scoring evidence: [scoring.test.ts](../packages/game-engine/test/scoring.test.ts) independently asserts the literal51-point example, all five composed bonuses, primary VP ordering, coins-plus-goods tiebreaks and shared competition ranks. It also covers frozen inputs, deterministic recalculation, seat-order results, finite numeric limits, mandatory terminal score arrays, 3/4/5-player completion events, and Captain overflow/cleanup before Customs House and tiebreak calculation. These are controlled legal boundary snapshots and command sequences; complete play histories remain PR-036.
+
+### TS-REPLAY complete games — PR-036 (implemented, awaiting review)
+
+Fixed histories in [fixtures/](../packages/game-engine/test/scenarios/fixtures/) start from `createGame` and consist only of literal accepted commands. No snapshot is edited and no resources are forced. A temporary authored strategy (since deleted) chose each command once from the legal descriptors; verification tests only replay the saved lists and never regenerate them.
+
+| Fixture | Seed / seats | Commands / rounds | Ending | Final totals (seat order) → ranks |
+| --- | --- | --- | --- | --- |
+| full-game-3p | 1897 / alice, bruno, chen | 259 / 22 | VP exhausted at revision 256, overflow 2 | 41, 34, 46 → 2, 3, 1 (alice Fire Station bonus 6) |
+| full-game-4p | 2024 / alice…dara | 340 / 19 | VP exhausted at revision 335, overflow 5 | 25, 29, 46, 49 → 4, 3, 2, 1 |
+| full-game-5p | 36 / alice…emil | 400 / 15 | VP exhausted at revision 390, overflow 14 | 14, 41, 26, 52, 56 → 5, 3, 4, 2, 1 |
+
+[full-games.test.ts](../packages/game-engine/test/scenarios/full-games.test.ts) checks the following:
+- **Every command:** only the decision-maker has a legal descriptor, and the command is accepted with unchanged input, the next revision and contiguous event indexes.
+- **Invariants at every step:** `assertGameState` plus test-local conservation ledgers for goods, estates, Quarries, buildings, workers and VP, using literals from SET-01/03 rather than the engine catalog. Applying the same command to a restored snapshot must give the identical transition.
+- **Scoring:** the engine's final scores must equal a test-local scorer (printed building VP, B-19…B-23 bonus rules, SCORE-002 competition ranks) and frozen per-seat literals. Earned VP and overflow must equal the `vp-earned` event ledger.
+- **Replay and recovery:** the full serialized record, and a replay from a restored snapshot at every round start, must reproduce identical final states and events.
+
+[invariants.property.test.ts](../packages/game-engine/test/scenarios/invariants.property.test.ts) plays random legal actions (test-local PRNG; 3/4/5 players × 3 seeds; at most 400 steps). It checks legal-action/validation agreement, invariants and ledgers, determinism after recovery, and WRONG_ACTOR rejection with no state change. Reaching the step limit is diagnostic only.
+
+Limitations: all three fixtures end by VP exhaustion, and only the Fire Station bonus is nonzero. City-full and worker-shortage endings, and the other bonuses, remain covered by the END/SCR boundary tests rather than by complete histories.

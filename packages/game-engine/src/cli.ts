@@ -36,8 +36,7 @@ function describeFailure(failure: ReplayFailure): string {
     return `replay failed at command ${failure.index}: ${code} ${ruleId}: ${message}`;
   }
   if (failure.kind === 'incompatible-version') return `replay failed: incompatible version at ${failure.path}`;
-  const detail = failure.kind === 'invalid-snapshot' && failure.detail ? ` (${failure.detail})` : '';
-  return `replay failed: ${failure.kind === 'invalid-record' ? 'invalid record' : 'invalid snapshot'} at ${failure.path}${detail}`;
+  return `replay failed: ${failure.kind === 'invalid-record' ? 'invalid record' : 'invalid snapshot'} at ${failure.path}`;
 }
 
 export function startCli(input: CreateGameInput): { readonly session: CliSession | null; readonly output: string } {
@@ -67,9 +66,7 @@ export function runCliLine(session: CliSession, line: string): CliResult {
   let parsed: unknown;
   try { parsed = JSON.parse(text); } catch { return same(`error: ${USAGE}`); }
   if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) return same(`error: ${USAGE}`);
-  // Convenience for headless play: default the actor to the current decision-maker.
-  const phase = session.state.phase;
-  const command = ('actorId' in parsed || !('actorId' in phase) ? parsed : { ...parsed, actorId: phase.actorId }) as GameCommand;
+  const command = parsed as GameCommand;
   const index = session.commands.length;
   const result = applyCommand(session.state, command);
   if (!result.ok) return same(`rejected command ${index}: ${result.error.code} ${result.error.ruleId}: ${result.error.message}`);

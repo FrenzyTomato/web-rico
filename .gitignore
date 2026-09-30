@@ -10,3 +10,8 @@ coverage/
 
 # Local Claude/Codex coordination
 .claude-review/
+test-results/
+playwright-report/
+
+# Machine-specific local tooling (Claude Code preview servers)
+.claude/launch.json

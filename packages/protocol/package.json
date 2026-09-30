@@ -15,6 +15,7 @@
     "build": "tsc -p ../game-engine && tsc"
   },
   "dependencies": {
-    "@vibe-rico/game-engine": "workspace:*"
+    "@vibe-rico/game-engine": "workspace:*",
+    "zod": "4.6.5"
   }
 }

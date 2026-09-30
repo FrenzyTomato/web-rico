@@ -1,11 +1,11 @@
 import type {
-  BuildingInstance, CargoShip, CountrysideTile, EstateTile, GameEvent, GamePhase, Good, Goods,
+  BuildingInstance, CargoShip, CountrysideTile, EndTrigger, EstateTile, GameEvent, GamePhase, Good, Goods,
   LegalAction, PersonalShip, PlayerId, RoleCard, Supply,
 } from '@vibe-rico/game-engine';
 
 /**
  * Field-by-field projection of GameState (RULES.md VISIBILITY-001–003, GAME_STATE.md "Visibility and replay").
- * Omitted as server-only: rng, estateBag, estateDiscard, endTriggers, snapshot/ruleset metadata,
+ * Omitted as server-only: rng, estateBag, snapshot/ruleset metadata,
  * gameId and revision (the broadcast envelope carries revision), and every other player's earnedVp.
  */
 export interface PublicPlayerView {
@@ -31,13 +31,16 @@ export interface PlayerView {
   readonly supply: Supply;
   /** Face-up estates only; bag order and identities stay server-only (VISIBILITY-003). */
   readonly estateMarket: readonly EstateTile[];
+  /** Leftover market tiles, all previously face-up (VISIBILITY-001). */
+  readonly estateDiscard: readonly EstateTile[];
+  readonly endTriggers: readonly EndTrigger[];
   readonly ships: readonly CargoShip[];
   readonly tradingHouse: readonly Good[];
 }
 /**
- * Canonical events after the snapshot filter (VISIBILITY-003): `vp-earned` reaches only its owner and
- * `end-triggered` is withheld like endTriggers. Kept events retain their canonical revision/index.
+ * Canonical events after the snapshot filter (VISIBILITY-003): `vp-earned` reaches only its owner.
+ * Kept events retain their canonical revision/index.
  */
-export type PlayerEvent = Exclude<GameEvent, { readonly kind: 'end-triggered' }>;
+export type PlayerEvent = GameEvent;
 /** Only the current decision-maker receives legal actions; every other viewer receives none. */
 export type PlayerLegalActions = readonly LegalAction[];
