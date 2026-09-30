@@ -1,6 +1,6 @@
 # Dependency-ordered Engineering Backlog
 
-PR-001's original source audit is complete. The user subsequently designated the local 44-page Special Edition rulebook (S3) as canonical; see [reference policy](../references/README.md). PR-002 is DONE against S3 with user-supplied building stock recorded as PROJECT-003; PR-003 is DONE. PR-004 and PR-005 are DONE; PR-006–047, PR-027A, PR-030A and PR-033A/B are DONE; PR-048 is WAIVED by the user (no playtest performed); PR-049 and PR-056 are READY. V1 remains the 3–5-player base game; deterministic setup, role selection, round rotation, base role mechanics and the building catalog are implemented; all23 building abilities and final scoring are implemented; headless controls and replay are implemented; 3/4/5-player full-game fixtures are implemented; application packages remain pending.
+PR-001's original source audit is complete. The user subsequently designated the local 44-page Special Edition rulebook (S3) as canonical; see [reference policy](../references/README.md). PR-002 is DONE against S3 with user-supplied building stock recorded as PROJECT-003; PR-003 is DONE. PR-004 and PR-005 are DONE; PR-006–047, PR-027A, PR-030A and PR-033A/B are DONE; PR-048 is WAIVED by the user (no playtest performed); PR-049 is DONE; PR-050, PR-051 and PR-056 are READY. V1 remains the 3–5-player base game; deterministic setup, role selection, round rotation, base role mechanics and the building catalog are implemented; all23 building abilities and final scoring are implemented; headless controls and replay are implemented; 3/4/5-player full-game fixtures are implemented; application packages remain pending.
 
 **Status:** READY means available to start; IN_PROGRESS means work has started (including awaiting a documented decision); WAITING means dependencies remain incomplete; DONE requires recorded acceptance evidence. PR-number dependencies must not be skipped. Tasks are topologically ordered; PR-004 can proceed independently.
 
@@ -771,18 +771,26 @@ Rule-specific tickets lacking M0 data do not yet have ready-to-copy test inputs.
 ## PR-049 [LOW] — Create the tabletop scene and fallback
 
 - **Milestone:** M9
-- **Status:** READY
+- **Status:** DONE
 - **Dependencies:** PR-048
 - **Files / Areas:** `apps/web/src/scene/TableScene.tsx`, `apps/web/src/scene/Camera.tsx`, `apps/web/src/scene/SceneBoundary.tsx`, `apps/web/src/scene/TableScene.test.tsx`
 - **Scope / Acceptance:** Introduce Three.js/R3F/drei, a semi-top-down camera, lighting, and table. Retain the DOM client when WebGL is unavailable.
 - **Required verification:** Readable 3/4/5-player layouts; controls work after resize, scene failure, and lack of WebGL.
 - **Out of scope:** Other tickets’ deliverables; consume dependencies only through defined interfaces.
-- **Evidence:** Not executed.
+- **Evidence:** 2026-10-01
+  - **Packages** (exact-pinned): three 0.186.1, @react-three/fiber 9.8.1, @react-three/drei 10.7.9, @types/three 0.186.0.
+  - **`scene/TableScene.tsx`:** a table plus one seat marker per player. `seatPositions` is pure: the viewer is at the front edge and seats run clockwise from above, on an oval inside the table. Names are canvas-texture sprites; the viewer's marker is green and the Governor is labelled.
+  - **`scene/Camera.tsx`:** a semi-top-down perspective camera aimed at the table centre.
+  - **`scene/SceneBoundary.tsx`:** renders the scene only with WebGL, and shows a notice if it throws. The DOM client sits outside the boundary.
+  - **Tests:** six in `TableScene.test.tsx`: 3/4/5-player layouts for every viewer (on the table, viewer in front, clockwise, centres ≥3 apart); no WebGL gives the notice with the scene never rendered and DOM controls still clickable; a throwing scene gives the notice with controls still clickable; jsdom's missing WebGL takes the default fallback.
+  - **Manual browser check** with real WebGL, 5 seats (me plus 4 bots): readable clockwise layout. After a tablet resize the canvas re-fits (752 px) and an action still worked.
+  - **Defect found and fixed:** drei `<Html>` labels remounted endlessly under React 19 (7,000+ "synchronously unmount a root" errors) and the viewer's label never rendered. They were replaced by canvas-texture sprites; 0 errors over 4 s afterwards.
+  - **Checks:** typecheck, test (engine 564, protocol 3, server 83, web 33; 683 total), build and e2e (5 passed, with the scene mounted in Chrome). The build warns about a >500 kB chunk (Three.js); code-splitting belongs to PR-055.
 
 ## PR-050 [LOW] — Build shared-area models
 
 - **Milestone:** M9
-- **Status:** WAITING
+- **Status:** READY
 - **Dependencies:** PR-049
 - **Files / Areas:** `apps/web/src/scene/CommonBoard.tsx`, `apps/web/src/scene/RoleTiles.tsx`, `apps/web/src/scene/Ships.tsx`, `apps/web/src/scene/Markets.tsx`
 - **Scope / Acceptance:** Use original geometry for roles, building market, tiles, trading area, ships, and supplies. Models read only PlayerView.
@@ -793,7 +801,7 @@ Rule-specific tickets lacking M0 data do not yet have ready-to-copy test inputs.
 ## PR-051 [LOW] — Build player boards and reusable pieces
 
 - **Milestone:** M9
-- **Status:** WAITING
+- **Status:** READY
 - **Dependencies:** PR-049
 - **Files / Areas:** `apps/web/src/scene/PlayerBoard.tsx`, `apps/web/src/scene/Buildings.tsx`, `apps/web/src/scene/Fields.tsx`, `apps/web/src/scene/Workers.tsx`
 - **Scope / Acceptance:** Display buildings, fields, workers, and goods by seat, mapped by stable instance IDs. Show no unauthorized information.

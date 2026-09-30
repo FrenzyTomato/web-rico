@@ -4,6 +4,8 @@ import type { CommandRejected, PlayerView, RoomState } from '@vibe-rico/protocol
 import { ActionForm } from '../actions/ActionForm.js';
 import type { GameStore } from '../state/gameStore.js';
 import { ScoreView } from './ScoreView.js';
+import { SceneBoundary } from '../scene/SceneBoundary.js';
+import { TableScene } from '../scene/TableScene.js';
 import { BUILDING, END_REASON, GOOD, PHASE, ROLE, TILE } from '../i18n/terms.js';
 
 const goods = (g: Goods) => (Object.entries(g) as [keyof Goods, number][]).filter(([, n]) => n > 0).map(([k, n]) => `${GOOD[k]}×${n}`).join(' ') || '无';
@@ -63,6 +65,7 @@ export function Game({ store, roomId, room }: { store: GameStore; roomId: string
   const names = Object.fromEntries(room.seats.map(s => [s.playerId, s.displayName]));
   return (
     <div data-revision={latest.revision}>
+      <SceneBoundary><TableScene view={latest.view} names={names} /></SceneBoundary>
       <p>版本 {latest.revision}</p>
       {rejection && <p role="alert">{rejectionText(rejection)}</p>}
       {connected
