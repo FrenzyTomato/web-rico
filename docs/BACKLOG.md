@@ -1,6 +1,6 @@
 # Dependency-ordered Engineering Backlog
 
-PR-001's original source audit is complete. The user subsequently designated the local 44-page Special Edition rulebook (S3) as canonical; see [reference policy](../references/README.md). PR-002 is DONE against S3 with user-supplied building stock recorded as PROJECT-003; PR-003 is DONE. PR-004 and PR-005 are DONE; PR-006–047, PR-027A, PR-030A and PR-033A/B are DONE; PR-048 is WAIVED by the user (no playtest performed); PR-049 is DONE; PR-050, PR-051 and PR-056 are READY. V1 remains the 3–5-player base game; deterministic setup, role selection, round rotation, base role mechanics and the building catalog are implemented; all23 building abilities and final scoring are implemented; headless controls and replay are implemented; 3/4/5-player full-game fixtures are implemented; application packages remain pending.
+PR-001's original source audit is complete. The user subsequently designated the local 44-page Special Edition rulebook (S3) as canonical; see [reference policy](../references/README.md). PR-002 is DONE against S3 with user-supplied building stock recorded as PROJECT-003; PR-003 is DONE. PR-004 and PR-005 are DONE; PR-006–047, PR-027A, PR-030A and PR-033A/B are DONE; PR-048 is WAIVED by the user (no playtest performed); PR-049–051 are DONE; PR-052 (after PR-045/050/051) and PR-056 are READY. V1 remains the 3–5-player base game; deterministic setup, role selection, round rotation, base role mechanics and the building catalog are implemented; all23 building abilities and final scoring are implemented; headless controls and replay are implemented; 3/4/5-player full-game fixtures are implemented; application packages remain pending.
 
 **Status:** READY means available to start; IN_PROGRESS means work has started (including awaiting a documented decision); WAITING means dependencies remain incomplete; DONE requires recorded acceptance evidence. PR-number dependencies must not be skipped. Tasks are topologically ordered; PR-004 can proceed independently.
 
@@ -790,24 +790,47 @@ Rule-specific tickets lacking M0 data do not yet have ready-to-copy test inputs.
 ## PR-050 [LOW] — Build shared-area models
 
 - **Milestone:** M9
-- **Status:** READY
+- **Status:** DONE
 - **Dependencies:** PR-049
 - **Files / Areas:** `apps/web/src/scene/CommonBoard.tsx`, `apps/web/src/scene/RoleTiles.tsx`, `apps/web/src/scene/Ships.tsx`, `apps/web/src/scene/Markets.tsx`
 - **Scope / Acceptance:** Use original geometry for roles, building market, tiles, trading area, ships, and supplies. Models read only PlayerView.
 - **Required verification:** Visually check counts and slots for empty/full/exhausted fixtures; overlapping objects must not obscure important data.
 - **Out of scope:** Other tickets’ deliverables; consume dependencies only through defined interfaces.
-- **Evidence:** Not executed.
+- **Evidence:** 2026-10-01. The user supplied a visual reference (a Three.js Catan client); `docs/DESIGN.md` adapts its structure, palette and typography to Puerto Rico, with original art only.
+  - **Shared-area models** (original low-poly geometry, reading only PlayerView): `Ships.tsx` (cargo ships with one slot per capacity crate, and the Trading House's 4 slots); `RoleTiles.tsx` (cards with stacked coins; chosen cards darkened and naming their chooser); `Markets.tsx` (estate market and Quarry stack with discard count; supply barrels with counts, workers, Register and VP; building market in catalog order, sold-out types greyed but listed); `CommonBoard.tsx` arranges them on a larger island table in a teal sea.
+  - **Labels:** `Label.tsx` canvas-texture sprites sized to their text. Pure `pieces.ts` helpers: `shipSlots`, `tradingSlots`, `buildingMarket`.
+  - **Screen shell (per the user's style direction):** `layout/GameShell.tsx` + `styles.css` tokens and a self-hosted Cormorant Garamond font (@fontsource 5.3.0; no font CDN):
+    - top bar;
+    - players panel (initials medallions in seat colours, Governor badge, own VP only);
+    - 3D stage;
+    - turn panel (decision-maker, rejection, final scores, a Chinese chronicle of the last 20 filtered events; the store keeps 50);
+    - bottom hand of goods/coin cards plus the action controls;
+    - a collapsible full text view, open automatically without WebGL.
+    A started game renders full-screen.
+  - **Dev-only `scene-preview.html`**, excluded from the production build: renders any revision of the frozen fixtures for visual checks.
+  - **Tests:** 38 web tests (new: ship/Trading House/building-market slot counts including empty/full/sold-out, camera-fit bounds, chronicle retention).
+  - **Visual checks** (browser, real WebGL): 5p revision 0 (all empty) and 396 (all three ships full 6/6, 7/7, 8/8; chosen roles naming choosers; sold-out buildings greyed; empty supplies greyed). Labels were initially unreadable, so they were made text-sized and the market respaced. In the live 3p shell, side seats were cropped on a narrow stage, so the camera now backs off by stage aspect (`cameraDistanceScale`).
+  - **Defect found:** the e2e 3p game timed out after the richer scene because R3F rendered every tab at 60 fps continuously. Now `frameloop="demand"`; the 3p e2e takes 19.5 s.
+  - **Regression caught by e2e and fixed:** the full-screen started game had dropped the lobby's disconnect and seat-replaced notices; they now stay above the game.
+  - **Checks:** see PR-051 (shared final run). Labels are small on very narrow stages; readability refinement is PR-054.
 
 ## PR-051 [LOW] — Build player boards and reusable pieces
 
 - **Milestone:** M9
-- **Status:** READY
+- **Status:** DONE
 - **Dependencies:** PR-049
 - **Files / Areas:** `apps/web/src/scene/PlayerBoard.tsx`, `apps/web/src/scene/Buildings.tsx`, `apps/web/src/scene/Fields.tsx`, `apps/web/src/scene/Workers.tsx`
 - **Scope / Acceptance:** Display buildings, fields, workers, and goods by seat, mapped by stable instance IDs. Show no unauthorized information.
 - **Required verification:** Screenshot checks for empty/full boards and multiplayer layouts; updates leave no stale objects; supplement color with text/shapes.
 - **Out of scope:** Other tickets’ deliverables; consume dependencies only through defined interfaces.
-- **Evidence:** Not executed.
+- **Evidence:** 2026-10-01, in the DESIGN.md style.
+  - **`PlayerBoard.tsx`:** one seat's public board: a seat-colour band, title with Governor/you markers, Countryside and City grids, goods barrels with counts, and a line with coins, idle workers and any Personal Ship. Earned VP is never drawn.
+  - **`Fields.tsx`:** 12 spaces; plantations are flat goods-colour tiles and Quarries taller grey blocks, each with a one-character mark so colour is never the only cue; workers are drawn on occupied tiles.
+  - **`Buildings.tsx`:** 12 City spaces in build order, using the catalog footprint (two-space buildings never wrap rows); each shows its name and workers against its catalog worker slots (`Workers.tsx`: filled discs vs empty rings).
+  - **Layout:** all objects are keyed by stable instance IDs. The engine now exports its `BUILDINGS` catalog, so the UI reads footprints and slots instead of copying rule data. The table grew to 36×24 and the camera scales with it.
+  - **Tests:** 40 web tests. The layout test now checks, for 3/4/5 players and every viewer, that boards stay on the table and never overlap. New: 12 Countryside slots empty/full keyed by tile ID; a full City with two-space buildings not wrapping; catalog worker slots.
+  - **Visual checks** on the scene preview: 5p revision 396 (full boards, no overlap with the shared area) and 3p revision 0 (starting plantations, empty grids).
+  - **Checks:** real pnpm from clean `dist/`: typecheck, test (engine 564, protocol 3, server 83, web 40; 690 total), build, and e2e (3 full games plus 2 reconnect specs, all passing after the notice fix). No PR-051 regressions.
 
 ## PR-052 [LOW] — Connect object selection to legal actions
 

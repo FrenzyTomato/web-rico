@@ -72,12 +72,19 @@ export function Lobby({ socket, onSession = () => {}, game }: {
     if (!reply.ok) setError(failure(START_ERRORS, reply.code));
   };
 
-  return (
-    <main>
-      <h1>波多黎各</h1>
+  const notices = (
+    <>
       {!connected && <p role="status">连接已断开，正在重新连接…</p>}
       {replaced && <p role="status">此座位已在其他窗口中打开</p>}
       {error && <p role="alert">{error}</p>}
+    </>
+  );
+  // A started game takes the whole screen, keeping the connection and seat notices above it.
+  if (seat && room?.started && game) return <>{notices}{game(seat, room)}</>;
+  return (
+    <main className="lobby">
+      <h1>波多黎各</h1>
+      {notices}
       {!seat ? (
         <section>
           <label>昵称 <input value={name} onChange={e => setName(e.target.value)} /></label>

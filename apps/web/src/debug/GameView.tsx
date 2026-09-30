@@ -1,11 +1,5 @@
-import { useStore } from 'zustand';
 import type { Goods } from '@vibe-rico/game-engine';
-import type { CommandRejected, PlayerView, RoomState } from '@vibe-rico/protocol';
-import { ActionForm } from '../actions/ActionForm.js';
-import type { GameStore } from '../state/gameStore.js';
-import { ScoreView } from './ScoreView.js';
-import { SceneBoundary } from '../scene/SceneBoundary.js';
-import { TableScene } from '../scene/TableScene.js';
+import type { CommandRejected, PlayerView } from '@vibe-rico/protocol';
 import { BUILDING, END_REASON, GOOD, PHASE, ROLE, TILE } from '../i18n/terms.js';
 
 const goods = (g: Goods) => (Object.entries(g) as [keyof Goods, number][]).filter(([, n]) => n > 0).map(([k, n]) => `${GOOD[k]}×${n}`).join(' ') || '无';
@@ -43,7 +37,6 @@ export function GameView({ view, names }: { view: PlayerView; names: Readonly<Re
           </article>
         ))}
       </section>
-      {phase.kind === 'game-over' && <ScoreView scores={phase.scores} names={names} />}
     </div>
   );
 }
@@ -55,23 +48,3 @@ const REJECTIONS: Partial<Record<CommandRejected['code'], string>> = {
 };
 export const rejectionText = (r: CommandRejected) =>
   REJECTIONS[r.code] ?? `操作被拒绝：${r.code}${r.ruleId ? `（规则 ${r.ruleId}）` : ''}`;
-
-/** In-game screen: latest authoritative view, this seat's actions, and the last server rejection. */
-export function Game({ store, roomId, room }: { store: GameStore; roomId: string; room: RoomState }) {
-  const latest = useStore(store, s => s.latest);
-  const rejection = useStore(store, s => s.rejection);
-  const connected = useStore(store, s => s.connected);
-  if (!latest) return <p>正在载入局面…</p>;
-  const names = Object.fromEntries(room.seats.map(s => [s.playerId, s.displayName]));
-  return (
-    <div data-revision={latest.revision}>
-      <SceneBoundary><TableScene view={latest.view} names={names} /></SceneBoundary>
-      <p>版本 {latest.revision}</p>
-      {rejection && <p role="alert">{rejectionText(rejection)}</p>}
-      {connected
-        ? <ActionForm legalActions={latest.legalActions} view={latest.view} submit={action => store.getState().submit(roomId, action)} />
-        : <p>连接已断开，暂时不能行动</p>}
-      <GameView view={latest.view} names={names} />
-    </div>
-  );
-}

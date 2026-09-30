@@ -6,7 +6,8 @@ import type { PlayerBroadcast, RoomState } from '@vibe-rico/protocol';
 import * as three from '../../../../packages/game-engine/test/scenarios/fixtures/full-game-3p.js';
 import * as four from '../../../../packages/game-engine/test/scenarios/fixtures/full-game-4p.js';
 import * as five from '../../../../packages/game-engine/test/scenarios/fixtures/full-game-5p.js';
-import { Game, rejectionText } from '../debug/GameView.js';
+import { rejectionText } from '../debug/GameView.js';
+import { GameShell } from '../layout/GameShell.js';
 import { ScoreView } from '../debug/ScoreView.js';
 import { createGameStore } from '../state/gameStore.js';
 import { ActionForm, describeOptions } from './ActionForm.js';
@@ -96,11 +97,11 @@ describe('game screen', () => {
       store.getState().receive({ protocolVersion: '1', revision: 0, view, legalActions: getLegalCommands(s, 'alice' as never), events: [] } as unknown as PlayerBroadcast);
       store.setState({ rejection: { commandId: 'c', code: 'ILLEGAL_COMMAND', ruleId: 'ROLE-001' } });
     });
-    render(<Game store={store} roomId="r" room={room} />);
+    render(<GameShell store={store} roomId="r" room={room} />);
     expect(screen.getByRole('alert').textContent).toBe('操作被拒绝：ILLEGAL_COMMAND（规则 ROLE-001）');
     expect(rejectionText({ commandId: 'c', code: 'STALE_REVISION', currentRevision: 2 })).toBe('状态已更新，请根据最新局面重新选择');
     expect(within(screen.getByRole('group', { name: '可选行动' })).getAllByRole('button')).toHaveLength(6);
-    expect(screen.getByLabelText('回合').textContent).toContain('等待 Alice');
+    expect(screen.getByLabelText('回合信息').textContent).toContain('Alice 的回合');
   });
 
   it('renders the itemized final scores in rank order with names', () => {

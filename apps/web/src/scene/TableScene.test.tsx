@@ -1,25 +1,41 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { SceneBoundary } from './SceneBoundary.js';
+import { cameraDistanceScale } from './Camera.js';
+import { BOARD } from './PlayerBoard.js';
 import { seatPositions, TABLE } from './TableScene.js';
 
 afterEach(cleanup);
 
 describe('seat layout', () => {
-  it.each([3, 4, 5])('%i players: every seat on the table, viewer in front, clockwise, and well separated', n => {
+  it.each([3, 4, 5])('%i players: every board on the table, viewer in front, clockwise, and boards never overlap', n => {
     const seats = Array.from({ length: n }, (_, i) => `p${i}`);
     for (const viewer of seats) {
       const layout = seatPositions(seats, viewer);
       expect(layout.map(s => s.playerId)).toEqual(seats);
-      for (const s of layout) expect(Math.abs(s.x) <= TABLE.width / 2 && Math.abs(s.z) <= TABLE.depth / 2).toBe(true);
+      for (const s of layout) {
+        expect(Math.abs(s.x) + BOARD.width / 2).toBeLessThanOrEqual(TABLE.width / 2);
+        expect(Math.abs(s.z) + BOARD.depth / 2).toBeLessThanOrEqual(TABLE.depth / 2);
+      }
       const me = layout.find(s => s.playerId === viewer)!;
       expect(me.z).toBeCloseTo(Math.max(...layout.map(s => s.z)));
       // Clockwise seen from above (+y): the next seat after the viewer is to the viewer's left (−x).
       const next = layout[(seats.indexOf(viewer) + 1) % n]!;
       expect(next.x).toBeLessThan(0);
-      // Seat markers are 3×2; centres at least 3 apart keep names readable.
-      for (const a of layout) for (const b of layout) if (a !== b) expect(Math.hypot(a.x - b.x, a.z - b.z)).toBeGreaterThanOrEqual(3);
+      // Axis-aligned boards must not overlap: separated along x or along z.
+      for (const a of layout) for (const b of layout) {
+        if (a !== b) expect(Math.abs(a.x - b.x) >= BOARD.width || Math.abs(a.z - b.z) >= BOARD.depth).toBe(true);
+      }
     }
+  });
+});
+
+describe('camera fit', () => {
+  it('backs away on narrow stages so side seats stay in view, within bounds', () => {
+    expect(cameraDistanceScale(2)).toBe(1);
+    expect(cameraDistanceScale(1.6)).toBe(1);
+    expect(cameraDistanceScale(1)).toBeCloseTo(1.6);
+    expect(cameraDistanceScale(0.5)).toBe(2);
   });
 });
 

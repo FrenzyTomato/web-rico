@@ -106,6 +106,17 @@ describe('client game store', () => {
     expect(store.getState().pending).toEqual({});
   });
 
+  it('keeps the newest events for the chronicle, ignoring duplicate snapshots', () => {
+    const { state } = ready();
+    const withEvents = (revision: number, n: number) => ({ ...snapshot(revision), events: Array.from({ length: n }, (_, index) => ({ kind: 'phase-changed', revision, index })) }) as unknown as PlayerBroadcast;
+    state().receive(withEvents(1, 2));
+    state().receive(withEvents(1, 2));
+    expect(state().chronicle).toHaveLength(2);
+    state().receive(withEvents(2, 60));
+    expect(state().chronicle).toHaveLength(50);
+    expect(state().chronicle.at(-1)).toMatchObject({ revision: 2, index: 59 });
+  });
+
   it('refuses to send before the first snapshot', () => {
     const store = createGameStore(transport());
     store.getState().sessionReady();

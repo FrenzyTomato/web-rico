@@ -1,62 +1,52 @@
-import { useEffect, useMemo } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { CanvasTexture } from 'three';
 import type { PlayerView } from '@vibe-rico/protocol';
 import { Camera } from './Camera.js';
+import { CommonBoard } from './CommonBoard.js';
+import { PlayerBoard } from './PlayerBoard.js';
+import { SEAT_COLORS } from './pieces.js';
 
-export const TABLE = { width: 14, depth: 9 } as const;
+export const TABLE = { width: 36, depth: 24 } as const;
 
 /**
- * Seat positions around an oval table, clockwise in seat order (seen from above), with the viewer's seat
- * at the front edge nearest the camera. Pure, so layouts for 3/4/5 players are testable without WebGL.
+ * Seat positions around an oval, clockwise in seat order (seen from above), with the viewer's seat at the
+ * front edge nearest the camera. Pure, so layouts for 3/4/5 players are testable without WebGL.
  */
 export function seatPositions(seatOrder: readonly string[], viewerId: string) {
   const n = seatOrder.length, viewer = seatOrder.indexOf(viewerId);
   return seatOrder.map((playerId, i) => {
     // Angle 0 is the front (+z); clockwise from above runs toward -x.
     const angle = (2 * Math.PI * (((i - viewer) % n) + n)) / n;
-    return { playerId, x: -Math.sin(angle) * (TABLE.width / 2 - 1.5), z: Math.cos(angle) * (TABLE.depth / 2 - 1) };
+    return { playerId, x: -Math.sin(angle) * (TABLE.width / 2 - 4), z: Math.cos(angle) * (TABLE.depth / 2 - 2.2) };
   });
 }
 
-/**
- * A name drawn onto a canvas texture and shown as a sprite: no extra React roots (drei Html remounted
- * endlessly under React 19) and no font download. Names are also listed in the DOM client.
- */
-function Label({ text, position }: { text: string; position: [number, number, number] }) {
-  const texture = useMemo(() => {
-    const canvas = document.createElement('canvas');
-    canvas.width = 512; canvas.height = 128;
-    const g = canvas.getContext('2d')!;
-    g.fillStyle = '#ffffff'; g.fillRect(0, 0, 512, 128);
-    g.fillStyle = '#111111'; g.font = 'bold 72px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
-    g.fillText(text, 256, 64);
-    return new CanvasTexture(canvas);
-  }, [text]);
-  useEffect(() => () => texture.dispose(), [texture]);
-  return <sprite position={position} scale={[4, 1, 1]}><spriteMaterial map={texture} /></sprite>;
-}
-
-/** The table, lighting and one labelled seat marker per player. Reads only PlayerView. */
+/** A wood-framed island in a teal sea (DESIGN.md): the shared harbour in the centre, one seat per player. */
 export function TableScene({ view, names }: { view: PlayerView; names: Readonly<Record<string, string>> }) {
   return (
-    <div style={{ height: 360 }} aria-label="桌面">
-      <Canvas>
+    <div className="scene" aria-label="桌面">
+      {/* Redraw only when props change: a board game is static between states (continuous 60 fps starved e2e tabs). */}
+      <Canvas frameloop="demand">
+        <color attach="background" args={['#2f7f86']} />
         <Camera />
-        <ambientLight intensity={0.6} />
-        <directionalLight position={[5, 10, 5]} intensity={0.9} />
-        <mesh position={[0, -0.25, 0]}>
-          <boxGeometry args={[TABLE.width, 0.5, TABLE.depth]} />
-          <meshStandardMaterial color="#7a5230" />
+        <ambientLight intensity={0.7} />
+        <directionalLight position={[8, 20, 10]} intensity={1.1} color="#fff1d6" />
+        <mesh position={[0, -0.8, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+          <planeGeometry args={[120, 120]} />
+          <meshStandardMaterial color="#2f7f86" />
         </mesh>
-        {seatPositions(view.seatOrder, view.viewer.playerId).map(seat => (
+        <mesh position={[0, -0.45, 0]}>
+          <boxGeometry args={[TABLE.width + 1, 0.7, TABLE.depth + 1]} />
+          <meshStandardMaterial color="#2b1d14" />
+        </mesh>
+        <mesh position={[0, -0.08, 0]}>
+          <boxGeometry args={[TABLE.width, 0.1, TABLE.depth]} />
+          <meshStandardMaterial color="#d9c8a2" />
+        </mesh>
+        <CommonBoard view={view} names={names} />
+        {seatPositions(view.seatOrder, view.viewer.playerId).map((seat, i) => (
           <group key={seat.playerId} position={[seat.x, 0, seat.z]}>
-            <mesh position={[0, 0.1, 0]}>
-              <boxGeometry args={[3, 0.2, 2]} />
-              <meshStandardMaterial color={seat.playerId === view.viewer.playerId ? '#2f6f4f' : '#4b5d6b'} />
-            </mesh>
-            <Label position={[0, 0.9, 0]}
-              text={`${names[seat.playerId] ?? seat.playerId}${seat.playerId === view.governorPlayerId ? '（总督）' : ''}`} />
+            <PlayerBoard player={view.players[i]!} color={SEAT_COLORS[i]!}
+              title={`${names[seat.playerId] ?? seat.playerId}${seat.playerId === view.governorPlayerId ? '（总督）' : ''}${seat.playerId === view.viewer.playerId ? '（你）' : ''}`} />
           </group>
         ))}
       </Canvas>

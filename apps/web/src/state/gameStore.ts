@@ -1,5 +1,5 @@
 import { createStore } from 'zustand/vanilla';
-import type { CommandAccepted, CommandRejected, GameplayRequest, PlayerBroadcast } from '@vibe-rico/protocol';
+import type { CommandAccepted, CommandRejected, GameplayRequest, PlayerBroadcast, PlayerEvent } from '@vibe-rico/protocol';
 import { PROTOCOL_VERSION } from '@vibe-rico/protocol';
 
 export interface CommandTransport { send(request: GameplayRequest): Promise<CommandAccepted | CommandRejected> }
@@ -12,6 +12,8 @@ export interface ClientState {
   /** Sent but unacknowledged requests, kept verbatim so retries reuse the original commandId. */
   readonly pending: Readonly<Record<string, GameplayRequest>>;
   readonly rejection: CommandRejected | null;
+  /** Recent filtered events for the chronicle, newest last (at most CHRONICLE_SIZE). */
+  readonly chronicle: readonly PlayerEvent[];
   receive(broadcast: PlayerBroadcast): void;
   /** The server holds this connection's session again: allow sends and retry every pending command. */
   sessionReady(): void;
@@ -20,6 +22,7 @@ export interface ClientState {
   submit(roomId: string, action: GameplayRequest['action']): string | null;
 }
 
+export const CHRONICLE_SIZE = 50;
 export const createGameStore = (transport: CommandTransport, newId: () => string = () => crypto.randomUUID()) =>
   createStore<ClientState>()((set, get) => {
     const send = (request: GameplayRequest) => {
@@ -32,9 +35,12 @@ export const createGameStore = (transport: CommandTransport, newId: () => string
       });
     };
     return {
-      latest: null, connected: false, pending: {}, rejection: null,
+      latest: null, connected: false, pending: {}, rejection: null, chronicle: [],
       // Old or duplicate snapshots never overwrite a newer one.
-      receive: broadcast => { if (!get().latest || broadcast.revision > get().latest!.revision) set({ latest: broadcast }); },
+      receive: broadcast => {
+        if (get().latest && broadcast.revision <= get().latest!.revision) return;
+        set(s => ({ latest: broadcast, chronicle: [...s.chronicle, ...broadcast.events].slice(-CHRONICLE_SIZE) }));
+      },
       sessionReady: () => { set({ connected: true }); for (const request of Object.values(get().pending)) send(request); },
       disconnected: () => set({ connected: false }),
       submit: (roomId, action) => {

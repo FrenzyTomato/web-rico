@@ -1,6 +1,8 @@
+import '@fontsource/cormorant-garamond/600.css';
+import './styles.css';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { Game } from './debug/GameView.js';
+import { GameShell } from './layout/GameShell.js';
 import { ScenarioTools } from './debug/ScenarioTools.js';
 import { Lobby } from './lobby/Lobby.js';
 import { bindStore, socketTransport } from './network/commands.js';
@@ -16,7 +18,7 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <Lobby socket={socket} onSession={onSession} game={(seat, room) => (
       <>
-        <Game store={gameStore} roomId={seat.roomId} room={room} />
+        <GameShell store={gameStore} roomId={seat.roomId} room={room} />
         {import.meta.env.DEV && <ScenarioTools socket={socket} roomId={seat.roomId} />}
       </>
     )} />

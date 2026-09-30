@@ -1,0 +1,60 @@
+/* DESIGN.md tokens: dark wood frame, parchment panels, gold trim, classical serif. */
+:root {
+  --wood: #2b1d14; --wood-light: #4a3222; --parchment: #efe4cc; --ink: #2a2118; --gold: #c9a45c; --sea: #2f7f86;
+  --serif: 'Cormorant Garamond', 'Songti SC', 'Noto Serif SC', serif;
+  --sans: system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--wood); color: var(--parchment); font-family: var(--sans); }
+h1, h2 { font-family: var(--serif); color: var(--gold); margin: 0 0 8px; font-weight: 600; }
+button {
+  font: inherit; color: var(--ink); background: var(--parchment); border: 1px solid var(--gold); border-radius: 4px;
+  padding: 6px 10px; margin: 2px; cursor: pointer;
+}
+button:hover:not(:disabled) { background: #fff6e2; }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+input { font: inherit; padding: 4px 6px; border: 1px solid var(--gold); border-radius: 4px; }
+a { color: var(--gold); }
+[role='alert'] { background: #7a2b20; color: #fff; padding: 6px 10px; border-radius: 4px; }
+[role='status'], [role='note'] { background: var(--wood-light); padding: 6px 10px; border-radius: 4px; }
+
+.shell {
+  display: grid; min-height: 100vh; gap: 8px; padding: 8px;
+  grid-template-columns: 220px 1fr 280px; grid-template-rows: auto 1fr auto auto;
+  grid-template-areas: 'top top top' 'players stage turn' 'hand hand hand' 'text text text';
+}
+.topbar { grid-area: top; display: flex; gap: 24px; align-items: baseline; border-bottom: 2px solid var(--gold); padding: 4px 8px; }
+.topbar h1 { margin: 0; font-size: 28px; }
+.panel { background: var(--parchment); color: var(--ink); border: 2px solid var(--gold); border-radius: 6px; padding: 10px; overflow: auto; }
+.panel h2 { color: var(--wood-light); font-size: 20px; }
+.players { grid-area: players; }
+.turn { grid-area: turn; }
+.stage { grid-area: stage; border: 2px solid var(--gold); border-radius: 6px; overflow: hidden; background: var(--sea); min-height: 420px; }
+.scene { height: 100%; min-height: 420px; }
+.seat { display: flex; gap: 10px; align-items: center; padding: 6px; border-bottom: 1px solid #d8ccb0; }
+.seat.acting { outline: 2px solid var(--gold); background: #fff6e2; }
+.medallion {
+  width: 40px; height: 40px; border-radius: 50%; border: 3px solid var(--gold); display: grid; place-items: center;
+  font-family: var(--serif); font-size: 20px; color: #fff; flex: none;
+}
+.badge { margin-left: 6px; font-size: 12px; background: var(--gold); color: var(--ink); padding: 1px 6px; border-radius: 8px; }
+.chronicle { padding-left: 18px; margin: 0; font-size: 14px; }
+.hand { grid-area: hand; display: flex; gap: 12px; align-items: flex-start; background: var(--wood-light); border: 2px solid var(--gold); border-radius: 6px; padding: 8px; }
+.cards { display: flex; gap: 6px; }
+.card {
+  width: 64px; height: 84px; background: var(--parchment); color: var(--ink); border: 2px solid var(--gold); border-radius: 6px;
+  display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 6px; font-family: var(--serif);
+}
+.card strong { font-size: 22px; }
+.actions { flex: 1; }
+.actions form, .actions [role='group'] { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.text-view { grid-area: text; background: var(--parchment); color: var(--ink); border-radius: 6px; padding: 8px; }
+table { border-collapse: collapse; font-size: 13px; }
+td, th { border: 1px solid #c9b894; padding: 2px 6px; }
+
+@media (max-width: 900px) {
+  .shell { grid-template-columns: 1fr; grid-template-areas: 'top' 'stage' 'turn' 'players' 'hand' 'text'; }
+}
+
+.lobby { max-width: 720px; margin: 40px auto; background: var(--parchment); color: var(--ink); border: 2px solid var(--gold); border-radius: 8px; padding: 20px; }
+.lobby label { display: block; margin: 8px 0; }

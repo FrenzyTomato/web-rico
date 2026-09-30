@@ -19,3 +19,5 @@ export { createReplay, replay, serializeReplay, REPLAY_FORMAT_VERSION } from './
 export type { ReplayRecord, ReplayFailure, ReplayResult } from './replay/replay.js';
 export { startCli, runCliLine } from './cli.js';
 export type { CliSession, CliResult } from './cli.js';
+export { BUILDINGS } from './buildings/definitions.js';
+export type { BuildingDefinition } from './buildings/definitions.js';
