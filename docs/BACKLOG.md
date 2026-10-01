@@ -1,6 +1,6 @@
 # Dependency-ordered Engineering Backlog
 
-PR-001's original source audit is complete. The user subsequently designated the local 44-page Special Edition rulebook (S3) as canonical; see [reference policy](../references/README.md). PR-002 is DONE against S3 with user-supplied building stock recorded as PROJECT-003; PR-003 is DONE. PR-004 and PR-005 are DONE; PR-006–047, PR-027A, PR-030A and PR-033A/B are DONE; PR-048 is WAIVED by the user (no playtest performed); PR-049–056 are DONE; PR-057 is READY. V1 remains the 3–5-player base game; deterministic setup, role selection, round rotation, base role mechanics and the building catalog are implemented; all23 building abilities and final scoring are implemented; headless controls and replay are implemented; 3/4/5-player full-game fixtures are implemented; application packages remain pending.
+PR-001's original source audit is complete. The user subsequently designated the local 44-page Special Edition rulebook (S3) as canonical; see [reference policy](../references/README.md). PR-002 is DONE against S3 with user-supplied building stock recorded as PROJECT-003; PR-003 is DONE. PR-004 and PR-005 are DONE; PR-006–047, PR-027A, PR-030A and PR-033A/B are DONE; PR-048 is WAIVED by the user (no playtest performed); PR-049–057 are DONE; PR-058 is READY. V1 remains the 3–5-player base game; deterministic setup, role selection, round rotation, base role mechanics and the building catalog are implemented; all23 building abilities and final scoring are implemented; headless controls and replay are implemented; 3/4/5-player full-game fixtures are implemented; application packages remain pending.
 
 **Status:** READY means available to start; IN_PROGRESS means work has started (including awaiting a documented decision); WAITING means dependencies remain incomplete; DONE requires recorded acceptance evidence. PR-number dependencies must not be skipped. Tasks are topologically ordered; PR-004 can proceed independently.
 
@@ -953,13 +953,32 @@ Rule-specific tickets lacking M0 data do not yet have ready-to-copy test inputs.
 ## PR-057 [MEDIUM] — Implement atomic commits and failure handling
 
 - **Milestone:** M11
-- **Status:** WAITING
+- **Status:** DONE
 - **Dependencies:** PR-056
 - **Files / Areas:** `apps/server/src/storage/commit.ts`, `apps/server/src/commands/submit.ts`, `apps/server/test/storage-failures.test.ts`
 - **Scope / Acceptance:** Transactionally write snapshot, command result, and events. Failure changes neither authoritative memory nor success acknowledgments. Sequence numbers remain monotonic.
 - **Required verification:** TS-DURABLE: errors before/during commit fully roll back; CAS conflicts fail; acknowledgment follows successful commit only.
 - **Out of scope:** Other tickets’ deliverables; consume dependencies only through defined interfaces.
-- **Evidence:** Not executed.
+- **Evidence:** 2026-10-01
+  - **`storage/commit.ts`:** `commitAccepted` writes the snapshot, the accepted command and its events in one store transaction against the read revision. It returns 'ok', 'stale' or 'unavailable', where a throwing store counts as unavailable.
+  - **`commands/submit.ts`:**
+    - a store read failure is now `STORE_UNAVAILABLE` instead of a thrown error;
+    - the broadcast and the acknowledgement happen only after 'ok';
+    - a broadcast failure cannot undo a commit.
+  - **`app.ts`:** a `guarded` wrapper on the async socket handlers (room, resume, debug), so a store failure answers `STORE_UNAVAILABLE` instead of an unhandled rejection crashing the process (Node 24). `createApp` gained a `store` option.
+  - **Tests:** `test/storage-failures.test.ts`.
+    - On real PostgreSQL 16 (`test:db`):
+      - a mid-transaction failure (a conflicting event row) rolls everything back, is not acknowledged and not broadcast, and the same command then commits at revision 1;
+      - an unreachable database (closed pool) gives `STORE_UNAVAILABLE` and no broadcast;
+      - a CAS conflict (a second server's store commits between the read and the write) gives `STALE_REVISION`, no broadcast, and only the winner's row;
+      - the acknowledgement comes after the commit is visible (the broadcast callback already sees the row), and revisions stay contiguous.
+    - Without a DB: a throwing store at the socket boundary answers `STORE_UNAVAILABLE` and the server keeps serving.
+  - The runner runs DB files sequentially, since each resets the schema.
+  - **Mutation checks:**
+    - broadcasting before the commit failed 2 DB tests;
+    - removing the handler guard hung the request (test timeout);
+    - both passed once restored.
+  - **Checks:** root typecheck, test (engine 564, protocol 3, server 84 + 8 DB-skipped, web 56), build, e2e 13/13; `test:db` 9/9 on real PostgreSQL 16.
 
 ## PR-058 [MEDIUM] — Implement restart recovery and lost acknowledgments
 

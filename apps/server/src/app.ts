@@ -11,6 +11,7 @@ import { RoomLifecycle } from './rooms/lifecycle.js';
 import { LIMITS, RateLimiter } from './rooms/limits.js';
 import { Lobby } from './rooms/lobby.js';
 import type { LobbyRandom } from './rooms/lobby.js';
+import type { RoomStore } from './rooms/store.js';
 import { exportRoom, importRoom } from './debug/scenarios.js';
 import { Sessions } from './sessions/reconnect.js';
 import { broadcast, broadcastFor, roomState } from './rooms/broadcast.js';
@@ -26,12 +27,13 @@ type Ack<T> = (reply: T) => void;
 /**
  * `devTools` enables full-state scenario tools; only for a controlled local environment (off by default).
  * `random` replaces crypto randomness for deterministic browser tests (apps/web/e2e/server.mjs).
+ * `store` defaults to the in-memory store; PostgreSQL is wired in main.ts (PR-058).
  */
-export function createApp({ devTools = false, random }: { devTools?: boolean; random?: LobbyRandom } = {}) {
+export function createApp({ devTools = false, random, store = new InMemoryRoomStore() }: { devTools?: boolean; random?: LobbyRandom; store?: RoomStore } = {}) {
   const app = Fastify();
   app.get('/health', async () => ({ status: 'ok' }));
   const io = new Server(app.server, { maxHttpBufferSize: devTools ? DEV_MAX_MESSAGE_BYTES : MAX_MESSAGE_BYTES });
-  const store = new InMemoryRoomStore(), queues = new RoomQueues();
+  const queues = new RoomQueues();
   const lobby = new Lobby(store, random), lifecycle = new RoomLifecycle(store, queues), sessions = new Sessions(store);
   const sweeper = setInterval(() => void lifecycle.sweep(), LIMITS.sweepIntervalMs);
   sweeper.unref();
@@ -56,6 +58,12 @@ export function createApp({ devTools = false, random }: { devTools?: boolean; ra
     lifecycle.connected(roomId, playerId);
   };
 
+  /** Store failures must not crash the process (unhandled rejections): answer STORE_UNAVAILABLE instead. */
+  const guarded = (handler: (payload: unknown, ack: unknown) => Promise<unknown> | unknown) => (payload: unknown, ack: unknown) => {
+    void Promise.resolve().then(() => handler(payload, ack)).catch(() => {
+      if (typeof ack === 'function') ack({ ok: false, code: 'STORE_UNAVAILABLE' });
+    });
+  };
   io.on('connection', socket => {
     // Over the rate limit closes the connection, like an oversized message.
     socket.use((_packet, next) => { if (limiter.allow(socket.id, Date.now())) next(); else socket.disconnect(true); });
@@ -65,14 +73,14 @@ export function createApp({ devTools = false, random }: { devTools?: boolean; ra
       if (s && sessions.release(s.roomId, s.playerId, socket.id)) lifecycle.disconnected(s.roomId, s.playerId);
     });
 
-    socket.on('resume', (payload: unknown, ack: unknown) => {
+    socket.on('resume', guarded((payload: unknown, ack: unknown) => {
       if (typeof ack !== 'function') return;
       const reply = ack as Ack<RoomReply<Resumed>>;
       const parsed = parseResumeRequest(payload);
       if (!parsed.ok) return reply({ ok: false, code: parsed.code });
       const { roomId, token } = parsed.value;
       // Subscribe and read the snapshot revision in one queued task, so no commit falls between them.
-      void queues.run(roomId, async () => {
+      return queues.run(roomId, async () => {
         const playerId = await sessions.authenticate(roomId, token);
         if (!playerId) return reply({ ok: false, code: 'UNAUTHORIZED' });
         attach(socket, roomId, playerId);
@@ -82,9 +90,9 @@ export function createApp({ devTools = false, random }: { devTools?: boolean; ra
         reply({ ok: true, value: { playerId, revision: game?.state.revision ?? null } });
         await announce(roomId);
       });
-    });
+    }));
 
-    socket.on('room', async (payload: unknown, ack: unknown) => {
+    socket.on('room', guarded(async (payload: unknown, ack: unknown) => {
       if (typeof ack !== 'function') return;
       const parsed = parseRoomRequest(payload);
       if (!parsed.ok) return (ack as Ack<RoomReply<null>>)({ ok: false, code: parsed.code });
@@ -118,7 +126,7 @@ export function createApp({ devTools = false, random }: { devTools?: boolean; ra
         if (left.ok) { await socket.leave(s.roomId); socket.data.session = undefined; await announce(s.roomId); }
         reply(left);
       }
-    });
+    }));
 
     if (devTools) {
       // Seated players only, for their own room; payload is `{ roomId }` or `{ roomId, replay }`.
@@ -127,12 +135,12 @@ export function createApp({ devTools = false, random }: { devTools?: boolean; ra
         const roomId = (payload as { roomId?: unknown } | null)?.roomId;
         return s && s.roomId === roomId && sessions.isCurrent(s.roomId, s.playerId, s.generation) ? s : undefined;
       };
-      socket.on('debug-export', async (payload: unknown, ack: unknown) => {
+      socket.on('debug-export', guarded(async (payload: unknown, ack: unknown) => {
         if (typeof ack !== 'function') return;
         const s = devSession(payload);
         ack(s ? await exportRoom(store, s.roomId) : { ok: false, code: 'UNAUTHORIZED' });
-      });
-      socket.on('debug-import', async (payload: unknown, ack: unknown) => {
+      }));
+      socket.on('debug-import', guarded(async (payload: unknown, ack: unknown) => {
         if (typeof ack !== 'function') return;
         const s = devSession(payload);
         if (!s) return ack({ ok: false, code: 'UNAUTHORIZED' });
@@ -142,7 +150,7 @@ export function createApp({ devTools = false, random }: { devTools?: boolean; ra
           if (game) await broadcast(io, s.roomId, game.state, []);
           return result;
         }));
-      });
+      }));
     }
 
     socket.on('command', async (payload: unknown, ack: unknown) => {
