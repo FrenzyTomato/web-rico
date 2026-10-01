@@ -1,6 +1,6 @@
 # Dependency-ordered Engineering Backlog
 
-PR-001's original source audit is complete. The user subsequently designated the local 44-page Special Edition rulebook (S3) as canonical; see [reference policy](../references/README.md). PR-002 is DONE against S3 with user-supplied building stock recorded as PROJECT-003; PR-003 is DONE. PR-004 and PR-005 are DONE; PR-006–047, PR-027A, PR-030A and PR-033A/B are DONE; PR-048 is WAIVED by the user (no playtest performed); PR-049–059 are DONE; PR-060 and PR-061 are READY. V1 remains the 3–5-player base game; deterministic setup, role selection, round rotation, base role mechanics and the building catalog are implemented; all23 building abilities and final scoring are implemented; headless controls and replay are implemented; 3/4/5-player full-game fixtures are implemented; application packages remain pending.
+PR-001's original source audit is complete. The user subsequently designated the local 44-page Special Edition rulebook (S3) as canonical; see [reference policy](../references/README.md). PR-002 is DONE against S3 with user-supplied building stock recorded as PROJECT-003; PR-003 is DONE. PR-004 and PR-005 are DONE; PR-006–047, PR-027A, PR-030A and PR-033A/B are DONE; PR-048 is WAIVED by the user (no playtest performed); PR-049–060 and PR-060A are DONE; PR-061 is READY. V1 remains the 3–5-player base game; deterministic setup, role selection, round rotation, base role mechanics and the building catalog are implemented; all23 building abilities and final scoring are implemented; headless controls and replay are implemented; 3/4/5-player full-game fixtures are implemented; application packages remain pending.
 
 **Status:** READY means available to start; IN_PROGRESS means work has started (including awaiting a documented decision); WAITING means dependencies remain incomplete; DONE requires recorded acceptance evidence. PR-number dependencies must not be skipped. Tasks are topologically ordered; PR-004 can proceed independently.
 
@@ -908,7 +908,7 @@ Rule-specific tickets lacking M0 data do not yet have ready-to-copy test inputs.
 - **Scope / Acceptance:** Record device/resolution and define and verify frame-time targets for a full table. Reuse geometry and release resources; avoid unsupported renderer rewrites.
 - **Required verification:** Suggested target: p95 frame time ≤33ms at 1080p on the agreed desktop device; no sustained resource growth across 10 scene enter/exit cycles; correct WebGL recovery.
 - **Out of scope:** Other tickets’ deliverables; consume dependencies only through defined interfaces.
-- **Evidence:** 2026-10-01 — see `docs/PERFORMANCE.md`. Device: Apple M4 / 16 GB / macOS 15.5, Chrome headless with WebGL2 via ANGLE Metal (verified), 1920×1080, on the full 5p table (fixture revision 396). **The device is provisional until the user agrees it.**
+- **Evidence:** 2026-10-01 — see `docs/PERFORMANCE.md`. Device: Apple M4 / 16 GB / macOS 15.5, Chrome headless with WebGL2 via ANGLE Metal (verified), 1920×1080, on the full 5p table (fixture revision 396). The user confirmed this Mac as the agreed device (2026-10-01).
   - **`scene/resources.ts`:** shared geometries per shape and materials per colour for the repeated pieces (`dispose={null}`; bounded at 9 geometries / 12 materials), plus a `liveTextures` counter in `Label`.
   - **Context loss:** the notice shows while lost; three.js restores its own state and the scene invalidates on restore.
   - **Code-splitting:** the scene is lazy-loaded; the main bundle went from 1,284 kB to 378 kB, with three.js in a 928 kB lazy chunk.
@@ -1026,13 +1026,36 @@ Rule-specific tickets lacking M0 data do not yet have ready-to-copy test inputs.
 ## PR-060 [MEDIUM] — Perform the final rule and boundary audit
 
 - **Milestone:** M12
-- **Status:** READY
+- **Status:** DONE
 - **Dependencies:** PR-055, PR-059, PR-003
 - **Files / Areas:** `docs/RULE_AUDIT.md`, `docs/TEST_SCENARIOS.md`, `docs/BACKLOG.md`
 - **Scope / Acceptance:** Independently audit against the rulebook, emphasizing Captain, workers, building combinations, scoring, and visibility. Create regression-test tickets before fixing findings.
 - **Required verification:** Every ruleId maps to implementation and passing tests; close all blocking defects. Unreviewed items cannot be called passed.
 - **Out of scope:** Other tickets’ deliverables; consume dependencies only through defined interfaces.
-- **Evidence:** Not executed.
+- **Evidence:** 2026-10-01 — see `docs/RULE_AUDIT.md`.
+  - Two independent read-only reviewers compared the canonical rulebook (all 44 pages, text extracted with macOS PDFKit; no download), RULES.md and the code, and ran the in-scope tests (144 tests, and 385 engine + 4 projection, all passing).
+  - **No BLOCKER or MAJOR findings.** Seven MINOR findings (AUD-01…07): two documentation clarifications, four test gaps or defensive tests, and one UX question (AUD-06, the Builder auto-skip after City-full) left for a user decision. Regression tests were ticketed first as PR-060A, per EXECUTION.md.
+  - Every rule ID in RULES.md maps to scenario cases and/or citing test files; the full table is in RULE_AUDIT.md.
+  - Rulebook items that can't be checked from its text (PROJECT-003 stock; production slot counts shown only in images) are recorded as such, not as passed.
+
+## PR-060A [LOW] — Add audit regression tests and documentation clarifications
+
+- **Milestone:** M11
+- **Status:** DONE
+- **Dependencies:** PR-060
+- **Files / Areas:** `packages/game-engine/test/scenarios/audit-regressions.test.ts`, `apps/server/test/projection.test.ts`, `docs/RULES.md`, `docs/RULE_AUDIT.md`
+- **Scope / Acceptance:** Turn the PR-060 audit findings AUD-01…AUD-07 into regression tests and documentation fixes, with no rule changes. AUD-06 (Builder auto-skip after City-full) needs a user decision and is not changed here.
+- **Required verification:** Each new test independently asserts the rulebook-backed expectation recorded in RULE_AUDIT.md.
+- **Out of scope:** Behaviour changes; AUD-06 until the user decides.
+- **Evidence:** 2026-10-01
+  - **`test/scenarios/audit-regressions.test.ts`** (six tests, expected values derived from the cited pages):
+    - AUD-01: after a cargo load, the Wharf owner's next visit offers Personal Ship corn ×3;
+    - AUD-02: Harbor declined leaves VP supply 1 with no trigger; used, it reaches 0 with `vp-exhausted`;
+    - AUD-03: accepting the Recruiter worker leaves supply 2 against refill 3, so `worker-shortage` and game over; declining leaves 3 and play continues;
+    - AUD-07: four Quarries price City Hall at 6 (5 with privilege), Harbor 5, Office 3, Builder's Yard 1.
+  - **`apps/server/test/projection.test.ts`:** over all three full games, AUD-04 (projected `vpRemaining` equals the true supply) and AUD-05 (supply and phase key sets match explicit allowlists, so a future hidden nested field fails).
+  - **Doc fixes in RULES.md:** CAPTAIN-004 (how Wharf "at any time" is represented) and VISIBILITY-001 (the VP supply is public).
+  - No rule or behaviour change. AUD-06 is left for the user's decision.
 
 ## PR-061 [LOW] — Containerize and document private deployment
 

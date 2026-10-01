@@ -2,7 +2,7 @@
 
 ## Device and conditions
 
-**The device is provisional until the user confirms it as the "agreed desktop device".**
+**Agreed desktop device:** confirmed by the user on 2026-10-01.
 
 | Item | Value |
 | --- | --- |

@@ -25,6 +25,16 @@ function revisions(fixture: { input: unknown; commands: readonly unknown[] }) {
   return out;
 }
 
+const SUPPLY_KEYS = ['buildingStock', 'goods', 'quarryCount', 'vpOverflow', 'vpRemaining', 'workRegisterCount', 'workerCount'];
+const TURN = ['actorId', 'actorIndex', 'kind', 'roleChooserId'];
+const PHASE_KEYS: Record<string, string[]> = {
+  'role-selection': ['actorId', 'kind'], 'planter-before': TURN, 'recruiter-advantage': TURN, 'recruiter-placement': TURN,
+  'builder-choice': TURN, 'trader-choice': TURN, 'captain-retention': TURN, adventurer: TURN,
+  'planter-choice': [...TURN, 'acquiredTileIds'].sort(), 'planter-worker': [...TURN, 'acquiredTileIds'].sort(),
+  'craftsman-production': [...TURN, 'chooserProducedTypes'].sort(), 'craftsman-bonus': [...TURN, 'chooserProducedTypes'].sort(),
+  'captain-loading': [...TURN, 'captainBonusUsed', 'consecutiveNoLoads'].sort(), 'game-over': ['kind', 'scores'],
+};
+
 describe('TS-PRIVACY: projections over complete games', () => {
   it.each([['3p', three], ['4p', four], ['5p', five]] as const)('%s: every seat’s messages hide VP, bag, RNG and others’ choices', (_, fixture) => {
     let othersVpEvents = 0, placements = 0;
@@ -47,6 +57,11 @@ describe('TS-PRIVACY: projections over complete games', () => {
         // PRIV-04: legal actions only for the decision-maker, exactly as the engine offers them.
         expect(message.legalActions).toEqual(getLegalCommands(state, seat));
         if ('actorId' in state.phase && state.phase.actorId !== seat) expect(message.legalActions).toEqual([]);
+        // AUD-04: the VP supply is public (VISIBILITY-001), as in the physical game; inference is accepted (VISIBILITY-003).
+        expect(message.view.supply.vpRemaining).toBe(state.supply.vpRemaining);
+        // AUD-05: nested objects pass through by reference, so pin their key sets; a new hidden field fails here.
+        expect(Object.keys(message.view.supply).sort()).toEqual(SUPPLY_KEYS);
+        expect(Object.keys(message.view.phase).sort()).toEqual(PHASE_KEYS[message.view.phase.kind]);
         // VISIBILITY-002: game over reveals every breakdown to everyone.
         if (over && state.phase.kind === 'game-over') expect(message.view.phase).toEqual(state.phase);
       }
