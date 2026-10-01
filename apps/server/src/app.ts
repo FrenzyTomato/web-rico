@@ -1,4 +1,5 @@
 import Fastify from 'fastify';
+import fastifyStatic from '@fastify/static';
 import { Server } from 'socket.io';
 import type { Socket } from 'socket.io';
 import type { PlayerId } from '@vibe-rico/game-engine';
@@ -29,10 +30,14 @@ type Ack<T> = (reply: T) => void;
  * `devTools` enables full-state scenario tools; only for a controlled local environment (off by default).
  * `random` replaces crypto randomness for deterministic browser tests (apps/web/e2e/server.mjs).
  * `store` defaults to the in-memory store; PostgreSQL is wired in main.ts (PR-058).
+ * `webRoot` serves the built web client from the same origin as Socket.IO (production, PR-061).
  */
-export function createApp({ devTools = false, random, store = new InMemoryRoomStore() }: { devTools?: boolean; random?: LobbyRandom; store?: RoomStore } = {}) {
+export function createApp({ devTools = false, random, store = new InMemoryRoomStore(), webRoot }: {
+  devTools?: boolean; random?: LobbyRandom; store?: RoomStore; webRoot?: string;
+} = {}) {
   const app = Fastify();
   app.get('/health', async () => ({ status: 'ok' }));
+  if (webRoot) void app.register(fastifyStatic, { root: webRoot });
   const io = new Server(app.server, { maxHttpBufferSize: devTools ? DEV_MAX_MESSAGE_BYTES : MAX_MESSAGE_BYTES });
   const queues = new RoomQueues();
   const lobby = new Lobby(store, random), lifecycle = new RoomLifecycle(store, queues), sessions = new Sessions(store);

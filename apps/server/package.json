@@ -12,6 +12,7 @@
     "db:generate": "drizzle-kit generate"
   },
   "dependencies": {
+    "@fastify/static": "10.1.5",
     "@vibe-rico/game-engine": "workspace:*",
     "@vibe-rico/protocol": "workspace:*",
     "drizzle-orm": "0.45.3",

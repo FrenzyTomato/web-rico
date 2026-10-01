@@ -36,7 +36,8 @@ const PHASE_KEYS: Record<string, string[]> = {
 };
 
 describe('TS-PRIVACY: projections over complete games', () => {
-  it.each([['3p', three], ['4p', four], ['5p', five]] as const)('%s: every seat’s messages hide VP, bag, RNG and others’ choices', (_, fixture) => {
+  // Heavy by design: every revision of three full games, for every seat; allow for parallel package runs.
+  it.each([['3p', three], ['4p', four], ['5p', five]] as const)('%s: every seat’s messages hide VP, bag, RNG and others’ choices', { timeout: 30_000 }, (_, fixture) => {
     let othersVpEvents = 0, placements = 0;
     for (const { state, events } of revisions(fixture)) {
       const over = state.phase.kind === 'game-over';

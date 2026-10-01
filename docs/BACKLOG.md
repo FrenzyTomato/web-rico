@@ -1,6 +1,6 @@
 # Dependency-ordered Engineering Backlog
 
-PR-001's original source audit is complete. The user subsequently designated the local 44-page Special Edition rulebook (S3) as canonical; see [reference policy](../references/README.md). PR-002 is DONE against S3 with user-supplied building stock recorded as PROJECT-003; PR-003 is DONE. PR-004 and PR-005 are DONE; PR-006–047, PR-027A, PR-030A and PR-033A/B are DONE; PR-048 is WAIVED by the user (no playtest performed); PR-049–060 and PR-060A are DONE; PR-061 is READY. V1 remains the 3–5-player base game; deterministic setup, role selection, round rotation, base role mechanics and the building catalog are implemented; all23 building abilities and final scoring are implemented; headless controls and replay are implemented; 3/4/5-player full-game fixtures are implemented; application packages remain pending.
+PR-001's original source audit is complete. The user subsequently designated the local 44-page Special Edition rulebook (S3) as canonical; see [reference policy](../references/README.md). PR-002 is DONE against S3 with user-supplied building stock recorded as PROJECT-003; PR-003 is DONE. PR-004 and PR-005 are DONE; PR-006–047, PR-027A, PR-030A and PR-033A/B are DONE; PR-048 is WAIVED by the user (no playtest performed); PR-049–061 and PR-060A are DONE; PR-062 is READY. V1 remains the 3–5-player base game; deterministic setup, role selection, round rotation, base role mechanics and the building catalog are implemented; all23 building abilities and final scoring are implemented; headless controls and replay are implemented; 3/4/5-player full-game fixtures are implemented; application packages remain pending.
 
 **Status:** READY means available to start; IN_PROGRESS means work has started (including awaiting a documented decision); WAITING means dependencies remain incomplete; DONE requires recorded acceptance evidence. PR-number dependencies must not be skipped. Tasks are topologically ordered; PR-004 can proceed independently.
 
@@ -1060,13 +1060,23 @@ Rule-specific tickets lacking M0 data do not yet have ready-to-copy test inputs.
 ## PR-061 [LOW] — Containerize and document private deployment
 
 - **Milestone:** M12
-- **Status:** READY
+- **Status:** DONE
 - **Dependencies:** PR-059
 - **Files / Areas:** `Dockerfile`, `compose.yaml`, `.dockerignore`, `docs/DEPLOYMENT.md`, `.env.example`
 - **Scope / Acceptance:** Provide a single-instance web/realtime service and database. Document TLS, environment variables, migrations, backups, and shutdown without automatically provisioning hosting.
 - **Required verification:** From a clean environment, build, start, check health/connectivity, and recover after restart. Images and logs contain no secrets.
 - **Out of scope:** Other tickets’ deliverables; consume dependencies only through defined interfaces.
-- **Evidence:** Not executed.
+- **Evidence:** 2026-10-01 — see `docs/DEPLOYMENT.md`.
+  - **Files:** `Dockerfile` (multi-stage on `node:24-bookworm-slim`, pulled with user approval; runtime holds server production deps plus built output, runs as `node`, with HEALTHCHECK), `compose.yaml` (app plus `postgres:16-alpine`, named volume, health-gated start, localhost-bound port, restart policy), `.dockerignore` (excludes `.env`, git, docs, references and build/test output) and `.env.example`.
+  - **Server changes:** serves the built client via `@fastify/static` 10.1.5 (same origin; a traversal test returns 404), a `HOST` setting, and graceful SIGTERM/SIGINT shutdown. DEPLOYMENT.md documents TLS through a reverse proxy (a Caddy example), environment variables, migrations, backups, upgrades and shutdown. No hosting was provisioned.
+  - **Clean-environment verification:**
+    - `docker compose build --no-cache` gives a 415 MB image; `up -d` gives a healthy db, `/health` ok and the client page served, on the PostgreSQL store;
+    - three socket clients created, joined and started a room, and a command was accepted at revision 1;
+    - after `restart app`, the same token resumed at revision 1 and the retried command returned its saved result;
+    - no password, token or `.env` in the image config, history, filesystem or logs;
+    - `stop` took 0 s with exit 0, and the stack and volume were removed.
+  - **Test fix:** the heavy full-game projection test now has an explicit 30 s timeout (it timed out only under parallel package runs).
+  - **Checks:** root typecheck, test (engine 570, protocol 3, server 87 + 12 DB-only, web 56), build, `test:db` 14/14, e2e 13/13.
 
 ## PR-062 [LOW] — Automate regression checks
 

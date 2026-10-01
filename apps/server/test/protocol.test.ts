@@ -130,3 +130,21 @@ describe('server entry point', () => {
     expect(await reason).toBe('transport close');
   });
 });
+
+describe('production web client serving (PR-061)', () => {
+  it('serves the built client from the same origin, and nothing outside its root', async () => {
+    const { mkdtempSync, writeFileSync } = await import('node:fs');
+    const { join } = await import('node:path');
+    const { tmpdir } = await import('node:os');
+    const root = mkdtempSync(join(tmpdir(), 'web-'));
+    writeFileSync(join(root, 'index.html'), '<title>波多黎各</title>');
+    const { app } = createApp({ webRoot: root });
+    await app.ready();
+    const page = await app.inject({ method: 'GET', url: '/' });
+    expect(page.statusCode).toBe(200);
+    expect(page.body).toContain('波多黎各');
+    expect((await app.inject({ method: 'GET', url: '/../../etc/passwd' })).statusCode).toBe(404);
+    expect((await app.inject({ method: 'GET', url: '/health' })).json()).toEqual({ status: 'ok' });
+    await app.close();
+  });
+});

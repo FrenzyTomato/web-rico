@@ -54,7 +54,7 @@ Headless engine play in a terminal (seed, then 3–5 player IDs clockwise; the f
 pnpm --filter @vibe-rico/game-engine cli 42 a b c
 ```
 
-Playtests on a local network: see [docs/PLAYTEST.md](docs/PLAYTEST.md).
+Playtests on a local network: see [docs/PLAYTEST.md](docs/PLAYTEST.md). Private deployment with Docker: see [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 
 ## Documentation
 

@@ -1,0 +1,32 @@
+# Private single-instance deployment: the game service and its PostgreSQL (docs/DEPLOYMENT.md).
+# Secrets come from .env (copy .env.example); nothing secret is baked into the image.
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: vibe_rico
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d vibe_rico"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  app:
+    build: .
+    environment:
+      DATABASE_URL: postgres://postgres:${POSTGRES_PASSWORD}@db:5432/vibe_rico
+    depends_on:
+      db:
+        condition: service_healthy
+    # Bound to localhost: put a TLS reverse proxy in front for friends (docs/DEPLOYMENT.md).
+    ports:
+      - "127.0.0.1:${APP_PORT:-3000}:3000"
+    restart: unless-stopped
+    stop_grace_period: 10s
+
+volumes:
+  db-data:
