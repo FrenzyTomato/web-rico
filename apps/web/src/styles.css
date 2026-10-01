@@ -62,3 +62,13 @@ td, th { border: 1px solid #c9b894; padding: 2px 6px; }
 .stage { position: relative; }
 .action-panel { position: absolute; left: 12px; bottom: 12px; right: 12px; background: var(--parchment); color: var(--ink); border: 2px solid var(--gold); border-radius: 6px; padding: 6px; display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
 .skip { position: absolute; top: 10px; right: 10px; }
+
+/* PR-054: visible keyboard focus, reduced motion, and the settings/help panel. */
+:focus-visible { outline: 3px solid #ffd76a; outline-offset: 2px; }
+.reduce-motion *, .reduce-motion *::before, .reduce-motion *::after { transition: none !important; animation: none !important; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
+.settings { margin-left: auto; position: relative; }
+.settings-body { position: absolute; right: 0; z-index: 10; width: 340px; background: var(--parchment); color: var(--ink); border: 2px solid var(--gold); padding: 8px; }
+.settings dl { margin: 8px 0 0; font-size: 14px; }
+.settings dt { font-weight: bold; color: var(--wood-light); }
+.settings dd { margin: 0 0 6px; }

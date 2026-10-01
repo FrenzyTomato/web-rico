@@ -1,6 +1,6 @@
 # Dependency-ordered Engineering Backlog
 
-PR-001's original source audit is complete. The user subsequently designated the local 44-page Special Edition rulebook (S3) as canonical; see [reference policy](../references/README.md). PR-002 is DONE against S3 with user-supplied building stock recorded as PROJECT-003; PR-003 is DONE. PR-004 and PR-005 are DONE; PR-006–047, PR-027A, PR-030A and PR-033A/B are DONE; PR-048 is WAIVED by the user (no playtest performed); PR-049–053 are DONE; PR-054 and PR-056 are READY. V1 remains the 3–5-player base game; deterministic setup, role selection, round rotation, base role mechanics and the building catalog are implemented; all23 building abilities and final scoring are implemented; headless controls and replay are implemented; 3/4/5-player full-game fixtures are implemented; application packages remain pending.
+PR-001's original source audit is complete. The user subsequently designated the local 44-page Special Edition rulebook (S3) as canonical; see [reference policy](../references/README.md). PR-002 is DONE against S3 with user-supplied building stock recorded as PROJECT-003; PR-003 is DONE. PR-004 and PR-005 are DONE; PR-006–047, PR-027A, PR-030A and PR-033A/B are DONE; PR-048 is WAIVED by the user (no playtest performed); PR-049–054 are DONE; PR-055 and PR-056 are READY. V1 remains the 3–5-player base game; deterministic setup, role selection, round rotation, base role mechanics and the building catalog are implemented; all23 building abilities and final scoring are implemented; headless controls and replay are implemented; 3/4/5-player full-game fixtures are implemented; application packages remain pending.
 
 **Status:** READY means available to start; IN_PROGRESS means work has started (including awaiting a documented decision); WAITING means dependencies remain incomplete; DONE requires recorded acceptance evidence. PR-number dependencies must not be skipped. Tasks are topologically ordered; PR-004 can proceed independently.
 
@@ -883,13 +883,21 @@ Rule-specific tickets lacking M0 data do not yet have ready-to-copy test inputs.
 ## PR-054 [LOW] — Improve readability and accessibility
 
 - **Milestone:** M10
-- **Status:** WAITING
+- **Status:** DONE
 - **Dependencies:** PR-052
 - **Files / Areas:** `apps/web/src/actions/ActionPanel.tsx`, `apps/web/src/settings/Settings.tsx`, `apps/web/src/styles.css`, `apps/web/e2e/accessibility.spec.ts`
 - **Scope / Acceptance:** Clearly identify the decision-maker, errors, and reasons for waiting. Provide complete keyboard controls, focus indicators, reduced motion, and terminology help.
 - **Required verification:** Complete representative roles by keyboard; distinguish cues without color; reduced-motion settings prevent mandatory long animations.
 - **Out of scope:** Other tickets’ deliverables; consume dependencies only through defined interfaces.
-- **Evidence:** Not executed.
+- **Evidence:** 2026-10-01
+  - **Decision-maker and waiting, stated in text:** the turn panel says 「轮到你：<phase>」 or 「等待 <name>：<phase>」, and the acting seat is marked 「（行动中）」, so colour or outline is never the only cue. Errors keep `role="alert"` with code and rule.
+  - **`settings/Settings.tsx`:** a 「设置与帮助」 panel with a 「减少动画」 toggle (default from `prefers-reduced-motion`, saved per browser) and a glossary of the seven roles plus 总督 and 运货分. Reduced motion makes the event queue zero-length, so no pulses play, and disables CSS transitions/animations.
+  - **Keyboard:** every action is a native button or form control. A strong `:focus-visible` ring was added. In `ActionPanel.tsx`, the first option takes focus and Escape closes.
+  - **Tests:** two settings unit tests (system default plus document class; saving plus glossary). `e2e/accessibility.spec.ts`:
+    - the first 9 commands of the frozen 3p game (Recruiter choice, recruit decision, three allocation forms, the next role and Planter turns) are played by Tab/Enter/typing only, with a non-`none` outline asserted on each focused control and all seats reaching revision 9;
+    - turn/waiting/acting texts on actor and waiting seats;
+    - with `reducedMotion: 'reduce'` the setting is on and no skip button (pulse) ever appears after a role choice.
+  - **Checks:** real pnpm from clean `dist/`: typecheck, test (engine 564, protocol 3, server 83, web 56; 706 total), build, e2e 10/10 (2.4 min).
 
 ## PR-055 [LOW] — Verify performance and resource cleanup
 

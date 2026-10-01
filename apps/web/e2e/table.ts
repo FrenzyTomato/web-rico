@@ -1,6 +1,6 @@
 import { isDeepStrictEqual } from 'node:util';
 import { expect } from '@playwright/test';
-import type { Browser, BrowserContext, Page } from '@playwright/test';
+import type { Browser, BrowserContext, BrowserContextOptions, Page } from '@playwright/test';
 import { getLegalCommands } from '@vibe-rico/game-engine';
 import type { GameCommand, GameState, Good } from '@vibe-rico/game-engine';
 import { describeOptions } from '../src/actions/options.js';
@@ -14,10 +14,10 @@ const open: BrowserContext[] = [];
 export async function closeTables() { await Promise.all(open.splice(0).map(c => c.close())); }
 
 /** One independent browser context per seat; names become display names. Seats join in `names` order. */
-export async function seatTable(browser: Browser, names: readonly string[], game: { seed: number; governor: number }) {
+export async function seatTable(browser: Browser, names: readonly string[], game: { seed: number; governor: number }, options: BrowserContextOptions = {}) {
   await fetch('http://127.0.0.1:3000/e2e/next-game', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(game) });
   const pages: Page[] = [];
-  for (const _ of names) { const context = await browser.newContext(); open.push(context); pages.push(await context.newPage()); }
+  for (const _ of names) { const context = await browser.newContext(options); open.push(context); pages.push(await context.newPage()); }
   const [host, ...guests] = pages;
   await host!.goto('/');
   await host!.getByLabel('昵称').fill(names[0]!);

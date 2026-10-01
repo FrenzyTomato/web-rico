@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useStore } from 'zustand';
 import type { RoomState } from '@vibe-rico/protocol';
 import { ActionForm } from '../actions/ActionForm.js';
 import { ActionPanel } from '../actions/ActionPanel.js';
-import { createEventQueue } from '../animation/eventQueue.js';
+import { createEventQueue, PULSE_MS } from '../animation/eventQueue.js';
+import { SettingsPanel, useSettings } from '../settings/Settings.js';
 import { describeOptions } from '../actions/options.js';
 import { optionsForTarget, SceneInteractionProvider, targetKey } from '../scene/Selection.js';
 import type { SceneTarget } from '../scene/Selection.js';
@@ -29,7 +30,9 @@ export function GameShell({ store, roomId, room }: { store: GameStore; roomId: s
   const options = useMemo(() => (latest?.legalActions[0] ? describeOptions(latest.legalActions[0], latest.view) ?? [] : []), [latest]);
   const actionable = useCallback((t: SceneTarget) => connected && optionsForTarget(options, t).length > 0, [options, connected]);
   // Event animation (PR-053): purely visual pulses; the scene always renders `latest`.
-  const queue = useRef(createEventQueue()).current;
+  const [settings, setSettings] = useSettings();
+  // Reduced motion: a zero-length queue shows no pulses at all (PR-054).
+  const queue = useMemo(() => createEventQueue(settings.reducedMotion ? 0 : PULSE_MS), [settings.reducedMotion]);
   const [pulse, setPulse] = useState<string | null>(null);
   const [animating, setAnimating] = useState(false);
   useEffect(() => {
@@ -53,6 +56,7 @@ export function GameShell({ store, roomId, room }: { store: GameStore; roomId: s
         <h1>波多黎各</h1>
         <span>第 {view.roundNumber} 轮 · 总督 {name(view.governorPlayerId)}</span>
         <span>房间 {room.roomCode} · 版本 {latest.revision}</span>
+        <SettingsPanel settings={settings} onChange={setSettings} />
       </header>
 
       <aside className="panel players" aria-label="玩家列表">
@@ -64,7 +68,7 @@ export function GameShell({ store, roomId, room }: { store: GameStore; roomId: s
             <section key={p.playerId} className={acting ? 'seat acting' : 'seat'}>
               <span className="medallion" style={{ background: SEAT_COLORS[i] }} aria-hidden>{name(p.playerId).slice(0, 1)}</span>
               <div>
-                <strong>{name(p.playerId)}{p.playerId === view.viewer.playerId && '（你）'}</strong>
+                <strong>{name(p.playerId)}{p.playerId === view.viewer.playerId && '（你）'}{acting && '（行动中）'}</strong>
                 {p.playerId === view.governorPlayerId && <span className="badge">总督</span>}
                 <div>{p.coins} 金币 · {Object.values(p.goods).reduce((a, b) => a + b, 0)} 货物{role && ` · ${ROLE[role.kind]}`}</div>
                 {p.playerId === view.viewer.playerId && <div>运货分 {view.viewer.earnedVp}</div>}
@@ -86,7 +90,8 @@ export function GameShell({ store, roomId, room }: { store: GameStore; roomId: s
 
       <aside className="panel turn" aria-label="回合信息">
         <h2>{'actorId' in phase ? `${name(phase.actorId)} 的回合` : PHASE[phase.kind]}</h2>
-        {'actorId' in phase && <p>{PHASE[phase.kind]}{phase.actorId !== view.viewer.playerId && ' · 请等待'}</p>}
+        {/* Who decides, and why everyone else is waiting (PR-054). */}
+        {'actorId' in phase && <p>{phase.actorId === view.viewer.playerId ? `轮到你：${PHASE[phase.kind]}` : `等待 ${name(phase.actorId)}：${PHASE[phase.kind]}`}</p>}
         {rejection && <p role="alert">{rejectionText(rejection)}</p>}
         {phase.kind === 'game-over' && <ScoreView scores={phase.scores} names={names} />}
         <h2>编年史</h2>
