@@ -41,3 +41,8 @@ jobs:
       - run: pnpm install --frozen-lockfile
       # Playwright uses the runner's Google Chrome (channel: 'chrome').
       - run: pnpm test:e2e
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-results
+          path: apps/web/test-results

@@ -42,6 +42,10 @@ PR-033A/B/033 completion: five pure activated bonus calculators, aggregate base/
 
 PR-033A/B/033 final review: fresh reviewer found no material issues; acceptance satisfied. Focused38 scoring/endgame tests and full537-test suite pass.
 
+## Status after PR-063 preparation (2026-10-01)
+
+PR-001–062 (with supplementary tickets) are DONE except PR-048 (waived by the user, no playtest) and PR-063 (pending: needs a deployment target and real players). AUD-06 (`docs/RULE_AUDIT.md`) awaits a user decision.
+
 ## Check commands (PR-062)
 
 Local and CI use the same root entry points (`.github/workflows/ci.yml`):

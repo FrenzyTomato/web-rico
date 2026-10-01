@@ -2,7 +2,7 @@
 
 A private online Puerto Rico (1897 Special Edition) game for 3–5 friends. A pure TypeScript engine enforces the rules, a single server adjudicates every action, and browsers render each player's filtered view.
 
-**Status:** playable prototype. A complete multiplayer game runs in the browser (DOM debug client, Chinese UI) with reconnect, and is covered by unit and browser tests. The 3D tabletop, persistent storage and deployment are not built yet. Ticket-level status lives in [the backlog](docs/BACKLOG.md).
+**Status:** release candidate awaiting its first real game. A complete multiplayer game runs in the browser with a 3D harbour table and a full DOM client (Chinese UI), reconnects across refreshes and server restarts (PostgreSQL), and ships as a Docker deployment. Covered by unit, database and browser tests (`pnpm check`, `pnpm test:db`, `pnpm test:e2e`). Friend playtests and release acceptance are still pending. Ticket-level status lives in [the backlog](docs/BACKLOG.md).
 
 ## Layout
 

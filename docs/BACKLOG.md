@@ -1,6 +1,6 @@
 # Dependency-ordered Engineering Backlog
 
-PR-001's original source audit is complete. The user subsequently designated the local 44-page Special Edition rulebook (S3) as canonical; see [reference policy](../references/README.md). PR-002 is DONE against S3 with user-supplied building stock recorded as PROJECT-003; PR-003 is DONE. PR-004 and PR-005 are DONE; PR-006–047, PR-027A, PR-030A and PR-033A/B are DONE; PR-048 is WAIVED by the user (no playtest performed); PR-049–061 and PR-060A are DONE; PR-062 is READY. V1 remains the 3–5-player base game; deterministic setup, role selection, round rotation, base role mechanics and the building catalog are implemented; all23 building abilities and final scoring are implemented; headless controls and replay are implemented; 3/4/5-player full-game fixtures are implemented; application packages remain pending.
+PR-001's original source audit is complete. The user subsequently designated the local 44-page Special Edition rulebook (S3) as canonical; see [reference policy](../references/README.md). PR-002 is DONE against S3 with user-supplied building stock recorded as PROJECT-003; PR-003 is DONE. PR-004 and PR-005 are DONE; PR-006–047, PR-027A, PR-030A and PR-033A/B are DONE; PR-048 is WAIVED by the user (no playtest performed); PR-049–062 and PR-060A are DONE; PR-063 is PENDING (needs a deployment target and real players). V1 remains the 3–5-player base game; deterministic setup, role selection, round rotation, base role mechanics and the building catalog are implemented; all23 building abilities and final scoring are implemented; headless controls and replay are implemented; 3/4/5-player full-game fixtures are implemented; application packages remain pending.
 
 **Status:** READY means available to start; IN_PROGRESS means work has started (including awaiting a documented decision); WAITING means dependencies remain incomplete; DONE requires recorded acceptance evidence. PR-number dependencies must not be skipped. Tasks are topologically ordered; PR-004 can proceed independently.
 
@@ -1081,24 +1081,29 @@ Rule-specific tickets lacking M0 data do not yet have ready-to-copy test inputs.
 ## PR-062 [LOW] — Automate regression checks
 
 - **Milestone:** M12
-- **Status:** WAITING
+- **Status:** DONE
 - **Dependencies:** PR-060, PR-061
 - **Files / Areas:** `.github/workflows/ci.yml`, `package.json`, `docs/EXECUTION.md`
 - **Scope / Acceptance:** After choosing a hosted repository, configure lint/typecheck/test/build and separate e2e checks. Local and CI entry points match.
 - **Required verification:** Full checks pass in a clean environment; checks detect prohibited engine network/UI imports. Without a remote, record local results only.
 - **Out of scope:** Other tickets’ deliverables; consume dependencies only through defined interfaces.
-- **Evidence:** Not executed.
+- **Evidence:** 2026-10-01
+  - **Lint:** `scripts/check-boundaries.mjs` (engine source may import only relative modules: no frameworks, network or IO; no `Math.random()` or system time), with its own `node --test` suite. The suite checks that the real engine passes and that each of six prohibited patterns is detected (network, UI, socket, dynamic import, `Math.random`, `Date.now`). A live mutation check, planting `Math.random()` in engine source, failed `pnpm lint` with file and line.
+  - **Root entry points:** `lint`, `check` (= lint + typecheck + test + build), `test:db` and `test:e2e`, documented in EXECUTION.md.
+  - **`.github/workflows/ci.yml`:** check, database and e2e jobs running the same root commands (Node from `.nvmrc`, pnpm via corepack). The e2e job uploads `test-results` on failure, and Playwright keeps traces on failure (no retries, so flakes stay visible).
+  - **No remote exists, so this records local results only**, per the ticket. In a fresh `git clone` (no `node_modules` or build output) at 826cf69: `pnpm install --frozen-lockfile` passed; `pnpm check` passed (lint 7/7, engine 570, protocol 3, server 87 + 12 DB-only, web 56, build); `pnpm test:db` 14/14.
+  - **`pnpm test:e2e`:** the first cold run had **1 failure out of 13 (6.5 min). Its details were not captured** because my output filter dropped them. Four further runs in the same clone, two with an emptied Vite cache, all passed 13/13 (3.1–3.9 min). The failure is recorded as an unreproduced intermittent; the trace-on-failure setting exists to diagnose it if it recurs.
 
 ## PR-063 [LOW] — Accept the release candidate
 
 - **Milestone:** M12
-- **Status:** WAITING
+- **Status:** PENDING (deployment target and real players needed; not passed)
 - **Dependencies:** PR-062
 - **Files / Areas:** `docs/RELEASE_CHECKLIST.md`, `docs/PLAYTEST.md`, `docs/BACKLOG.md`
 - **Scope / Acceptance:** Friends complete a real game at the target URL, including refresh/disconnection/recovery. Record release version, known limitations, and rollback procedure.
 - **Required verification:** Retain complete playtest and scoring evidence; no blocking bugs. Keep pending if deployment is unauthorized or no test participants are available.
 - **Out of scope:** Other tickets’ deliverables; consume dependencies only through defined interfaces.
-- **Evidence:** Not executed.
+- **Evidence:** 2026-10-01, preparation only. `docs/RELEASE_CHECKLIST.md` records the candidate (branch/commit, ruleset, protocol and snapshot versions, automated evidence), the people-run acceptance steps (deploy behind TLS, back up, play a complete 3–5 player game with a refresh, a network blip and a host restart, record it in PLAYTEST.md), known limitations (including AUD-06 and the waived PR-048) and the rollback procedure. **No deployment and no real game have happened, so this ticket is not passed.**
 
 ## Initial effort distribution
 
