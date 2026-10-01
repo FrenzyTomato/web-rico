@@ -36,6 +36,12 @@ pnpm --filter @vibe-rico/web dev
 
 Set `VIBE_RICO_DEV_TOOLS=1` on the server to enable the local-only scenario tools (history export/import). Never enable them for real players.
 
+PostgreSQL store tests (needs Docker; starts and removes a throwaway `postgres:16-alpine`):
+
+```sh
+pnpm --filter @vibe-rico/server test:db
+```
+
 Browser tests (uses the installed Google Chrome):
 
 ```sh

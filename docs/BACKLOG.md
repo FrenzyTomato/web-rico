@@ -1,6 +1,6 @@
 # Dependency-ordered Engineering Backlog
 
-PR-001's original source audit is complete. The user subsequently designated the local 44-page Special Edition rulebook (S3) as canonical; see [reference policy](../references/README.md). PR-002 is DONE against S3 with user-supplied building stock recorded as PROJECT-003; PR-003 is DONE. PR-004 and PR-005 are DONE; PR-006–047, PR-027A, PR-030A and PR-033A/B are DONE; PR-048 is WAIVED by the user (no playtest performed); PR-049–055 are DONE; PR-056 is READY. V1 remains the 3–5-player base game; deterministic setup, role selection, round rotation, base role mechanics and the building catalog are implemented; all23 building abilities and final scoring are implemented; headless controls and replay are implemented; 3/4/5-player full-game fixtures are implemented; application packages remain pending.
+PR-001's original source audit is complete. The user subsequently designated the local 44-page Special Edition rulebook (S3) as canonical; see [reference policy](../references/README.md). PR-002 is DONE against S3 with user-supplied building stock recorded as PROJECT-003; PR-003 is DONE. PR-004 and PR-005 are DONE; PR-006–047, PR-027A, PR-030A and PR-033A/B are DONE; PR-048 is WAIVED by the user (no playtest performed); PR-049–056 are DONE; PR-057 is READY. V1 remains the 3–5-player base game; deterministic setup, role selection, round rotation, base role mechanics and the building catalog are implemented; all23 building abilities and final scoring are implemented; headless controls and replay are implemented; 3/4/5-player full-game fixtures are implemented; application packages remain pending.
 
 **Status:** READY means available to start; IN_PROGRESS means work has started (including awaiting a documented decision); WAITING means dependencies remain incomplete; DONE requires recorded acceptance evidence. PR-number dependencies must not be skipped. Tasks are topologically ordered; PR-004 can proceed independently.
 
@@ -923,13 +923,32 @@ Rule-specific tickets lacking M0 data do not yet have ready-to-copy test inputs.
 ## PR-056 [LOW] — Implement persistence schema and database adapter
 
 - **Milestone:** M11
-- **Status:** READY
+- **Status:** DONE
 - **Dependencies:** PR-048, PR-039
 - **Files / Areas:** `apps/server/src/storage/schema.ts`, `apps/server/src/storage/postgresStore.ts`, `apps/server/test/storage.test.ts`, `apps/server/drizzle.config.ts`
 - **Scope / Acceptance:** Introduce PostgreSQL/Drizzle with versioned snapshots, events, deduplication results, room/session-hash tables, and migrations. Preserve the RoomStore interface.
 - **Required verification:** Use a real test database for round trips, unique constraints, revision conflicts, and initial migrations; mocks alone cannot establish acceptance.
 - **Out of scope:** Other tickets’ deliverables; consume dependencies only through defined interfaces.
-- **Evidence:** Not executed.
+- **Evidence:** 2026-10-01
+  - **Packages:** drizzle-orm 0.45.3, postgres (postgres.js) 3.4.9 and drizzle-kit 0.31.11, exact-pinned. pnpm 11's `allowBuilds` records an explicit **deny** for esbuild's install script (drizzle-kit works without it), so `pnpm install --frozen-lockfile` stays strict.
+  - **`storage/schema.ts`:**
+    - `rooms`: unique code, revision, `bigint` seed (uint32 overflows `integer`; fixed before the first migration), initial/current snapshots as JSONB, and snapshot schema/engine version columns.
+    - `seats`: pk (room, player), unique (room, seat index), globally unique token hash; only hashes are stored.
+    - `commands`: deduplication results, pk (room, player, commandId), unique (room, accepted revision).
+    - `events`: pk (room, revision, index).
+    - All children cascade on room delete.
+  - **Migrations:** `drizzle.config.ts` plus the generated `drizzle/0000_initial.sql`, applied by `connect()`.
+  - **`storage/postgresStore.ts`:** `PostgresRoomStore` implements the unchanged `RoomStore`:
+    - `create` inserts the room and seats in one transaction; a unique violation returns false, leaving nothing behind;
+    - `update` and `delete` are guarded by `revision = expected` in one transaction; `update` rewrites seats and appends only new commands/events, rewriting history when it is not a prefix (dev import);
+    - `get` reassembles the Room.
+  - **Real-database tests:** `test:db` (`scripts/with-postgres.mjs`) starts a throwaway `postgres:16-alpine` (the existing local image, so nothing was downloaded), runs `test/storage.test.ts`, and removes the container. The suite is skipped without `DATABASE_URL` in the regular `pnpm test`. Four tests on PostgreSQL 16:
+    - the initial migration creates exactly the 4 tables and 1 applied migration on an empty database;
+    - the same lobby plus 3 commands round-trips identically to `InMemoryRoomStore` (token hashes aside, which are random per run and checked as SHA-256 hex), including seed 4294967295, deduplication rows, events and version columns;
+    - unique room ID, code and token hash, and duplicate command keys are rejected;
+    - stale update and delete don't write; two concurrent writers give exactly one 'ok'; delete cascades seats.
+  - Mutation check: removing the revision guard failed the conflict test, and it passed once restored. The server still runs on the in-memory store; wiring persistence is PR-058.
+  - **Checks:** root typecheck, test (engine 564, protocol 3, server 83 + 4 skipped without a DB, web 56), build and e2e 13/13 pass; `test:db` 4/4 on real PostgreSQL.
 
 ## PR-057 [MEDIUM] — Implement atomic commits and failure handling
 

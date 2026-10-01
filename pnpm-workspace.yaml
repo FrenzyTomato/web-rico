@@ -1,3 +1,7 @@
 packages:
   - 'packages/*'
   - 'apps/*'
+
+# Install scripts are denied unless listed here. esbuild (via drizzle-kit) works without its postinstall.
+allowBuilds:
+  esbuild: false
