@@ -1,7 +1,8 @@
 import type { RoleCard } from '@vibe-rico/game-engine';
 import { ROLE } from '../i18n/terms.js';
 import { Label } from './Label.js';
-import { Selectable } from './Selection.js';
+import { Selectable } from './Selectable.js';
+import { cylinder } from './resources.js';
 
 /** Role cards in a row: coins stacked on each card; a chosen card is darkened and names its chooser. */
 export function RoleTiles({ cards, names }: { cards: readonly RoleCard[]; names: Readonly<Record<string, string>> }) {
@@ -16,8 +17,7 @@ export function RoleTiles({ cards, names }: { cards: readonly RoleCard[]; names:
             <meshStandardMaterial color={card.selectedBy ? '#6d5a44' : '#efe4cc'} />
           </mesh>
           {Array.from({ length: card.accumulatedCoins }, (_, c) => (
-            <mesh key={c} position={[0, 0.15 + c * 0.08, 0.4]}>
-              <cylinderGeometry args={[0.25, 0.25, 0.06, 16]} />
+            <mesh key={c} position={[0, 0.15 + c * 0.08, 0.4]} dispose={null} geometry={cylinder(0.25, 0.06, 16)}>
               <meshStandardMaterial color="#c9a45c" metalness={0.4} />
             </mesh>
           ))}

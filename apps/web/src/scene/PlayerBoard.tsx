@@ -5,7 +5,7 @@ import { CELL, Fields } from './Fields.js';
 import { Label } from './Label.js';
 import { GRID } from './boardLayout.js';
 import { GOOD_COLOR } from './pieces.js';
-import { Selectable } from './Selection.js';
+import { Selectable } from './Selectable.js';
 
 export const BOARD = { width: GRID.cols * CELL * 2 + 1.2, depth: GRID.rows * CELL + 1.6 } as const;
 

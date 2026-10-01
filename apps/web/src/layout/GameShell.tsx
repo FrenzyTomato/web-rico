@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { useStore } from 'zustand';
 import type { RoomState } from '@vibe-rico/protocol';
 import { ActionForm } from '../actions/ActionForm.js';
@@ -13,7 +13,8 @@ import { ScoreView } from '../debug/ScoreView.js';
 import { describeEvent } from '../i18n/chronicle.js';
 import { GOOD, PHASE, ROLE } from '../i18n/terms.js';
 import { SceneBoundary, webglAvailable } from '../scene/SceneBoundary.js';
-import { TableScene } from '../scene/TableScene.js';
+// Lazy: Three.js loads only when the 3D stage is shown (PR-055 code-splitting).
+const TableScene = lazy(() => import('../scene/TableScene.js').then(m => ({ default: m.TableScene })));
 import { SEAT_COLORS } from '../scene/pieces.js';
 import type { GameStore } from '../state/gameStore.js';
 
@@ -80,7 +81,7 @@ export function GameShell({ store, roomId, room }: { store: GameStore; roomId: s
 
       <main className="stage">
         <SceneInteractionProvider value={interaction}>
-          <SceneBoundary><TableScene view={view} names={names} /></SceneBoundary>
+          <SceneBoundary><Suspense fallback={<p role="status">正在载入 3D 视图…</p>}><TableScene view={view} names={names} /></Suspense></SceneBoundary>
         </SceneInteractionProvider>
         {animating && <button className="skip" onClick={() => { queue.skip(); setPulse(null); setAnimating(false); }}>跳过动画</button>}
         <ActionPanel key={selected ? `${targetKey(selected)}@${latest.revision}` : 'none'} target={selected}

@@ -1,10 +1,10 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Canvas, useThree } from '@react-three/fiber';
 import type { PlayerView } from '@vibe-rico/protocol';
 import { Camera } from './Camera.js';
 import { CommonBoard } from './CommonBoard.js';
 import { PlayerBoard } from './PlayerBoard.js';
-import { TargetProbe } from './Selection.js';
+import { TargetProbe } from './Selectable.js';
 import { SEAT_COLORS } from './pieces.js';
 
 export const TABLE = { width: 36, depth: 24 } as const;
@@ -39,11 +39,19 @@ function Redraw({ view }: { view: PlayerView }) {
 }
 
 /** A wood-framed island in a teal sea (DESIGN.md): the shared harbour in the centre, one seat per player. */
-export function TableScene({ view, names }: { view: PlayerView; names: Readonly<Record<string, string>> }) {
+export function TableScene({ view, names, frameloop = 'demand' }: {
+  view: PlayerView; names: Readonly<Record<string, string>>; frameloop?: 'demand' | 'always';
+}) {
+  // WebGL context loss (PR-055): three.js restores its own state; show a notice while lost, redraw after.
+  const [lost, setLost] = useState(false);
   return (
     <div className="scene" aria-label="桌面">
+      {lost && <p role="note">3D 视图暂时不可用，正在恢复…</p>}
       {/* Redraw only when props change: a board game is static between states (continuous 60 fps starved e2e tabs). */}
-      <Canvas frameloop="demand">
+      <Canvas frameloop={frameloop} onCreated={({ gl, invalidate }) => {
+        gl.domElement.addEventListener('webglcontextlost', () => setLost(true));
+        gl.domElement.addEventListener('webglcontextrestored', () => { setLost(false); invalidate(); });
+      }}>
         <color attach="background" args={['#2f7f86']} />
         <Camera />
         <Redraw view={view} />

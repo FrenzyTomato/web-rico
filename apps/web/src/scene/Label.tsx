@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from 'react';
 import { CanvasTexture } from 'three';
+import { liveTextures } from './resources.js';
 
 const FONT = 'bold 64px "Songti SC", "Noto Serif SC", serif';
 /**
@@ -21,8 +22,9 @@ export function Label({ text, position, height = 0.8, ink = '#2a2118', paper = '
     g.strokeStyle = '#c9a45c'; g.lineWidth = 8; g.strokeRect(4, 4, canvas.width - 8, canvas.height - 8);
     g.fillStyle = ink; g.font = FONT; g.textAlign = 'center'; g.textBaseline = 'middle';
     g.fillText(text, canvas.width / 2, canvas.height / 2 + 2);
+    liveTextures.count++;
     return { texture: new CanvasTexture(canvas), aspect: canvas.width / canvas.height };
   }, [text, ink, paper]);
-  useEffect(() => () => texture.dispose(), [texture]);
+  useEffect(() => () => { texture.dispose(); liveTextures.count--; }, [texture]);
   return <sprite position={position} scale={[height * aspect, height, 1]}><spriteMaterial map={texture} /></sprite>;
 }

@@ -1,7 +1,8 @@
 import type { EstateTile, Goods, Supply } from '@vibe-rico/game-engine';
 import { BUILDING, GOOD, TILE } from '../i18n/terms.js';
 import { Label } from './Label.js';
-import { Selectable } from './Selection.js';
+import { Selectable } from './Selectable.js';
+import { box, material } from './resources.js';
 import { buildingMarket, GOOD_COLOR, QUARRY_COLOR } from './pieces.js';
 
 /** Face-up estates, the Quarry stack, and the discard pile count. */
@@ -55,7 +56,7 @@ export function BuildingMarket({ stock }: { stock: Supply['buildingStock'] }) {
         return (
           <group key={type} position={[col * 2.1, 0, row * 1.2]}>
             <Selectable target={{ kind: 'building', type }} size={[1, 0.8]}>
-              <mesh position={[0, 0.15, 0]}><boxGeometry args={[1, 0.3, 0.8]} /><meshStandardMaterial color={exhausted ? '#6f685e' : '#b08d5b'} /></mesh>
+              <mesh position={[0, 0.15, 0]} dispose={null} geometry={box(1, 0.3, 0.8)} material={material(exhausted ? '#6f685e' : '#b08d5b')} />
               <Label position={[0, 0.65, 0]} height={0.45} ink={exhausted ? '#8f8778' : '#2a2118'} text={`${BUILDING[type]}×${count}`} />
             </Selectable>
           </group>

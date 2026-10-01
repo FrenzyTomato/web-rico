@@ -1,6 +1,6 @@
 # Dependency-ordered Engineering Backlog
 
-PR-001's original source audit is complete. The user subsequently designated the local 44-page Special Edition rulebook (S3) as canonical; see [reference policy](../references/README.md). PR-002 is DONE against S3 with user-supplied building stock recorded as PROJECT-003; PR-003 is DONE. PR-004 and PR-005 are DONE; PR-006–047, PR-027A, PR-030A and PR-033A/B are DONE; PR-048 is WAIVED by the user (no playtest performed); PR-049–054 are DONE; PR-055 and PR-056 are READY. V1 remains the 3–5-player base game; deterministic setup, role selection, round rotation, base role mechanics and the building catalog are implemented; all23 building abilities and final scoring are implemented; headless controls and replay are implemented; 3/4/5-player full-game fixtures are implemented; application packages remain pending.
+PR-001's original source audit is complete. The user subsequently designated the local 44-page Special Edition rulebook (S3) as canonical; see [reference policy](../references/README.md). PR-002 is DONE against S3 with user-supplied building stock recorded as PROJECT-003; PR-003 is DONE. PR-004 and PR-005 are DONE; PR-006–047, PR-027A, PR-030A and PR-033A/B are DONE; PR-048 is WAIVED by the user (no playtest performed); PR-049–055 are DONE; PR-056 is READY. V1 remains the 3–5-player base game; deterministic setup, role selection, round rotation, base role mechanics and the building catalog are implemented; all23 building abilities and final scoring are implemented; headless controls and replay are implemented; 3/4/5-player full-game fixtures are implemented; application packages remain pending.
 
 **Status:** READY means available to start; IN_PROGRESS means work has started (including awaiting a documented decision); WAITING means dependencies remain incomplete; DONE requires recorded acceptance evidence. PR-number dependencies must not be skipped. Tasks are topologically ordered; PR-004 can proceed independently.
 
@@ -902,13 +902,23 @@ Rule-specific tickets lacking M0 data do not yet have ready-to-copy test inputs.
 ## PR-055 [LOW] — Verify performance and resource cleanup
 
 - **Milestone:** M10
-- **Status:** WAITING
+- **Status:** DONE
 - **Dependencies:** PR-053, PR-054
 - **Files / Areas:** `apps/web/src/scene/resources.ts`, `apps/web/e2e/scene-performance.spec.ts`, `docs/PERFORMANCE.md`
 - **Scope / Acceptance:** Record device/resolution and define and verify frame-time targets for a full table. Reuse geometry and release resources; avoid unsupported renderer rewrites.
 - **Required verification:** Suggested target: p95 frame time ≤33ms at 1080p on the agreed desktop device; no sustained resource growth across 10 scene enter/exit cycles; correct WebGL recovery.
 - **Out of scope:** Other tickets’ deliverables; consume dependencies only through defined interfaces.
-- **Evidence:** Not executed.
+- **Evidence:** 2026-10-01 — see `docs/PERFORMANCE.md`. Device: Apple M4 / 16 GB / macOS 15.5, Chrome headless with WebGL2 via ANGLE Metal (verified), 1920×1080, on the full 5p table (fixture revision 396). **The device is provisional until the user agrees it.**
+  - **`scene/resources.ts`:** shared geometries per shape and materials per colour for the repeated pieces (`dispose={null}`; bounded at 9 geometries / 12 materials), plus a `liveTextures` counter in `Label`.
+  - **Context loss:** the notice shows while lost; three.js restores its own state and the scene invalidates on restore.
+  - **Code-splitting:** the scene is lazy-loaded; the main bundle went from 1,284 kB to 378 kB, with three.js in a 928 kB lazy chunk.
+  - **Dev preview modes:** `?bench=1` and `?cycles=N`.
+  - **`e2e/scene-performance.spec.ts`:** p95 frame time 16.8 ms, at most 33 (p50 16.7, 181 frames, vsync-limited); 10 enter/exit cycles leave 0 textures and 0 canvases each time, with the shared caches constant and the heap flat (54–72 MB); WebGL context loss shows the notice, and restore clears it with a usable context.
+  - **Defects found:**
+    1. Remounting on restore was unnecessary; the leaner path relies on three.js's own restore.
+    2. The first code-split was ineffective, because the shell statically imported R3F through `Selection.tsx`; it is now split into `Selection.tsx` (pure) and `Selectable.tsx` (scene).
+    3. Test-side: context loss must wait until the renderer is live.
+  - **Checks:** typecheck, test (706), build, e2e 13/13 (3.3 min), and scene specs 8/8 after the split.
 
 ## PR-056 [LOW] — Implement persistence schema and database adapter
 

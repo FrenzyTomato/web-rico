@@ -1,16 +1,15 @@
 import type { CargoShip, Good } from '@vibe-rico/game-engine';
 import { GOOD } from '../i18n/terms.js';
 import { Label } from './Label.js';
-import { Selectable } from './Selection.js';
+import { cylinder, material } from './resources.js';
+import { Selectable } from './Selectable.js';
 import { GOOD_COLOR, shipSlots, tradingSlots } from './pieces.js';
 
 function Crates({ slots, spacing }: { slots: (Good | null)[]; spacing: number }) {
   const start = -((slots.length - 1) * spacing) / 2;
   return <>{slots.map((good, i) => (
-    <mesh key={i} position={[start + i * spacing, 0.45, 0]}>
-      {good ? <cylinderGeometry args={[0.22, 0.22, 0.45, 12]} /> : <cylinderGeometry args={[0.2, 0.2, 0.04, 12]} />}
-      <meshStandardMaterial color={good ? GOOD_COLOR[good] : '#d8ccb0'} />
-    </mesh>
+    <mesh key={i} position={[start + i * spacing, 0.45, 0]} dispose={null}
+      geometry={good ? cylinder(0.22, 0.45) : cylinder(0.2, 0.04)} material={material(good ? GOOD_COLOR[good] : '#d8ccb0')} />
   ))}</>;
 }
 
