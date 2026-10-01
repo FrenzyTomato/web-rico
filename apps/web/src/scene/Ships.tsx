@@ -1,6 +1,7 @@
 import type { CargoShip, Good } from '@vibe-rico/game-engine';
 import { GOOD } from '../i18n/terms.js';
 import { Label } from './Label.js';
+import { Selectable } from './Selection.js';
 import { GOOD_COLOR, shipSlots, tradingSlots } from './pieces.js';
 
 function Crates({ slots, spacing }: { slots: (Good | null)[]; spacing: number }) {
@@ -19,12 +20,14 @@ export function Ships({ ships, tradingHouse }: { ships: readonly CargoShip[]; tr
     <group>
       {ships.map((ship, i) => (
         <group key={ship.instanceId} position={[(i - (ships.length - 1) / 2) * 4, 0, 0]}>
-          <mesh position={[0, 0.15, 0]}>
-            <boxGeometry args={[ship.capacity * 0.5 + 0.4, 0.3, 1]} />
-            <meshStandardMaterial color="#6b4a2f" />
-          </mesh>
-          <Crates slots={shipSlots(ship)} spacing={0.5} />
-          <Label position={[0, 1.3, 0]} text={`${ship.goodType ? GOOD[ship.goodType] : '空船'} ${ship.loadedCount}/${ship.capacity}`} />
+          <Selectable target={{ kind: 'ship', id: ship.instanceId }} size={[ship.capacity * 0.5 + 0.4, 1]}>
+            <mesh position={[0, 0.15, 0]}>
+              <boxGeometry args={[ship.capacity * 0.5 + 0.4, 0.3, 1]} />
+              <meshStandardMaterial color="#6b4a2f" />
+            </mesh>
+            <Crates slots={shipSlots(ship)} spacing={0.5} />
+            <Label position={[0, 1.3, 0]} text={`${ship.goodType ? GOOD[ship.goodType] : '空船'} ${ship.loadedCount}/${ship.capacity}`} />
+          </Selectable>
         </group>
       ))}
       <group position={[(ships.length + 0.6) * 2.2, 0, 0]}>

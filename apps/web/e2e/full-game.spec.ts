@@ -4,7 +4,9 @@ import type { CreateGameInput, GameCommand } from '@vibe-rico/game-engine';
 import * as three from '../../../packages/game-engine/test/scenarios/fixtures/full-game-3p.js';
 import * as four from '../../../packages/game-engine/test/scenarios/fixtures/full-game-4p.js';
 import * as five from '../../../packages/game-engine/test/scenarios/fixtures/full-game-5p.js';
-import { play, seatTable } from './table.js';
+import { closeTables, play, seatTable } from './table.js';
+
+test.afterEach(closeTables);
 
 // TS-UI: the frozen PR-036 histories, played through the real UI by independent browser contexts.
 for (const [name, fixture] of [['3p', three], ['4p', four], ['5p', five]] as const) {

@@ -1,6 +1,11 @@
+import { useCallback, useMemo, useState } from 'react';
 import { useStore } from 'zustand';
 import type { RoomState } from '@vibe-rico/protocol';
 import { ActionForm } from '../actions/ActionForm.js';
+import { ActionPanel } from '../actions/ActionPanel.js';
+import { describeOptions } from '../actions/options.js';
+import { optionsForTarget, SceneInteractionProvider, targetKey } from '../scene/Selection.js';
+import type { SceneTarget } from '../scene/Selection.js';
 import { GameView, rejectionText } from '../debug/GameView.js';
 import { ScoreView } from '../debug/ScoreView.js';
 import { describeEvent } from '../i18n/chronicle.js';
@@ -18,6 +23,11 @@ export function GameShell({ store, roomId, room }: { store: GameStore; roomId: s
   const rejection = useStore(store, s => s.rejection);
   const connected = useStore(store, s => s.connected);
   const chronicle = useStore(store, s => s.chronicle);
+  const [selected, setSelected] = useState<SceneTarget | null>(null);
+  // Discrete legal options for this seat; the scene only filters them by object (PR-052).
+  const options = useMemo(() => (latest?.legalActions[0] ? describeOptions(latest.legalActions[0], latest.view) ?? [] : []), [latest]);
+  const actionable = useCallback((t: SceneTarget) => connected && optionsForTarget(options, t).length > 0, [options, connected]);
+  const interaction = useMemo(() => ({ actionable, select: setSelected }), [actionable]);
   if (!latest) return <p>正在载入局面…</p>;
   const { view } = latest, phase = view.phase;
   const names = Object.fromEntries(room.seats.map(s => [s.playerId, s.displayName]));
@@ -52,7 +62,12 @@ export function GameShell({ store, roomId, room }: { store: GameStore; roomId: s
       </aside>
 
       <main className="stage">
-        <SceneBoundary><TableScene view={view} names={names} /></SceneBoundary>
+        <SceneInteractionProvider value={interaction}>
+          <SceneBoundary><TableScene view={view} names={names} /></SceneBoundary>
+        </SceneInteractionProvider>
+        <ActionPanel key={selected ? `${targetKey(selected)}@${latest.revision}` : 'none'} target={selected}
+          options={selected && connected ? optionsForTarget(options, selected) : []}
+          submit={o => store.getState().submit(roomId, o.action)} clear={() => setSelected(null)} />
       </main>
 
       <aside className="panel turn" aria-label="回合信息">

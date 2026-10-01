@@ -132,6 +132,17 @@ describe('lobby', () => {
     expect((screen.getByText('开始游戏') as HTMLButtonElement).disabled).toBe(true);
   });
 
+  it('enables actions when the socket connected before the lobby subscribed (no missed connect event)', async () => {
+    const socket = new FakeSocket({});
+    socket.connected = false;
+    // Connects during the first render, before the effect registers its 'connect' listener.
+    const Probe = () => { socket.connected = true; return null; };
+    render(<><Lobby socket={socket as unknown as LobbySocket} /><Probe /></>);
+    await flush();
+    fireEvent.change(screen.getByLabelText('昵称'), { target: { value: 'Ana' } });
+    expect((screen.getByText('创建房间') as HTMLButtonElement).disabled).toBe(false);
+  });
+
   it('returns to the entry form when a saved seat can no longer be resumed', async () => {
     localStorage.setItem('vibe-rico.seat', JSON.stringify(granted));
     const socket = new FakeSocket({ resume: { ok: false, code: 'UNAUTHORIZED' } });

@@ -2,7 +2,9 @@ import { expect, test } from '@playwright/test';
 import { applyCommand, createGame } from '@vibe-rico/game-engine';
 import type { CreateGameInput, GameCommand } from '@vibe-rico/game-engine';
 import * as three from '../../../packages/game-engine/test/scenarios/fixtures/full-game-3p.js';
-import { play, seatTable } from './table.js';
+import { closeTables, play, seatTable } from './table.js';
+
+test.afterEach(closeTables);
 
 const input = three.input as unknown as CreateGameInput;
 const commands = three.commands as readonly GameCommand[];

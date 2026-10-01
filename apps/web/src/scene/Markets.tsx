@@ -1,6 +1,7 @@
 import type { EstateTile, Goods, Supply } from '@vibe-rico/game-engine';
 import { BUILDING, GOOD, TILE } from '../i18n/terms.js';
 import { Label } from './Label.js';
+import { Selectable } from './Selection.js';
 import { buildingMarket, GOOD_COLOR, QUARRY_COLOR } from './pieces.js';
 
 /** Face-up estates, the Quarry stack, and the discard pile count. */
@@ -9,15 +10,19 @@ export function EstateMarket({ market, discard, quarries }: { market: readonly E
     <group>
       {market.map((tile, i) => (
         <group key={tile.instanceId} position={[i * 1.5, 0, 0]}>
-          <mesh position={[0, 0.05, 0]}><boxGeometry args={[1.1, 0.1, 1.1]} /><meshStandardMaterial color={GOOD_COLOR[tile.kind]} /></mesh>
-          <Label position={[0, 0.7, 0]} height={0.5} text={TILE[tile.kind]} />
+          <Selectable target={{ kind: 'estate', id: tile.instanceId }} size={[1.1, 1.1]}>
+            <mesh position={[0, 0.05, 0]}><boxGeometry args={[1.1, 0.1, 1.1]} /><meshStandardMaterial color={GOOD_COLOR[tile.kind]} /></mesh>
+            <Label position={[0, 0.7, 0]} height={0.5} text={TILE[tile.kind]} />
+          </Selectable>
         </group>
       ))}
       <group position={[market.length * 1.5 + 0.4, 0, 0]}>
-        {Array.from({ length: quarries }, (_, q) => (
-          <mesh key={q} position={[0, 0.05 + q * 0.1, 0]}><boxGeometry args={[1.1, 0.08, 1.1]} /><meshStandardMaterial color={QUARRY_COLOR} /></mesh>
-        ))}
-        <Label position={[0, 1.4, 0]} height={0.5} text={`采石场×${quarries}`} />
+        <Selectable target={{ kind: 'quarry' }} size={[1.1, 1.1]}>
+          {Array.from({ length: quarries }, (_, q) => (
+            <mesh key={q} position={[0, 0.05 + q * 0.1, 0]}><boxGeometry args={[1.1, 0.08, 1.1]} /><meshStandardMaterial color={QUARRY_COLOR} /></mesh>
+          ))}
+          <Label position={[0, 1.4, 0]} height={0.5} text={`采石场×${quarries}`} />
+        </Selectable>
       </group>
       <Label position={[market.length * 1.5 + 2.6, 0.7, 0]} height={0.5} text={`弃牌×${discard}`} />
     </group>
@@ -49,8 +54,10 @@ export function BuildingMarket({ stock }: { stock: Supply['buildingStock'] }) {
         const col = i % 8, row = Math.floor(i / 8);
         return (
           <group key={type} position={[col * 2.1, 0, row * 1.2]}>
-            <mesh position={[0, 0.15, 0]}><boxGeometry args={[1, 0.3, 0.8]} /><meshStandardMaterial color={exhausted ? '#6f685e' : '#b08d5b'} /></mesh>
-            <Label position={[0, 0.65, 0]} height={0.45} ink={exhausted ? '#8f8778' : '#2a2118'} text={`${BUILDING[type]}×${count}`} />
+            <Selectable target={{ kind: 'building', type }} size={[1, 0.8]}>
+              <mesh position={[0, 0.15, 0]}><boxGeometry args={[1, 0.3, 0.8]} /><meshStandardMaterial color={exhausted ? '#6f685e' : '#b08d5b'} /></mesh>
+              <Label position={[0, 0.65, 0]} height={0.45} ink={exhausted ? '#8f8778' : '#2a2118'} text={`${BUILDING[type]}×${count}`} />
+            </Selectable>
           </group>
         );
       })}

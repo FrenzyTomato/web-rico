@@ -1,6 +1,6 @@
 # Dependency-ordered Engineering Backlog
 
-PR-001's original source audit is complete. The user subsequently designated the local 44-page Special Edition rulebook (S3) as canonical; see [reference policy](../references/README.md). PR-002 is DONE against S3 with user-supplied building stock recorded as PROJECT-003; PR-003 is DONE. PR-004 and PR-005 are DONE; PR-006–047, PR-027A, PR-030A and PR-033A/B are DONE; PR-048 is WAIVED by the user (no playtest performed); PR-049–051 are DONE; PR-052 (after PR-045/050/051) and PR-056 are READY. V1 remains the 3–5-player base game; deterministic setup, role selection, round rotation, base role mechanics and the building catalog are implemented; all23 building abilities and final scoring are implemented; headless controls and replay are implemented; 3/4/5-player full-game fixtures are implemented; application packages remain pending.
+PR-001's original source audit is complete. The user subsequently designated the local 44-page Special Edition rulebook (S3) as canonical; see [reference policy](../references/README.md). PR-002 is DONE against S3 with user-supplied building stock recorded as PROJECT-003; PR-003 is DONE. PR-004 and PR-005 are DONE; PR-006–047, PR-027A, PR-030A and PR-033A/B are DONE; PR-048 is WAIVED by the user (no playtest performed); PR-049–052 are DONE; PR-053, PR-054 and PR-056 are READY. V1 remains the 3–5-player base game; deterministic setup, role selection, round rotation, base role mechanics and the building catalog are implemented; all23 building abilities and final scoring are implemented; headless controls and replay are implemented; 3/4/5-player full-game fixtures are implemented; application packages remain pending.
 
 **Status:** READY means available to start; IN_PROGRESS means work has started (including awaiting a documented decision); WAITING means dependencies remain incomplete; DONE requires recorded acceptance evidence. PR-number dependencies must not be skipped. Tasks are topologically ordered; PR-004 can proceed independently.
 
@@ -835,13 +835,28 @@ Rule-specific tickets lacking M0 data do not yet have ready-to-copy test inputs.
 ## PR-052 [LOW] — Connect object selection to legal actions
 
 - **Milestone:** M9
-- **Status:** WAITING
+- **Status:** DONE
 - **Dependencies:** PR-050, PR-051, PR-045
 - **Files / Areas:** `apps/web/src/scene/Selection.tsx`, `apps/web/src/actions/ActionPanel.tsx`, `apps/web/e2e/scene-actions.spec.ts`
 - **Scope / Acceptance:** Hover/click associates objects with legal-action forms, submitted through the same command channel. DOM controls remain available.
 - **Required verification:** Clicks do not mutate authoritative resources; illegal objects offer no executable action; server rejection preserves consistent views.
 - **Out of scope:** Other tickets’ deliverables; consume dependencies only through defined interfaces.
-- **Evidence:** Not executed.
+- **Evidence:** 2026-10-01
+  - **`scene/Selection.tsx`:** `SceneTarget` (role card, estate tile, Quarry stack, market building, cargo ship, own goods barrel, own Countryside tile) and `optionsForTarget`, which filters the engine-derived options by object and computes nothing itself. A `Selectable` wrapper (click selects, gold outline plus pointer cursor when actionable) is applied to all those objects. A dev-only `TargetProbe` (`window.__sceneTargets`, absent from the production bundle, checked) gives browser tests real canvas positions.
+  - **`actions/ActionPanel.tsx`:** the selected object's actions, submitted through the same `store.submit` channel. An object with no legal action says so and offers only "取消选择". Selecting never changes state. The DOM ActionForm stays.
+  - **Tests:** six unit tests in `Selection.test.tsx`:
+    - over all three frozen games, every object-related move played is reachable by clicking its object (>50 per game), and every option an object offers is one of the engine's options;
+    - a sold-out building and an empty option list offer nothing;
+    - the panel submits then clears, and shows the no-action message.
+
+    `e2e/scene-actions.spec.ts` clicks the real canvas:
+    - another seat's role-card click offers nothing and changes nothing;
+    - the Governor's click offers exactly that card's action, and choosing it advances all seats to revision 1;
+    - a replaced tab's panel submission is rejected (STALE_SESSION shown) and every view stays at revision 0.
+  - **Defects found while stabilising e2e:**
+    1. Seat browser contexts were never closed, so WebGL tabs accumulated and the suite slowed to a timeout. `closeTables` now runs after each test.
+    2. A real client race: the socket could connect before the lobby subscribed to `connect`, leaving the lobby "disconnected" with disabled buttons; it was intermittent. The lobby now re-reads `socket.connected` after subscribing, with a regression test (mutation-checked).
+  - **Checks:** real pnpm from clean `dist/`: typecheck, test (engine 564, protocol 3, server 83, web 47; 697 total) and build pass; e2e 7/7 passed in two consecutive runs (1.7 min each).
 
 ## PR-053 [LOW] — Implement event animation and interruption recovery
 

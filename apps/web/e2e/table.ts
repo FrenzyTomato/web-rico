@@ -1,6 +1,6 @@
 import { isDeepStrictEqual } from 'node:util';
 import { expect } from '@playwright/test';
-import type { Browser, Page } from '@playwright/test';
+import type { Browser, BrowserContext, Page } from '@playwright/test';
 import { getLegalCommands } from '@vibe-rico/game-engine';
 import type { GameCommand, GameState, Good } from '@vibe-rico/game-engine';
 import { describeOptions } from '../src/actions/options.js';
@@ -9,11 +9,15 @@ import { GOOD } from '../src/i18n/terms.js';
 const GOODS: Good[] = ['corn', 'fruit', 'sugar', 'tobacco', 'coffee'];
 const withoutActor = (c: GameCommand) => { const { actorId: _, ...rest } = c; return rest; };
 
+const open: BrowserContext[] = [];
+/** Closes every seat context: contexts from `browser.newContext()` otherwise keep rendering WebGL across tests. */
+export async function closeTables() { await Promise.all(open.splice(0).map(c => c.close())); }
+
 /** One independent browser context per seat; names become display names. Seats join in `names` order. */
 export async function seatTable(browser: Browser, names: readonly string[], game: { seed: number; governor: number }) {
   await fetch('http://127.0.0.1:3000/e2e/next-game', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(game) });
   const pages: Page[] = [];
-  for (const name of names) pages.push(await (await browser.newContext()).newPage());
+  for (const _ of names) { const context = await browser.newContext(); open.push(context); pages.push(await context.newPage()); }
   const [host, ...guests] = pages;
   await host!.goto('/');
   await host!.getByLabel('昵称').fill(names[0]!);

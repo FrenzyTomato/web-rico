@@ -51,6 +51,8 @@ export function Lobby({ socket, onSession = () => {}, game }: {
     socket.on('disconnect', onDisconnect);
     socket.on('room-state', setRoom);
     socket.on('session-replaced', onReplaced);
+    // The socket may have connected between the first render and this effect, missing 'connect'.
+    setConnected(socket.connected);
     if (socket.connected) void resume();
     return () => {
       socket.off('connect', onConnect); socket.off('disconnect', onDisconnect);

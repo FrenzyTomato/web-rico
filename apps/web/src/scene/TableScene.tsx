@@ -3,6 +3,7 @@ import type { PlayerView } from '@vibe-rico/protocol';
 import { Camera } from './Camera.js';
 import { CommonBoard } from './CommonBoard.js';
 import { PlayerBoard } from './PlayerBoard.js';
+import { TargetProbe } from './Selection.js';
 import { SEAT_COLORS } from './pieces.js';
 
 export const TABLE = { width: 36, depth: 24 } as const;
@@ -28,6 +29,7 @@ export function TableScene({ view, names }: { view: PlayerView; names: Readonly<
       <Canvas frameloop="demand">
         <color attach="background" args={['#2f7f86']} />
         <Camera />
+        {import.meta.env.DEV && <TargetProbe />}
         <ambientLight intensity={0.7} />
         <directionalLight position={[8, 20, 10]} intensity={1.1} color="#fff1d6" />
         <mesh position={[0, -0.8, 0]} rotation={[-Math.PI / 2, 0, 0]}>
@@ -45,7 +47,7 @@ export function TableScene({ view, names }: { view: PlayerView; names: Readonly<
         <CommonBoard view={view} names={names} />
         {seatPositions(view.seatOrder, view.viewer.playerId).map((seat, i) => (
           <group key={seat.playerId} position={[seat.x, 0, seat.z]}>
-            <PlayerBoard player={view.players[i]!} color={SEAT_COLORS[i]!}
+            <PlayerBoard player={view.players[i]!} color={SEAT_COLORS[i]!} mine={seat.playerId === view.viewer.playerId}
               title={`${names[seat.playerId] ?? seat.playerId}${seat.playerId === view.governorPlayerId ? '（总督）' : ''}${seat.playerId === view.viewer.playerId ? '（你）' : ''}`} />
           </group>
         ))}
