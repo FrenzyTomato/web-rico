@@ -1,4 +1,5 @@
-import { Canvas } from '@react-three/fiber';
+import { useEffect } from 'react';
+import { Canvas, useThree } from '@react-three/fiber';
 import type { PlayerView } from '@vibe-rico/protocol';
 import { Camera } from './Camera.js';
 import { CommonBoard } from './CommonBoard.js';
@@ -21,6 +22,22 @@ export function seatPositions(seatOrder: readonly string[], viewerId: string) {
   });
 }
 
+/**
+ * On-demand rendering redraws only when invalidated. The browser may discard the canvas image (hidden tab,
+ * compositor), so redraw on every view change and on visibility, plus a 1 fps safety net.
+ */
+function Redraw({ view }: { view: PlayerView }) {
+  const invalidate = useThree(s => s.invalidate);
+  useEffect(() => { invalidate(); }, [view, invalidate]);
+  useEffect(() => {
+    const onVisible = () => invalidate();
+    document.addEventListener('visibilitychange', onVisible);
+    const timer = setInterval(invalidate, 1000);
+    return () => { document.removeEventListener('visibilitychange', onVisible); clearInterval(timer); };
+  }, [invalidate]);
+  return null;
+}
+
 /** A wood-framed island in a teal sea (DESIGN.md): the shared harbour in the centre, one seat per player. */
 export function TableScene({ view, names }: { view: PlayerView; names: Readonly<Record<string, string>> }) {
   return (
@@ -29,6 +46,7 @@ export function TableScene({ view, names }: { view: PlayerView; names: Readonly<
       <Canvas frameloop="demand">
         <color attach="background" args={['#2f7f86']} />
         <Camera />
+        <Redraw view={view} />
         {import.meta.env.DEV && <TargetProbe />}
         <ambientLight intensity={0.7} />
         <directionalLight position={[8, 20, 10]} intensity={1.1} color="#fff1d6" />

@@ -1,6 +1,6 @@
 # Dependency-ordered Engineering Backlog
 
-PR-001's original source audit is complete. The user subsequently designated the local 44-page Special Edition rulebook (S3) as canonical; see [reference policy](../references/README.md). PR-002 is DONE against S3 with user-supplied building stock recorded as PROJECT-003; PR-003 is DONE. PR-004 and PR-005 are DONE; PR-006–047, PR-027A, PR-030A and PR-033A/B are DONE; PR-048 is WAIVED by the user (no playtest performed); PR-049–052 are DONE; PR-053, PR-054 and PR-056 are READY. V1 remains the 3–5-player base game; deterministic setup, role selection, round rotation, base role mechanics and the building catalog are implemented; all23 building abilities and final scoring are implemented; headless controls and replay are implemented; 3/4/5-player full-game fixtures are implemented; application packages remain pending.
+PR-001's original source audit is complete. The user subsequently designated the local 44-page Special Edition rulebook (S3) as canonical; see [reference policy](../references/README.md). PR-002 is DONE against S3 with user-supplied building stock recorded as PROJECT-003; PR-003 is DONE. PR-004 and PR-005 are DONE; PR-006–047, PR-027A, PR-030A and PR-033A/B are DONE; PR-048 is WAIVED by the user (no playtest performed); PR-049–053 are DONE; PR-054 and PR-056 are READY. V1 remains the 3–5-player base game; deterministic setup, role selection, round rotation, base role mechanics and the building catalog are implemented; all23 building abilities and final scoring are implemented; headless controls and replay are implemented; 3/4/5-player full-game fixtures are implemented; application packages remain pending.
 
 **Status:** READY means available to start; IN_PROGRESS means work has started (including awaiting a documented decision); WAITING means dependencies remain incomplete; DONE requires recorded acceptance evidence. PR-number dependencies must not be skipped. Tasks are topologically ordered; PR-004 can proceed independently.
 
@@ -861,13 +861,24 @@ Rule-specific tickets lacking M0 data do not yet have ready-to-copy test inputs.
 ## PR-053 [LOW] — Implement event animation and interruption recovery
 
 - **Milestone:** M10
-- **Status:** WAITING
+- **Status:** DONE
 - **Dependencies:** PR-052
 - **Files / Areas:** `apps/web/src/animation/eventQueue.ts`, `apps/web/src/animation/transitions.ts`, `apps/web/src/animation/eventQueue.test.ts`
 - **Scope / Acceptance:** Use short event-driven animations, deduplicated by revision and event index. Skipping, reconnecting, or lagging aligns directly to the snapshot.
 - **Required verification:** TS-MOTION: duplicate/missing events, new state during animation, skip, and reconnect; the final view always matches the latest snapshot.
 - **Out of scope:** Other tickets’ deliverables; consume dependencies only through defined interfaces.
-- **Evidence:** Not executed.
+- **Evidence:** 2026-10-01
+  - **`animation/eventQueue.ts`:** a pure queue of short (600 ms) highlights.
+    - Broadcasts are accepted once each in revision order, so every (revision, index) is seen at most once; duplicate and old broadcasts are ignored.
+    - A revision gap (missed events, or a reconnect snapshot) drops pending effects and aligns to the snapshot.
+    - A lagging backlog of more than 6 keeps only the newest; `skip` clears everything; a zero duration (for reduced motion, PR-054) shows nothing.
+    - The queue never holds game state, so the scene always renders the latest snapshot.
+  - **`animation/transitions.ts`:** `effectFor` maps an event to an on-table object (role card, market building, own tile, cargo ship).
+  - **Wiring:** a pulsing gold ring on the matching `Selectable` that requests frames only while active; a 「跳过动画」 skip button while effects play.
+  - **Tests:** seven in `eventQueue.test.ts` (TS-MOTION): order and duration, duplicate/old, gap or reconnect alignment, new state during an animation, lag cap, skip, zero duration, event mapping.
+  - **Manual browser check:** choosing a role and building showed the pulse and skip button, and the chronicle updated.
+  - **Defect found and fixed:** with on-demand rendering, the canvas image could be discarded (white or empty stage after a state change) and nothing redrew it. A `Redraw` helper now invalidates on every view change and on visibility, with a 1 fps safety net; verified during and after a pulse.
+  - **Checks:** real pnpm from clean `dist/`: typecheck, test (engine 564, protocol 3, server 83, web 54; 704 total), build, e2e 7/7 (2.3 min).
 
 ## PR-054 [LOW] — Improve readability and accessibility
 

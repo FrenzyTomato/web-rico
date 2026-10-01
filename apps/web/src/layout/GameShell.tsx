@@ -1,8 +1,9 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useStore } from 'zustand';
 import type { RoomState } from '@vibe-rico/protocol';
 import { ActionForm } from '../actions/ActionForm.js';
 import { ActionPanel } from '../actions/ActionPanel.js';
+import { createEventQueue } from '../animation/eventQueue.js';
 import { describeOptions } from '../actions/options.js';
 import { optionsForTarget, SceneInteractionProvider, targetKey } from '../scene/Selection.js';
 import type { SceneTarget } from '../scene/Selection.js';
@@ -27,7 +28,19 @@ export function GameShell({ store, roomId, room }: { store: GameStore; roomId: s
   // Discrete legal options for this seat; the scene only filters them by object (PR-052).
   const options = useMemo(() => (latest?.legalActions[0] ? describeOptions(latest.legalActions[0], latest.view) ?? [] : []), [latest]);
   const actionable = useCallback((t: SceneTarget) => connected && optionsForTarget(options, t).length > 0, [options, connected]);
-  const interaction = useMemo(() => ({ actionable, select: setSelected }), [actionable]);
+  // Event animation (PR-053): purely visual pulses; the scene always renders `latest`.
+  const queue = useRef(createEventQueue()).current;
+  const [pulse, setPulse] = useState<string | null>(null);
+  const [animating, setAnimating] = useState(false);
+  useEffect(() => {
+    if (!latest) return;
+    queue.accept(latest);
+    const tick = () => { setPulse(queue.active(performance.now())); setAnimating(queue.busy()); };
+    tick();
+    const timer = setInterval(tick, 100);
+    return () => clearInterval(timer);
+  }, [latest, queue]);
+  const interaction = useMemo(() => ({ actionable, select: setSelected, pulse }), [actionable, pulse]);
   if (!latest) return <p>正在载入局面…</p>;
   const { view } = latest, phase = view.phase;
   const names = Object.fromEntries(room.seats.map(s => [s.playerId, s.displayName]));
@@ -65,6 +78,7 @@ export function GameShell({ store, roomId, room }: { store: GameStore; roomId: s
         <SceneInteractionProvider value={interaction}>
           <SceneBoundary><TableScene view={view} names={names} /></SceneBoundary>
         </SceneInteractionProvider>
+        {animating && <button className="skip" onClick={() => { queue.skip(); setPulse(null); setAnimating(false); }}>跳过动画</button>}
         <ActionPanel key={selected ? `${targetKey(selected)}@${latest.revision}` : 'none'} target={selected}
           options={selected && connected ? optionsForTarget(options, selected) : []}
           submit={o => store.getState().submit(roomId, o.action)} clear={() => setSelected(null)} />

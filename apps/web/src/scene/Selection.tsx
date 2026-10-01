@@ -1,8 +1,8 @@
 import { createContext, useContext, useEffect, useRef } from 'react';
 import type { ReactNode } from 'react';
-import { useThree } from '@react-three/fiber';
+import { useFrame, useThree } from '@react-three/fiber';
 import { Vector3 } from 'three';
-import type { Group } from 'three';
+import type { Group, Mesh } from 'three';
 import type { Good } from '@vibe-rico/game-engine';
 import type { Option } from '../actions/options.js';
 
@@ -32,8 +32,9 @@ export function optionsForTarget(options: readonly Option[], target: SceneTarget
   });
 }
 
-export interface SceneInteraction { actionable(target: SceneTarget): boolean; select(target: SceneTarget): void }
-const Interaction = createContext<SceneInteraction>({ actionable: () => false, select: () => {} });
+/** `pulse` is the target key the event animation is highlighting (PR-053), if any. */
+export interface SceneInteraction { actionable(target: SceneTarget): boolean; select(target: SceneTarget): void; pulse: string | null }
+const Interaction = createContext<SceneInteraction>({ actionable: () => false, select: () => {}, pulse: null });
 export const SceneInteractionProvider = Interaction.Provider;
 
 /** Props for a selectable mesh: gold highlight when actionable, pointer cursor, click selects. */
@@ -60,6 +61,7 @@ export function Selectable({ target, size, children }: { target: SceneTarget; si
   const { active, handlers } = useSelectable(target);
   const ref = useRef<Group>(null);
   const key = targetKey(target);
+  const pulsing = useContext(Interaction).pulse === key;
   useEffect(() => {
     if (!import.meta.env.DEV || !ref.current) return;
     registry.set(key, { target, group: ref.current });
@@ -67,6 +69,7 @@ export function Selectable({ target, size, children }: { target: SceneTarget; si
   }, [key, target]);
   return (
     <group ref={ref} {...handlers}>
+      {pulsing && <Pulse size={size} />}
       {active && (
         <mesh position={[0, 0.01, 0]}>
           <boxGeometry args={[size[0] + 0.3, 0.04, size[1] + 0.3]} />
@@ -90,4 +93,20 @@ export function TargetProbe() {
     });
   }, [camera, size, actionable]);
   return null;
+}
+
+/** A short growing gold ring; requests frames only while mounted, so on-demand rendering stays cheap. */
+function Pulse({ size }: { size: [number, number] }) {
+  const ref = useRef<Mesh>(null);
+  useFrame(({ clock, invalidate }) => {
+    const t = (clock.getElapsedTime() * 2) % 1;
+    ref.current?.scale.set(1 + t * 0.4, 1, 1 + t * 0.4);
+    invalidate();
+  });
+  return (
+    <mesh ref={ref} position={[0, 0.03, 0]}>
+      <boxGeometry args={[size[0] + 0.6, 0.06, size[1] + 0.6]} />
+      <meshBasicMaterial color="#f2d27a" transparent opacity={0.7} />
+    </mesh>
+  );
 }
