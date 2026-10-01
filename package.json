@@ -7,9 +7,13 @@
     "pnpm": "11.25.0"
   },
   "scripts": {
+    "lint": "node scripts/check-boundaries.mjs && node --test 'scripts/*.test.mjs'",
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test",
-    "build": "pnpm -r build"
+    "build": "pnpm -r build",
+    "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm build",
+    "test:db": "pnpm --filter @vibe-rico/server test:db",
+    "test:e2e": "pnpm --filter @vibe-rico/web test:e2e"
   },
   "devDependencies": {
     "typescript": "7.0.2",

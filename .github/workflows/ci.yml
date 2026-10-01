@@ -1,0 +1,43 @@
+# Regression checks (PR-062). Each job runs the same root command used locally (docs/EXECUTION.md).
+# Not yet run on a hosted service: the repository has no remote; local results are recorded in BACKLOG.md.
+name: ci
+on:
+  push:
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - run: corepack enable
+      - run: pnpm install --frozen-lockfile
+      # Boundary lint, typecheck, unit tests and build.
+      - run: pnpm check
+
+  database:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - run: corepack enable
+      - run: pnpm install --frozen-lockfile
+      # Starts a throwaway postgres:16-alpine with Docker (available on the runner).
+      - run: pnpm test:db
+
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - run: corepack enable
+      - run: pnpm install --frozen-lockfile
+      # Playwright uses the runner's Google Chrome (channel: 'chrome').
+      - run: pnpm test:e2e

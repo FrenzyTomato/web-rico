@@ -41,3 +41,17 @@ PR-032 ruling: use `game-over` with explicit `scores:null` until PR-033 integrat
 PR-033A/B/033 completion: five pure activated bonus calculators, aggregate base/earned/bonus scoring and shared competition ranks are implemented. Final completion populates mandatory scores and emits exactly one ordered `game-scored` event; PR-032's temporary null scores are removed. Reused existing activation and catalog facts; no dependency additions. Initial calculator assertions failed14 bonus cases and8 aggregate/integration cases before implementation; final typecheck/test/build pass (537 tests). Tests include literal rule examples, overflow, post-cleanup inventory, frozen-input determinism and 3/4/5-player terminal integration. No commit made because the repository still has no baseline commit.
 
 PR-033A/B/033 final review: fresh reviewer found no material issues; acceptance satisfied. Focused38 scoring/endgame tests and full537-test suite pass.
+
+## Check commands (PR-062)
+
+Local and CI use the same root entry points (`.github/workflows/ci.yml`):
+
+| Command | Runs |
+| --- | --- |
+| `pnpm lint` | Engine boundary lint (`scripts/check-boundaries.mjs`): engine source may import only its own relative modules, and may not use `Math.random()` or system time. Includes the lint's own tests. |
+| `pnpm check` | `lint`, `typecheck`, `test`, `build` |
+| `pnpm test:db` | PostgreSQL storage, failure, restart and recovery tests against a throwaway Docker `postgres:16-alpine` |
+| `pnpm test:e2e` | Playwright browser games, reconnect, scene, accessibility and performance specs (installed Google Chrome) |
+
+Run `pnpm check` before marking a ticket DONE; run `test:db` / `test:e2e` when storage, server or web behaviour changes.
+
