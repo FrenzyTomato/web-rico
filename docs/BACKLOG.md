@@ -1,6 +1,6 @@
 # Dependency-ordered Engineering Backlog
 
-PR-001's original source audit is complete. The user subsequently designated the local 44-page Special Edition rulebook (S3) as canonical; see [reference policy](../references/README.md). PR-002 is DONE against S3 with user-supplied building stock recorded as PROJECT-003; PR-003 is DONE. PR-004 and PR-005 are DONE; PR-006–047, PR-027A, PR-030A and PR-033A/B are DONE; PR-048 is WAIVED by the user (no playtest performed); PR-049–058 are DONE; PR-059 is READY. V1 remains the 3–5-player base game; deterministic setup, role selection, round rotation, base role mechanics and the building catalog are implemented; all23 building abilities and final scoring are implemented; headless controls and replay are implemented; 3/4/5-player full-game fixtures are implemented; application packages remain pending.
+PR-001's original source audit is complete. The user subsequently designated the local 44-page Special Edition rulebook (S3) as canonical; see [reference policy](../references/README.md). PR-002 is DONE against S3 with user-supplied building stock recorded as PROJECT-003; PR-003 is DONE. PR-004 and PR-005 are DONE; PR-006–047, PR-027A, PR-030A and PR-033A/B are DONE; PR-048 is WAIVED by the user (no playtest performed); PR-049–059 are DONE; PR-060 and PR-061 are READY. V1 remains the 3–5-player base game; deterministic setup, role selection, round rotation, base role mechanics and the building catalog are implemented; all23 building abilities and final scoring are implemented; headless controls and replay are implemented; 3/4/5-player full-game fixtures are implemented; application packages remain pending.
 
 **Status:** READY means available to start; IN_PROGRESS means work has started (including awaiting a documented decision); WAITING means dependencies remain incomplete; DONE requires recorded acceptance evidence. PR-number dependencies must not be skipped. Tasks are topologically ordered; PR-004 can proceed independently.
 
@@ -1005,18 +1005,28 @@ Rule-specific tickets lacking M0 data do not yet have ready-to-copy test inputs.
 ## PR-059 [LOW] — Add version guards and recovery drills
 
 - **Milestone:** M11
-- **Status:** WAITING
+- **Status:** DONE
 - **Dependencies:** PR-058
 - **Files / Areas:** `apps/server/src/storage/versionGuard.ts`, `apps/server/test/versionGuard.test.ts`, `docs/RECOVERY.md`
 - **Scope / Acceptance:** Explicitly isolate unsupported save versions; upgrade only through known migrations. Document backup/restore and history export.
 - **Required verification:** Rejected old versions retain original data; restored backups reproduce replay/final views; diagnostics exports contain no credentials.
 - **Out of scope:** Other tickets’ deliverables; consume dependencies only through defined interfaces.
-- **Evidence:** Not executed.
+- **Evidence:** 2026-10-01 — see `docs/RECOVERY.md`.
+  - **`storage/versionGuard.ts`:** on load, applies known upgrades from `SNAPSHOT_UPGRADES` (none yet; injectable), in memory only, then validates strictly with `deserializeGame`. An unsupported save throws `IncompatibleSave`; `submitCommand` answers `VERSION_MISMATCH` without writing, so the room is isolated and its row untouched. The next successful commit persists an upgraded snapshot and version columns.
+  - **`scripts/export-history.mjs`:** a diagnostics export of `{replay, snapshot}`.
+  - **Tests:** `test/versionGuard.test.ts`.
+    - Unit: current version accepted; an old version rejected unless an upgrade exists; the upgrade does not mutate its input; a foreign engine version rejected.
+    - Real PostgreSQL:
+      - a tampered 0.9.0 save gives `VERSION_MISMATCH`, with the row's revision, state text and version column byte-identical and no command rows;
+      - with a known 0.9.0 to 1.0.0 upgrade the command commits and the stored version becomes 1.0.0;
+      - backup drill: `pg_dump -Fc`, then `pg_restore` into a fresh database, gives a restored room identical to the original, a replay that reproduces the final state, and identical projections for every seat;
+      - the export script's output holds the history, no seat token hash and no "token" string.
+  - **Checks:** root typecheck, test (engine 564, protocol 3, server 86 + 12 DB-only, web 56), build, `test:db` 14/14, e2e 13/13 (3.4 min).
 
 ## PR-060 [MEDIUM] — Perform the final rule and boundary audit
 
 - **Milestone:** M12
-- **Status:** WAITING
+- **Status:** READY
 - **Dependencies:** PR-055, PR-059, PR-003
 - **Files / Areas:** `docs/RULE_AUDIT.md`, `docs/TEST_SCENARIOS.md`, `docs/BACKLOG.md`
 - **Scope / Acceptance:** Independently audit against the rulebook, emphasizing Captain, workers, building combinations, scoring, and visibility. Create regression-test tickets before fixing findings.
@@ -1027,7 +1037,7 @@ Rule-specific tickets lacking M0 data do not yet have ready-to-copy test inputs.
 ## PR-061 [LOW] — Containerize and document private deployment
 
 - **Milestone:** M12
-- **Status:** WAITING
+- **Status:** READY
 - **Dependencies:** PR-059
 - **Files / Areas:** `Dockerfile`, `compose.yaml`, `.dockerignore`, `docs/DEPLOYMENT.md`, `.env.example`
 - **Scope / Acceptance:** Provide a single-instance web/realtime service and database. Document TLS, environment variables, migrations, backups, and shutdown without automatically provisioning hosting.

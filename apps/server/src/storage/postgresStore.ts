@@ -6,6 +6,8 @@ import postgres from 'postgres';
 import type { GameEvent, PlayerId } from '@vibe-rico/game-engine';
 import type { AcceptedCommand, Room, RoomStore, StoredRoom } from '../rooms/store.js';
 import * as schema from './schema.js';
+import { guardSnapshot, SNAPSHOT_UPGRADES } from './versionGuard.js';
+import type { SnapshotUpgrade } from './versionGuard.js';
 
 type Db = PostgresJsDatabase<typeof schema>;
 type Tx = Parameters<Parameters<Db['transaction']>[0]>[0];
@@ -14,11 +16,11 @@ const isUniqueViolation = (e: unknown) => (e as { code?: string; cause?: { code?
   || (e as { cause?: { code?: string } }).cause?.code === '23505';
 
 /** Opens a connection pool and applies pending migrations. */
-export async function connect(url: string) {
+export async function connect(url: string, upgrades: Readonly<Record<string, SnapshotUpgrade>> = SNAPSHOT_UPGRADES) {
   const client = postgres(url, { max: 5, onnotice: () => {} });
   const db = drizzle(client, { schema });
   await migrate(db, { migrationsFolder: MIGRATIONS });
-  return { store: new PostgresRoomStore(db), close: () => client.end() };
+  return { store: new PostgresRoomStore(db, upgrades), close: () => client.end() };
 }
 
 /**
@@ -26,7 +28,7 @@ export async function connect(url: string) {
  * stored revision, so a stale writer changes nothing.
  */
 export class PostgresRoomStore implements RoomStore {
-  constructor(private readonly db: Db) {}
+  constructor(private readonly db: Db, private readonly upgrades: Readonly<Record<string, SnapshotUpgrade>> = SNAPSHOT_UPGRADES) {}
 
   async create(room: Room): Promise<boolean> {
     try {
@@ -54,7 +56,8 @@ export class PostgresRoomStore implements RoomStore {
       roomId: row.roomId, roomCode: row.roomCode, hostPlayerId: row.hostPlayerId as PlayerId,
       seats: seats.map(s => ({ playerId: s.playerId as PlayerId, displayName: s.displayName, tokenHash: s.tokenHash })),
       game: row.state === null || row.initialState === null || row.seed === null ? null : {
-        seed: row.seed, initialState: row.initialState, state: row.state,
+        // Version guard (PR-059): known upgrades in memory, then strict validation; incompatible saves throw.
+        seed: row.seed, initialState: guardSnapshot(row.roomId, row.initialState, this.upgrades), state: guardSnapshot(row.roomId, row.state, this.upgrades),
         commands: commands.map(c => ({
           playerId: c.playerId as PlayerId, commandId: c.commandId, expectedRevision: c.expectedRevision,
           action: c.action as AcceptedCommand['action'], acceptedRevision: c.acceptedRevision, events: byRevision.get(c.acceptedRevision) ?? [],

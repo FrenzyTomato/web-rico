@@ -4,6 +4,7 @@ import type { GameCommand, GameEvent, GameState, PlayerId } from '@vibe-rico/gam
 import type { CommandAccepted, CommandRejected, GameplayRequest } from '@vibe-rico/protocol';
 import type { RoomStore, StoredRoom } from '../rooms/store.js';
 import { commitAccepted } from '../storage/commit.js';
+import { IncompatibleSave } from '../storage/versionGuard.js';
 import type { RoomQueues } from './queue.js';
 
 /**
@@ -18,7 +19,10 @@ export function submitCommand(store: RoomStore, queues: RoomQueues, roomId: stri
     // Step 2: session and room lifecycle inside the queue.
     if (!isCurrentSession()) return { commandId, code: 'STALE_SESSION' };
     let stored: StoredRoom | undefined;
-    try { stored = await store.get(roomId); } catch { return { commandId, code: 'STORE_UNAVAILABLE' }; }
+    try { stored = await store.get(roomId); } catch (e) {
+      // An unsupported save version isolates the room without touching its data (PR-059).
+      return { commandId, code: e instanceof IncompatibleSave ? 'VERSION_MISMATCH' : 'STORE_UNAVAILABLE' };
+    }
     if (!stored) return { commandId, code: 'ROOM_CLOSED' };
     const { room, revision } = stored;
     if (room.game === null) return { commandId, code: 'ILLEGAL_COMMAND' };
