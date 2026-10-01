@@ -35,7 +35,8 @@ function nextAutomatic(state: GameState): GameResult | null {
       next=afterPlanting(state);
       break;
     case 'builder-choice':
-      if(state.endTriggers.length>0 || availableBuilds(state).length>0) return null;
+      // Skip actors with nothing affordable, also after a City-full trigger (AUD-06 user ruling, 2026-10-01).
+      if(availableBuilds(state).length>0) return null;
       next={...state,phase:phase.actorIndex===state.seatOrder.length-1
         ? {kind:'phase-completion',role:'builder',roleChooserId:phase.roleChooserId}
         : {...phase,actorIndex:phase.actorIndex+1,

@@ -32,7 +32,6 @@
 - **Seats:** one browser profile holds one seat. Several players in one browser take over each other's seat (use separate devices or profiles).
 - **Hosting:** single instance, with no horizontal scaling. Rooms survive restarts only with PostgreSQL (`DATABASE_URL`); the in-memory mode is for development.
 - **Performance:** measured on the agreed Apple M4 / Chrome device (`docs/PERFORMANCE.md`); other GPUs and browsers are not measured.
-- **Open rule question:** AUD-06 (`docs/RULE_AUDIT.md`). After a City-full trigger, remaining Builder players who can't afford anything decline by hand instead of being skipped. The outcome is correct.
 - **Playtests:** PR-048 friend playtests were waived; this checklist is the first real multiplayer validation.
 
 ## Rollback

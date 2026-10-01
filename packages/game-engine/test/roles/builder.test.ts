@@ -234,22 +234,31 @@ it('BUILDER-003: later actors retain their purchase decisions after a City trigg
   assertGameState(b.state);
 });
 
-it('BLD-02: a full City still accepts B and C declines before game completion',()=>{
+// AUD-06 user ruling (2026-10-01): after a City-full trigger, actors with no affordable building are
+// skipped automatically, exactly as before the trigger; the phase still completes before scoring.
+it('BLD-02: after a full City, actors with nothing affordable are skipped and the game ends',()=>{
   const s=builder();city(s,10);s.players[0]!.coins=10;s.players[1]!.coins=0;s.players[2]!.coins=0;
+  const a=build(s,{buildingTypeId:'fire-station',useAdvantage:false,useSchool:false});if(!a.ok)throw Error(a.error.message);
+  expect(a.state.phase).toEqual({kind:'game-over',scores:calculateFinalScore(a.state)});
+  expect(a.state.endTriggers.map(t=>t.reason)).toEqual(['city-full']);
+  expect(a.state.roundNumber).toBe(1);expect(a.state.roleSelectionIndex).toBe(0);
+  // One revision: the build, the automatic skips to completion, game over and scoring.
+  expect(a.events.slice(-2)).toEqual([{kind:'phase-changed',revision:2,index:a.events.length-2,from:'phase-completion',to:'game-over'},
+    {kind:'game-scored',revision:2,index:a.events.length-1,scores:calculateFinalScore(a.state)}]);
+  expect(getLegalCommands(a.state,s.seatOrder[1]!)).toEqual([]);
+  assertGameState(a.state);
+});
+
+it('BLD-02: after a full City, an actor who can afford a building still decides; the rest are skipped',()=>{
+  const s=builder();city(s,10);s.players[0]!.coins=10;s.players[1]!.coins=1;s.players[2]!.coins=0;
   const a=build(s,{buildingTypeId:'fire-station',useAdvantage:false,useSchool:false});if(!a.ok)throw Error(a.error.message);
   expect(a.state.phase).toEqual({kind:'builder-choice',actorId:s.seatOrder[1],roleChooserId:s.seatOrder[0],actorIndex:1});
   const b=build(a.state,null);if(!b.ok)throw Error(b.error.message);
-  expect(b.state.phase).toEqual({kind:'builder-choice',actorId:s.seatOrder[2],roleChooserId:s.seatOrder[0],actorIndex:2});
-  const c=build(b.state,null);if(!c.ok)throw Error(c.error.message);
-  expect(c.state.phase).toEqual({kind:'game-over',scores:calculateFinalScore(c.state)});
-  expect(c.state.endTriggers).toEqual(a.state.endTriggers);
-  expect(c.state.roundNumber).toBe(1);expect(c.state.roleSelectionIndex).toBe(0);
-  expect(c.events).toEqual([{kind:'phase-changed',revision:4,index:0,from:'builder-choice',to:'phase-completion'},
-    {kind:'phase-changed',revision:4,index:1,from:'phase-completion',to:'game-over'},
-    {kind:'game-scored',revision:4,index:2,scores:calculateFinalScore(c.state)}]);
-  expect(getLegalCommands(c.state,s.seatOrder[0]!)).toEqual([]);
-  expect(advanceAutomatic(c)).toEqual(c);
-  assertGameState(c.state);
+  // C cannot afford anything, so the declined turn moves straight to phase completion and scoring.
+  expect(b.state.phase).toEqual({kind:'game-over',scores:calculateFinalScore(b.state)});
+  expect(b.state.endTriggers).toEqual(a.state.endTriggers);
+  expect(advanceAutomatic(b)).toEqual(b);
+  assertGameState(b.state);
 });
 
 it('BUILDER-001: an instance ID collision in a valid restored state does not duplicate a tile',()=>{

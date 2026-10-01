@@ -1056,6 +1056,7 @@ Rule-specific tickets lacking M0 data do not yet have ready-to-copy test inputs.
   - **`apps/server/test/projection.test.ts`:** over all three full games, AUD-04 (projected `vpRemaining` equals the true supply) and AUD-05 (supply and phase key sets match explicit allowlists, so a future hidden nested field fails).
   - **Doc fixes in RULES.md:** CAPTAIN-004 (how Wharf "at any time" is represented) and VISIBILITY-001 (the VP supply is public).
   - No rule or behaviour change. AUD-06 is left for the user's decision.
+- **AUD-06 follow-up, 2026-10-01:** the user ruled to auto-skip. `advanceAutomatic` now skips Builder actors with no affordable building even after a City-full trigger. The old BLD-02 manual-decline test was replaced by two tests (written first and failing): nobody else can afford a building, so the filling build goes straight to game over in one revision; B can afford and decides, then C is skipped and the game ends. Engine 571 tests pass.
 
 ## PR-061 [LOW] — Containerize and document private deployment
 

@@ -44,7 +44,7 @@ PR-033A/B/033 final review: fresh reviewer found no material issues; acceptance 
 
 ## Status after PR-063 preparation (2026-10-01)
 
-PR-001–062 (with supplementary tickets) are DONE except PR-048 (waived by the user, no playtest) and PR-063 (pending: needs a deployment target and real players). AUD-06 (`docs/RULE_AUDIT.md`) awaits a user decision.
+PR-001–062 (with supplementary tickets) are DONE except PR-048 (waived by the user, no playtest) and PR-063 (pending: needs a deployment target and real players). AUD-06 was resolved by the user (auto-skip after City-full).
 
 ## Check commands (PR-062)
 

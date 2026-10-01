@@ -85,7 +85,7 @@ Test family: TS-BUILDER. Sources: S3 pp.11,18; School p.21.
 | --- | --- |
 | BUILDER-001 | An actor may buy exactly one in-stock building or decline. They must not already own its type, must have enough City space, and must afford the final cost. On success pay the Bank, remove one market tile and place it. No debt, resale, demolition, or replacement. |
 | BUILDER-002 | Price = max(0, listedCost − min(occupiedQuarries, quarryCap) − chooserDiscount), where chooserDiscount is 1 only when the Builder chooser accepts the advantage, otherwise 0. quarryCap is the market tier shown in the catalog. Never pay the player for a negative computed cost. Declining the purchase gives no discount payout. |
-| BUILDER-003 | Determine discounts and active School from the pre-purchase state. Apply School after placing the new building; it may supply one worker only to that new building. Buying School does not activate itself. If City use reaches 12, record a trigger immediately; finish the remaining actors in this Builder phase, then score. Do not offer another role selection. |
+| BUILDER-003 | Determine discounts and active School from the pre-purchase state. Apply School after placing the new building; it may supply one worker only to that new building. Buying School does not activate itself. If City use reaches 12, record a trigger immediately; finish the remaining actors in this Builder phase, then score. Do not offer another role selection. Remaining actors with no affordable building are skipped automatically, as before the trigger (user ruling 2026-10-01, AUD-06). |
 
 Source example with three occupied Quarries, before the Builder discount: Builder’s Yard costs **1**, Office **3**, Harbor **5**, City Hall **7**.
 
