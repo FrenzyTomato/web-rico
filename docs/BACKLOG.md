@@ -1,6 +1,6 @@
 # Dependency-ordered Engineering Backlog
 
-PR-001's original source audit is complete. The user subsequently designated the local 44-page Special Edition rulebook (S3) as canonical; see [reference policy](../references/README.md). PR-002 is DONE against S3 with user-supplied building stock recorded as PROJECT-003; PR-003 is DONE. PR-004 and PR-005 are DONE; PR-006–047, PR-027A, PR-030A and PR-033A/B are DONE; PR-048 is WAIVED by the user (no playtest performed); PR-049–057 are DONE; PR-058 is READY. V1 remains the 3–5-player base game; deterministic setup, role selection, round rotation, base role mechanics and the building catalog are implemented; all23 building abilities and final scoring are implemented; headless controls and replay are implemented; 3/4/5-player full-game fixtures are implemented; application packages remain pending.
+PR-001's original source audit is complete. The user subsequently designated the local 44-page Special Edition rulebook (S3) as canonical; see [reference policy](../references/README.md). PR-002 is DONE against S3 with user-supplied building stock recorded as PROJECT-003; PR-003 is DONE. PR-004 and PR-005 are DONE; PR-006–047, PR-027A, PR-030A and PR-033A/B are DONE; PR-048 is WAIVED by the user (no playtest performed); PR-049–058 are DONE; PR-059 is READY. V1 remains the 3–5-player base game; deterministic setup, role selection, round rotation, base role mechanics and the building catalog are implemented; all23 building abilities and final scoring are implemented; headless controls and replay are implemented; 3/4/5-player full-game fixtures are implemented; application packages remain pending.
 
 **Status:** READY means available to start; IN_PROGRESS means work has started (including awaiting a documented decision); WAITING means dependencies remain incomplete; DONE requires recorded acceptance evidence. PR-number dependencies must not be skipped. Tasks are topologically ordered; PR-004 can proceed independently.
 
@@ -983,13 +983,24 @@ Rule-specific tickets lacking M0 data do not yet have ready-to-copy test inputs.
 ## PR-058 [MEDIUM] — Implement restart recovery and lost acknowledgments
 
 - **Milestone:** M11
-- **Status:** WAITING
+- **Status:** DONE
 - **Dependencies:** PR-057, PR-041
 - **Files / Areas:** `apps/server/src/storage/recoverRoom.ts`, `apps/server/src/sessions/reconnect.ts`, `apps/server/test/restart.test.ts`
 - **Scope / Acceptance:** Restore rooms, sessions, snapshots, and processed commands after restart. A retry after a post-commit/pre-acknowledgment crash returns the saved result.
 - **Required verification:** TS-DURABLE: same-token recovery after a real process restart; retries grant no duplicate resources; no actions lost during snapshot/subscription recovery.
 - **Out of scope:** Other tickets’ deliverables; consume dependencies only through defined interfaces.
-- **Evidence:** Not executed.
+- **Evidence:** 2026-10-01
+  - **What survives a restart:** with PostgreSQL every request reads rooms, snapshots, seat token hashes and processed commands from the store, so they survive a restart unchanged.
+  - **`storage/recoverRoom.ts`:** `recoverRooms` marks every stored room (`RoomStore.listRoomIds`, added to both stores) as empty since startup, so presence-based cleanup still works and players get the full TTL to resume.
+  - **`main.ts`:** selects PostgreSQL when `DATABASE_URL` is set (in memory otherwise) and awaits recovery before listening. `createApp` returns `ready`.
+  - **`sessions/reconnect.ts`:** documents that controllers are rebuilt as players resume against the stored hashes.
+  - **Tests:**
+    - `test/restart.test.ts`, real processes plus real PostgreSQL via `test:db`:
+      1. the normal server (`dist/main.js`): 3 seats, start, and the first command at revision 1;
+      2. SIGKILL, then `test/fixtures/crash-server.mjs`, which exits (code 70) right after a successful commit and before the acknowledgement. All three seats resume with their original tokens at revision 1; the next command's acknowledgement is lost in the crash;
+      3. a normal restart: the token resumes at revision 2 (the commit survived); retrying `c2` returns the saved `acceptedRevision: 2` with no second transition; all seats resume; the next move reaches every seat at revision 3, so nothing was lost during recovery.
+    - `lifecycle.test.ts`: recovered rooms are swept after the TTL unless a player resumes.
+  - **Checks:** root typecheck, test (engine 564, protocol 3, server 85 + 9 DB-only, web 56), build, `test:db` 10/10, e2e 13/13 (3.2 min).
 
 ## PR-059 [LOW] — Add version guards and recovery drills
 

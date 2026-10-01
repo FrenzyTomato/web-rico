@@ -83,6 +83,10 @@ export class PostgresRoomStore implements RoomStore {
     });
   }
 
+  async listRoomIds(): Promise<string[]> {
+    return (await this.db.select({ roomId: schema.rooms.roomId }).from(schema.rooms)).map(r => r.roomId);
+  }
+
   async delete(roomId: string, expectedRevision: number): Promise<'ok' | 'stale'> {
     const deleted = await this.db.delete(schema.rooms)
       .where(and(eq(schema.rooms.roomId, roomId), eq(schema.rooms.revision, expectedRevision))).returning({ roomId: schema.rooms.roomId });

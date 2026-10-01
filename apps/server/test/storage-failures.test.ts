@@ -68,7 +68,7 @@ describe.skipIf(!url)('atomic commits and failure handling', () => {
     const { roomId, governor, request, row } = await started(store);
     const second = await connect(url!);
     // Server 2 reads first; server 1 commits before server 2 writes.
-    const racing: RoomStore = { ...second.store, get: id => second.store.get(id), findByCode: c => second.store.findByCode(c), create: r => second.store.create(r), delete: (id, r) => second.store.delete(id, r),
+    const racing: RoomStore = { ...second.store, get: id => second.store.get(id), findByCode: c => second.store.findByCode(c), create: r => second.store.create(r), delete: (id, r) => second.store.delete(id, r), listRoomIds: () => second.store.listRoomIds(),
       update: async (room, expected) => {
         await submitCommand(store, new RoomQueues(), roomId, governor, request('first', 0), () => true);
         return second.store.update(room, expected);

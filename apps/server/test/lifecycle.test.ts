@@ -160,3 +160,20 @@ describe('rate limits', () => {
     expect(await reason).toBe('io server disconnect');
   });
 });
+
+describe('restart recovery (PR-058)', () => {
+  it('stored rooms start empty after a restart: swept after the full TTL unless a player resumes', async () => {
+    const { store, queues, roomId, seats, advance } = await setup(3);
+    let now = 0;
+    const restarted = new RoomLifecycle(store, queues, () => now, TTL);
+    const { recoverRooms } = await import('../src/storage/recoverRoom.js');
+    const other = await new Lobby(store, { id: () => 'o-id', roomCode: () => 'OTHER', seed: () => 1, pick: () => 0 }).createRoom('Z');
+    if (!other.ok) throw Error(other.code);
+    expect(await recoverRooms(store, restarted)).toBe(2);
+    restarted.connected(roomId, seats[0]!);
+    now = TTL; advance(TTL);
+    await restarted.sweep();
+    expect(await store.get(roomId)).toBeDefined();
+    expect(await store.get(other.value.roomId)).toBeUndefined();
+  });
+});

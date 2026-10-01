@@ -14,7 +14,7 @@ try {
     execFileSync('sleep', ['0.5']);
   }
   const env = { ...process.env, DATABASE_URL: `postgres://postgres:${password}@127.0.0.1:${port}/postgres` };
-  const run = spawnSync('npx', ['vitest', 'run', 'test/storage', '--no-file-parallelism', ...process.argv.slice(2)], { stdio: 'inherit', env });
+  const run = spawnSync('npx', ['vitest', 'run', 'test/storage', 'test/restart', '--no-file-parallelism', ...process.argv.slice(2)], { stdio: 'inherit', env });
   process.exitCode = run.status ?? 1;
 } finally {
   docker('rm', '-f', name);

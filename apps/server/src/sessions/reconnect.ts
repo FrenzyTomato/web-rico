@@ -2,7 +2,11 @@ import type { PlayerId } from '@vibe-rico/game-engine';
 import type { RoomStore } from '../rooms/store.js';
 import { hashToken } from './tokens.js';
 
-/** One active controlling connection per seat, versioned by sessionGeneration (PROTOCOL.md "Rooms and recovery"). */
+/**
+ * One active controlling connection per seat, versioned by sessionGeneration (PROTOCOL.md "Rooms and recovery").
+ * Controllers are in memory; after a restart they are rebuilt as players resume, while tokens are checked
+ * against the stored seat hashes (PR-058).
+ */
 export class Sessions {
   readonly #controllers = new Map<string, Map<PlayerId, { generation: number; socketId: string }>>();
 

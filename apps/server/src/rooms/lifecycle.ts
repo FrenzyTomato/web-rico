@@ -43,6 +43,11 @@ export class RoomLifecycle {
     });
   }
 
+  /** After a restart nobody is connected: treat a stored room as empty since now (PR-058). */
+  recovered(roomId: string): void {
+    if (!this.#presence.has(roomId)) this.#presence.set(roomId, { connected: new Set(), emptySince: this.now() });
+  }
+
   /** Connection events change presence only; a disconnected player keeps their seat. */
   connected(roomId: string, playerId: PlayerId): void {
     const p = this.#presence.get(roomId) ?? { connected: new Set<PlayerId>(), emptySince: null };

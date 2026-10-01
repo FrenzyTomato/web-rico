@@ -14,6 +14,7 @@ import type { LobbyRandom } from './rooms/lobby.js';
 import type { RoomStore } from './rooms/store.js';
 import { exportRoom, importRoom } from './debug/scenarios.js';
 import { Sessions } from './sessions/reconnect.js';
+import { recoverRooms } from './storage/recoverRoom.js';
 import { broadcast, broadcastFor, roomState } from './rooms/broadcast.js';
 
 /** Largest accepted Socket.IO message; bigger messages close the connection (PROTOCOL.md step 1, size). */
@@ -169,5 +170,7 @@ export function createApp({ devTools = false, random, store = new InMemoryRoomSt
         (state, events) => broadcast(io, s.roomId, state, events)));
     });
   });
-  return { app, io };
+  // Await before listening: rebuilds presence for stored rooms after a restart.
+  const ready = recoverRooms(store, lifecycle);
+  return { app, io, ready };
 }

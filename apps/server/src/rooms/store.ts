@@ -47,4 +47,6 @@ export interface RoomStore {
   update(room: Room, expectedRevision: number): Promise<'ok' | 'stale'>;
   /** Removes the room and frees its code, under the same expectedRevision contract. */
   delete(roomId: string, expectedRevision: number): Promise<'ok' | 'stale'>;
+  /** Every stored room, for recovery after a restart (PR-058). */
+  listRoomIds(): Promise<string[]>;
 }

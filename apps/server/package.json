@@ -8,7 +8,7 @@
     "test": "tsc -p ../../packages/game-engine && tsc -p ../../packages/protocol && tsc -p tsconfig.test.json && vitest run",
     "build": "tsc -p ../../packages/game-engine && tsc -p ../../packages/protocol && tsc",
     "start": "node dist/main.js",
-    "test:db": "tsc -p ../../packages/game-engine && tsc -p ../../packages/protocol && node scripts/with-postgres.mjs",
+    "test:db": "tsc -p ../../packages/game-engine && tsc -p ../../packages/protocol && tsc && node scripts/with-postgres.mjs",
     "db:generate": "drizzle-kit generate"
   },
   "dependencies": {
