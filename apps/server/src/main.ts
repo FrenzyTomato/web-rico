@@ -9,7 +9,8 @@ const url = process.env.DATABASE_URL;
 const store = url ? (await connect(url)).store : new InMemoryRoomStore();
 // WEB_ROOT may be relative to the working directory; the static plugin needs an absolute path.
 const webRoot = process.env.WEB_ROOT ? resolve(process.env.WEB_ROOT) : undefined;
-const { app, ready } = createApp({ store, devTools: process.env.VIBE_RICO_DEV_TOOLS === '1', ...(webRoot ? { webRoot } : {}) });
+const allowedOrigins = (process.env.CORS_ORIGINS ?? "").split(",").map(origin => origin.trim()).filter(Boolean);
+const { app, ready } = createApp({ store, allowedOrigins, devTools: process.env.VIBE_RICO_DEV_TOOLS === '1', ...(webRoot ? { webRoot } : {}) });
 await ready;
 const host = process.env.HOST ?? '127.0.0.1', port = Number(process.env.PORT ?? 3000);
 await app.listen({ host, port });

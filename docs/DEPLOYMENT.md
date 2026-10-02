@@ -68,3 +68,9 @@ Share `https://game.example.com/` invite links. localhost without TLS is fine fo
 - No password, token or `.env` in the image config, layer history, filesystem or logs.
 - `stop` completes immediately with exit code 0.
 - The test stack and its volume were removed afterwards (`down -v`).
+
+## Vercel frontend with a separate backend
+
+Compose defaults `CORS_ORIGINS` to `https://webri.co`. Override it with a comma-separated list in `.env` if needed; origins must match exactly (no trailing slash). Direct server launches default to no cross-origin browser access.
+
+Set Vercel’s public build variable `VITE_SERVER_URL=https://api.webri.co` and redeploy. Configure Caddy on the Droplet to reverse proxy `api.webri.co` to `127.0.0.1:3000`. After pulling backend changes, run `docker compose up -d --build`. Keep the existing database password and volume.

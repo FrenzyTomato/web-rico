@@ -18,6 +18,7 @@ services:
   app:
     build: .
     environment:
+      CORS_ORIGINS: ${CORS_ORIGINS-https://webri.co}
       DATABASE_URL: postgres://postgres:${POSTGRES_PASSWORD}@db:5432/vibe_rico
     depends_on:
       db:

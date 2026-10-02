@@ -32,13 +32,13 @@ type Ack<T> = (reply: T) => void;
  * `store` defaults to the in-memory store; PostgreSQL is wired in main.ts (PR-058).
  * `webRoot` serves the built web client from the same origin as Socket.IO (production, PR-061).
  */
-export function createApp({ devTools = false, random, store = new InMemoryRoomStore(), webRoot }: {
-  devTools?: boolean; random?: LobbyRandom; store?: RoomStore; webRoot?: string;
+export function createApp({ devTools = false, random, store = new InMemoryRoomStore(), webRoot, allowedOrigins = [] }: {
+  devTools?: boolean; random?: LobbyRandom; store?: RoomStore; webRoot?: string; allowedOrigins?: string[];
 } = {}) {
   const app = Fastify();
   app.get('/health', async () => ({ status: 'ok' }));
   if (webRoot) void app.register(fastifyStatic, { root: webRoot });
-  const io = new Server(app.server, { maxHttpBufferSize: devTools ? DEV_MAX_MESSAGE_BYTES : MAX_MESSAGE_BYTES });
+  const io = new Server(app.server, { cors: { origin: allowedOrigins }, maxHttpBufferSize: devTools ? DEV_MAX_MESSAGE_BYTES : MAX_MESSAGE_BYTES });
   const queues = new RoomQueues();
   const lobby = new Lobby(store, random), lifecycle = new RoomLifecycle(store, queues), sessions = new Sessions(store);
   const sweeper = setInterval(() => void lifecycle.sweep(), LIMITS.sweepIntervalMs);
