@@ -1,0 +1,178 @@
+{
+  "settings": {
+    "ai_model": "meshy-6-lite",
+    "should_texture": true,
+    "enable_pbr": true,
+    "texture_resolution": "2k",
+    "should_remesh": false,
+    "target_formats": [
+      "glb"
+    ]
+  },
+  "tasks": {
+    "Small Market": {
+      "status": "SUCCEEDED",
+      "submittedAt": "2026-10-02T03:04:28.027Z",
+      "id": "01a0fa92-0413-72a9-9d5c-02fcee727539",
+      "progress": 100,
+      "bytes": 22925328,
+      "downloaded": true,
+      "completedAt": "2026-10-02T03:06:01.513Z"
+    },
+    "Builder's Yard": {
+      "status": "SUCCEEDED",
+      "submittedAt": "2026-10-02T03:04:30.898Z",
+      "id": "01a0fa92-0e83-776b-8577-3757f2b78852",
+      "progress": 100,
+      "bytes": 14222352,
+      "downloaded": true,
+      "completedAt": "2026-10-02T03:06:25.156Z"
+    },
+    "Hacienda": {
+      "status": "SUCCEEDED",
+      "submittedAt": "2026-10-02T03:04:34.009Z",
+      "id": "01a0fa92-1a2b-756f-9f70-a927a3fd2dbf",
+      "progress": 100,
+      "bytes": 15270460,
+      "downloaded": true,
+      "completedAt": "2026-10-02T03:06:27.850Z"
+    },
+    "Small Warehouse": {
+      "status": "SUCCEEDED",
+      "submittedAt": "2026-10-02T03:04:35.202Z",
+      "id": "01a0fa92-1edf-7355-b1ab-2703be063056",
+      "progress": 100,
+      "bytes": 11239388,
+      "downloaded": true,
+      "completedAt": "2026-10-02T03:06:04.666Z"
+    },
+    "Hospital": {
+      "status": "SUCCEEDED",
+      "submittedAt": "2026-10-02T03:04:36.178Z",
+      "id": "01a0fa92-22b7-704e-b074-b0848aa38ab6",
+      "progress": 100,
+      "bytes": 15848324,
+      "downloaded": true,
+      "completedAt": "2026-10-02T03:06:30.473Z"
+    },
+    "Large Market": {
+      "status": "SUCCEEDED",
+      "submittedAt": "2026-10-02T03:04:37.138Z",
+      "id": "01a0fa92-2679-7279-9b42-689ab30ac229",
+      "progress": 100,
+      "bytes": 19567656,
+      "downloaded": true,
+      "completedAt": "2026-10-02T03:06:50.925Z"
+    },
+    "Large Warehouse": {
+      "status": "SUCCEEDED",
+      "submittedAt": "2026-10-02T03:07:06.704Z",
+      "id": "01a0fa94-6fd7-7088-86a1-4e2cc2d26199",
+      "progress": 100,
+      "bytes": 14946620,
+      "downloaded": true,
+      "completedAt": "2026-10-02T03:08:24.606Z"
+    },
+    "Factory": {
+      "status": "SUCCEEDED",
+      "submittedAt": "2026-10-02T03:07:08.251Z",
+      "id": "01a0fa94-74c2-7514-8aaf-f3b862dd0fb7",
+      "progress": 100,
+      "bytes": 16044532,
+      "downloaded": true,
+      "completedAt": "2026-10-02T03:08:26.258Z"
+    },
+    "Harbor": {
+      "status": "SUCCEEDED",
+      "submittedAt": "2026-10-02T03:07:09.494Z",
+      "id": "01a0fa94-7991-75d1-a966-5c387f23c1de",
+      "progress": 100,
+      "bytes": 12276856,
+      "downloaded": true,
+      "completedAt": "2026-10-02T03:08:44.438Z"
+    },
+    "Office": {
+      "status": "SUCCEEDED",
+      "submittedAt": "2026-10-02T03:07:10.552Z",
+      "id": "01a0fa94-7da7-705e-b5ac-41e2af26baf4",
+      "progress": 100,
+      "bytes": 16765796,
+      "downloaded": true,
+      "completedAt": "2026-10-02T03:09:06.111Z"
+    },
+    "School": {
+      "status": "SUCCEEDED",
+      "submittedAt": "2026-10-02T03:07:11.593Z",
+      "id": "01a0fa94-81c6-7598-b471-5cc6eb01a943",
+      "progress": 100,
+      "bytes": 16450360,
+      "downloaded": true,
+      "completedAt": "2026-10-02T03:08:46.627Z"
+    },
+    "Wharf": {
+      "status": "SUCCEEDED",
+      "submittedAt": "2026-10-02T03:07:12.640Z",
+      "id": "01a0fa94-85d3-754f-8045-7fbbebd16398",
+      "progress": 100,
+      "bytes": 11208328,
+      "downloaded": true,
+      "completedAt": "2026-10-02T03:08:47.831Z"
+    },
+    "Small Fruit Depot": {
+      "status": "SUCCEEDED",
+      "submittedAt": "2026-10-02T03:09:21.836Z",
+      "id": "01a0fa96-7fb5-779b-adcf-93af49772734",
+      "progress": 100,
+      "bytes": 20889000,
+      "downloaded": true,
+      "completedAt": "2026-10-02T03:10:41.375Z"
+    },
+    "Large Fruit Depot": {
+      "status": "SUCCEEDED",
+      "submittedAt": "2026-10-02T03:09:23.190Z",
+      "id": "01a0fa96-83ce-760c-9f28-24e03bd8e662",
+      "progress": 100,
+      "bytes": 17064444,
+      "downloaded": true,
+      "completedAt": "2026-10-02T03:10:43.983Z"
+    },
+    "Large Tobacco Storage": {
+      "status": "SUCCEEDED",
+      "submittedAt": "2026-10-02T03:09:24.309Z",
+      "id": "01a0fa96-882e-70ec-995c-2ad0d4892102",
+      "progress": 100,
+      "bytes": 16516584,
+      "downloaded": true,
+      "completedAt": "2026-10-02T03:10:46.214Z"
+    },
+    "Small Sugar Mill": {
+      "status": "SUCCEEDED",
+      "submittedAt": "2026-10-02T03:09:25.314Z",
+      "id": "01a0fa96-8c1c-76a7-9d5b-ad545a986043",
+      "progress": 100,
+      "bytes": 25154972,
+      "downloaded": true,
+      "completedAt": "2026-10-02T03:11:06.305Z"
+    },
+    "Large Sugar Mill": {
+      "status": "SUCCEEDED",
+      "submittedAt": "2026-10-02T03:09:26.186Z",
+      "id": "01a0fa96-8f7a-7712-83e9-7041cda3ef52",
+      "progress": 100,
+      "bytes": 21256516,
+      "downloaded": true,
+      "completedAt": "2026-10-02T03:11:25.660Z"
+    },
+    "Large Coffee Roaster": {
+      "status": "SUCCEEDED",
+      "submittedAt": "2026-10-02T03:09:27.398Z",
+      "id": "01a0fa96-944c-742e-a051-302ab750de37",
+      "progress": 100,
+      "bytes": 20558088,
+      "downloaded": true,
+      "completedAt": "2026-10-02T03:11:44.573Z"
+    }
+  },
+  "startBalance": 1055,
+  "lastBalance": 785
+}

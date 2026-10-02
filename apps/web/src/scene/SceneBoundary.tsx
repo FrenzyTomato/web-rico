@@ -1,11 +1,11 @@
+import { t, useLanguage } from '../i18n/language.js';
 import { Component } from 'react';
 import type { ReactNode } from 'react';
 
-export function webglAvailable(): boolean {
-  const canvas = document.createElement('canvas');
-  return Boolean(canvas.getContext('webgl2') ?? canvas.getContext('webgl'));
-}
-const FALLBACK = <p role="note">3D 视图不可用，请使用下方的文字界面</p>;
+import { webglAvailable } from './webglSupport.js';
+export { webglAvailable } from './webglSupport.js';
+
+function Fallback() { useLanguage(); return <p role="note">{t("立体视图不可用，请使用下方的文字界面")}</p>; }
 
 /**
  * Shows the 3D scene only with WebGL, and replaces it with a notice if it fails. The DOM client is
@@ -15,7 +15,7 @@ export class SceneBoundary extends Component<{ children: ReactNode; webgl?: () =
   state = { failed: false };
   static getDerivedStateFromError() { return { failed: true }; }
   render() {
-    if (this.state.failed || !(this.props.webgl ?? webglAvailable)()) return FALLBACK;
+    if (this.state.failed || !(this.props.webgl ?? webglAvailable)()) return <Fallback />;
     return this.props.children;
   }
 }

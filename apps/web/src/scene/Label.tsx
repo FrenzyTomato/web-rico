@@ -1,30 +1,54 @@
-import { useEffect, useMemo } from 'react';
-import { CanvasTexture } from 'three';
+import { useEffect, useMemo, useState } from 'react';
+import { CanvasTexture, SRGBColorSpace } from 'three';
+import { labelWorldSize } from './labelLayout.js';
 import { liveTextures } from './resources.js';
 
-const FONT = 'bold 64px "Songti SC", "Noto Serif SC", serif';
+const FONT = '700 64px "Source Han Sans CN", "PingFang SC", "Microsoft YaHei", sans-serif';
 /**
- * Text drawn onto a canvas texture and shown as a sprite: no extra React roots (drei Html remounted
- * endlessly under React 19) and no font download. `height` is in world units; width follows the text.
+ * Text drawn onto a canvas texture and laid flat on the board: no extra React roots (drei Html remounted
+ * endlessly under React 19) with the same Chinese game font as the DOM. `height` controls world-space sizing;
+ * labels zoom with their models, without screen-size floors or zoom-dependent hiding.
  * Everything labelled here is also in the DOM client.
  */
-export function Label({ text, position, height = 0.8, ink = '#2a2118', paper = '#efe4cc' }: {
-  text: string; position: [number, number, number]; height?: number; ink?: string; paper?: string;
+export function Label({ text, position, height = 0.8, ink = '#fff4de', maxWidth = Infinity }: {
+  text: string; position: [number, number, number]; height?: number; ink?: string; maxWidth?: number;
 }) {
-  const { texture, aspect } = useMemo(() => {
+  const [loadedText, setLoadedText] = useState('');
+  useEffect(() => {
+    let alive = true;
+    // Canvas labels must be redrawn after their Unicode font segments arrive.
+    document.fonts?.load('700 64px "Source Han Sans CN"', text).then(() => {
+      if (alive) setLoadedText(text);
+    }).catch(() => { /* Keep the readable system fallback. */ });
+    return () => { alive = false; };
+  }, [text]);
+  const { texture, canvasWidth, canvasHeight } = useMemo(() => {
     const canvas = document.createElement('canvas');
     const measure = canvas.getContext('2d')!;
     measure.font = FONT;
-    canvas.width = Math.ceil(measure.measureText(text).width) + 48;
-    canvas.height = 112;
+    canvas.width = Math.ceil(measure.measureText(text).width) + 40;
+    canvas.height = 104;
     const g = canvas.getContext('2d')!;
-    g.fillStyle = paper; g.fillRect(0, 0, canvas.width, canvas.height);
-    g.strokeStyle = '#c9a45c'; g.lineWidth = 8; g.strokeRect(4, 4, canvas.width - 8, canvas.height - 8);
-    g.fillStyle = ink; g.font = FONT; g.textAlign = 'center'; g.textBaseline = 'middle';
-    g.fillText(text, canvas.width / 2, canvas.height / 2 + 2);
+    g.fillStyle = '#fff4de'; g.font = FONT; g.textAlign = 'center'; g.textBaseline = 'middle';
+    // A dark silhouette separates ivory glyphs from water, sand and forest without a backing panel.
+    g.strokeStyle = '#102c30';
+    g.lineWidth = 10; g.lineJoin = 'round'; g.miterLimit = 2;
+    g.shadowColor = '#071b26'; g.shadowBlur = 5; g.shadowOffsetY = 3;
+    g.strokeText(text, canvas.width / 2, 52);
+    g.shadowColor = 'transparent';
+    g.fillText(text, canvas.width / 2, 52);
     liveTextures.count++;
-    return { texture: new CanvasTexture(canvas), aspect: canvas.width / canvas.height };
-  }, [text, ink, paper]);
+    const texture = new CanvasTexture(canvas); texture.colorSpace = SRGBColorSpace; texture.anisotropy = 8;
+    return { texture, canvasWidth: canvas.width, canvasHeight: canvas.height };
+  }, [text, ink, loadedText]);
   useEffect(() => () => { texture.dispose(); liveTextures.count--; }, [texture]);
-  return <sprite position={position} scale={[height * aspect, height, 1]}><spriteMaterial map={texture} /></sprite>;
+  const [width, worldHeight] = labelWorldSize(height, canvasWidth, canvasHeight, maxWidth);
+  // Buildings occlude labels naturally. Transparent glyph margins must not write depth,
+  // otherwise they cut rectangular holes in island artwork.
+  return <group position={position}>
+    <mesh renderOrder={10} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, Number.isFinite(maxWidth) ? worldHeight / 2 : 0]}>
+      <planeGeometry args={[width, worldHeight]} />
+      <meshBasicMaterial map={texture} transparent depthTest depthWrite={false} toneMapped={false} />
+    </mesh>
+  </group>;
 }

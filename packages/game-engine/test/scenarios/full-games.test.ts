@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { applyCommand, assertGameState, createGame, deserializeGame, getLegalCommands, serializeGame } from '../../src/index.js';
+import { applyCommand, assertGameState, confirmedWorkers, createGame, deserializeGame, getLegalCommands, serializeGame } from '../../src/index.js';
 import type { CreateGameInput, GameCommand, GameEvent, GameState } from '../../src/index.js';
 import { createReplay, replay, serializeReplay } from '../../src/replay/replay.js';
 import { expectLedgers, independentScores } from '../helpers/verify.js';
@@ -36,7 +36,7 @@ describe.each(GAMES)('TS-REPLAY: fixed $n-player history', ({ n, input, history,
     for (const [index, command] of history.entries()) {
       const before = serializeGame(state);
       // Legal-action generation and validation agree: only the decision-maker has a descriptor.
-      expect(state.seatOrder.filter(id => getLegalCommands(state, id).length > 0), `command ${index}`).toEqual([command.actorId]);
+      expect(state.seatOrder.filter(id => getLegalCommands(state, id).length > 0), `command ${index}`).toEqual(state.phase.kind === 'recruiter-placement' ? state.seatOrder.filter(id => !confirmedWorkers(state).includes(id)) : [command.actorId]);
       const result = applyCommand(state, command);
       if (!result.ok) throw Error(`command ${index} rejected: ${result.error.code} ${result.error.message}`);
       expect(serializeGame(state)).toBe(before);

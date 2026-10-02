@@ -13,7 +13,7 @@ Per-player broadcast: `{ protocolVersion, revision, view, legalActions, events }
 1. Validate size, schema, and protocol version. Resolve roomId / playerId / sessionGeneration from the authenticated session.
 2. Recheck session and room lifecycle inside the room's serial queue.
 3. Look up `(gameId, playerId, commandId)`. Same ID and payload returns the saved result without reapplying; different payload returns COMMAND_ID_REUSE.
-4. For new commands, validate expectedRevision. Return STALE_REVISION and request a fresh snapshot for stale input; do not rewrite intent.
+4. For new commands, validate expectedRevision. Return STALE_REVISION for stale input, with one narrow exception: an `allocate-workers` request may be applied unchanged when the current phase is still Recruitment placement and every intervening accepted command is another player's allocation. Require complete contiguous history coverage. The engine still validates ownership, conservation and whether the player already confirmed. Never rebase across distribution, phase changes, another role or the same player's confirmation.
 5. Construct a trusted GameCommand and run engine validation.
 6. Atomically write the new snapshot, success result, and event history against the expected previous revision. Storage failure must not acknowledge or broadcast success.
 7. Install in-memory state, acknowledge, and broadcast player views. Client correctness must not depend on acknowledgment/broadcast arrival order.

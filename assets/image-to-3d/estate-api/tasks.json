@@ -1,0 +1,61 @@
+{
+  "settings": {
+    "ai_model": "meshy-6-lite",
+    "should_texture": true,
+    "enable_pbr": true,
+    "texture_resolution": "2k",
+    "should_remesh": false,
+    "target_formats": [
+      "glb"
+    ]
+  },
+  "tasks": {
+    "corn": {
+      "status": "SUCCEEDED",
+      "submittedAt": "2026-10-01T16:08:30.220Z",
+      "id": "01a0f839-76ba-7784-bdf4-cf7a40b5317e",
+      "progress": 100,
+      "bytes": 21339372,
+      "downloaded": true,
+      "completedAt": "2026-10-01T16:10:40.927Z"
+    },
+    "banana": {
+      "status": "SUCCEEDED",
+      "submittedAt": "2026-10-01T16:08:31.717Z",
+      "id": "01a0f839-7b4a-7759-8b6d-7a1b71693a3b",
+      "progress": 100,
+      "bytes": 25659020,
+      "downloaded": true,
+      "completedAt": "2026-10-01T16:10:44.428Z"
+    },
+    "sugar": {
+      "status": "SUCCEEDED",
+      "submittedAt": "2026-10-01T16:08:33.175Z",
+      "id": "01a0f839-8113-775d-8bf9-a8420e1334c4",
+      "progress": 100,
+      "bytes": 30573764,
+      "downloaded": true,
+      "completedAt": "2026-10-01T16:11:21.633Z"
+    },
+    "tobacco": {
+      "status": "SUCCEEDED",
+      "submittedAt": "2026-10-01T16:08:34.324Z",
+      "id": "01a0f839-89c6-751e-b64a-12157409d580",
+      "progress": 100,
+      "bytes": 21051956,
+      "downloaded": true,
+      "completedAt": "2026-10-01T16:10:47.667Z"
+    },
+    "quarry": {
+      "status": "SUCCEEDED",
+      "submittedAt": "2026-10-01T16:08:36.557Z",
+      "id": "01a0f839-8e28-7782-ab05-39fc50022e81",
+      "progress": 100,
+      "bytes": 12506500,
+      "downloaded": true,
+      "completedAt": "2026-10-01T16:10:50.312Z"
+    }
+  },
+  "startBalance": 1130,
+  "lastBalance": 1055
+}

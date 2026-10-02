@@ -1,0 +1,408 @@
+[
+  {
+    "name": "City Hall",
+    "category": "building",
+    "source": "import/ChatGPT Image 2 Oct 2026, 13_45_17.png",
+    "crop": [
+      65,
+      10,
+      755,
+      386
+    ],
+    "reference": "references/City Hall.png",
+    "file": "City Hall.glb",
+    "method": "meshy"
+  },
+  {
+    "name": "Customs House",
+    "category": "building",
+    "source": "import/ChatGPT Image 2 Oct 2026, 13_45_17.png",
+    "crop": [
+      770,
+      60,
+      1536,
+      414
+    ],
+    "reference": "references/Customs House.png",
+    "file": "Customs House.glb",
+    "method": "meshy"
+  },
+  {
+    "name": "Fire Station",
+    "category": "building",
+    "source": "import/ChatGPT Image 2 Oct 2026, 13_45_17.png",
+    "crop": [
+      0,
+      510,
+      555,
+      855
+    ],
+    "reference": "references/Fire Station.png",
+    "file": "Fire Station.glb",
+    "method": "meshy"
+  },
+  {
+    "name": "Fortress",
+    "category": "building",
+    "source": "import/ChatGPT Image 2 Oct 2026, 13_45_17.png",
+    "crop": [
+      555,
+      488,
+      1040,
+      855
+    ],
+    "reference": "references/Fortress.png",
+    "file": "Fortress.glb",
+    "method": "meshy"
+  },
+  {
+    "name": "Residence",
+    "category": "building",
+    "source": "import/ChatGPT Image 2 Oct 2026, 13_45_17.png",
+    "crop": [
+      1030,
+      538,
+      1536,
+      855
+    ],
+    "reference": "references/Residence.png",
+    "file": "Residence.glb",
+    "method": "meshy"
+  },
+  {
+    "name": "Worker 01",
+    "category": "worker",
+    "source": "import/ChatGPT Image 2 Oct 2026, 13_37_24.png",
+    "crop": [
+      101,
+      101,
+      451,
+      663
+    ],
+    "reference": "references/Worker 01.png",
+    "file": "Worker 01.glb",
+    "method": "meshy"
+  },
+  {
+    "name": "Worker 02",
+    "category": "worker",
+    "source": "import/ChatGPT Image 2 Oct 2026, 13_37_24.png",
+    "crop": [
+      551,
+      101,
+      859,
+      663
+    ],
+    "reference": "references/Worker 02.png",
+    "file": "Worker 02.glb",
+    "method": "meshy"
+  },
+  {
+    "name": "Worker 03",
+    "category": "worker",
+    "source": "import/ChatGPT Image 2 Oct 2026, 13_37_24.png",
+    "crop": [
+      939,
+      101,
+      1267,
+      663
+    ],
+    "reference": "references/Worker 03.png",
+    "file": "Worker 03.glb",
+    "method": "meshy"
+  },
+  {
+    "name": "Worker 04",
+    "category": "worker",
+    "source": "import/ChatGPT Image 2 Oct 2026, 13_37_24.png",
+    "crop": [
+      1358,
+      101,
+      1644,
+      663
+    ],
+    "reference": "references/Worker 04.png",
+    "file": "Worker 04.glb",
+    "method": "meshy"
+  },
+  {
+    "name": "Worker 05",
+    "category": "worker",
+    "source": "import/ChatGPT Image 2 Oct 2026, 13_37_24.png",
+    "crop": [
+      1734,
+      101,
+      2057,
+      663
+    ],
+    "reference": "references/Worker 05.png",
+    "file": "Worker 05.glb",
+    "method": "meshy"
+  },
+  {
+    "name": "Corn Crate",
+    "category": "goods",
+    "source": "import/ChatGPT Image 2 Oct 2026, 13_37_17.png",
+    "crop": [
+      32,
+      159,
+      456,
+      567
+    ],
+    "reference": "references/Corn Crate.png",
+    "file": "Corn Crate.glb",
+    "method": "meshy"
+  },
+  {
+    "name": "Sugar Crate",
+    "category": "goods",
+    "source": "import/ChatGPT Image 2 Oct 2026, 13_37_17.png",
+    "crop": [
+      467,
+      159,
+      880,
+      567
+    ],
+    "reference": "references/Sugar Crate.png",
+    "file": "Sugar Crate.glb",
+    "method": "meshy"
+  },
+  {
+    "name": "Banana Crate",
+    "category": "goods",
+    "source": "import/ChatGPT Image 2 Oct 2026, 13_37_17.png",
+    "crop": [
+      891,
+      159,
+      1304,
+      567
+    ],
+    "reference": "references/Banana Crate.png",
+    "file": "Banana Crate.glb",
+    "method": "meshy"
+  },
+  {
+    "name": "Coffee Crate",
+    "category": "goods",
+    "source": "import/ChatGPT Image 2 Oct 2026, 13_37_17.png",
+    "crop": [
+      1315,
+      159,
+      1734,
+      567
+    ],
+    "reference": "references/Coffee Crate.png",
+    "file": "Coffee Crate.glb",
+    "method": "meshy"
+  },
+  {
+    "name": "Tobacco Crate",
+    "category": "goods",
+    "source": "import/ChatGPT Image 2 Oct 2026, 13_37_17.png",
+    "crop": [
+      1745,
+      159,
+      2172,
+      567
+    ],
+    "reference": "references/Tobacco Crate.png",
+    "file": "Tobacco Crate.glb",
+    "method": "meshy"
+  },
+  {
+    "name": "4-Slot Boat",
+    "category": "boat",
+    "source": "import/ChatGPT Image 2 Oct 2026, 13_36_59.png",
+    "crop": [
+      300,
+      45,
+      550,
+      380
+    ],
+    "reference": "references/4-Slot Boat.png",
+    "file": "4-Slot Boat.glb",
+    "method": "meshy"
+  },
+  {
+    "name": "5-Slot Boat",
+    "category": "boat",
+    "source": "import/ChatGPT Image 2 Oct 2026, 13_36_59.png",
+    "crop": [
+      645,
+      15,
+      920,
+      380
+    ],
+    "reference": "references/5-Slot Boat.png",
+    "file": "5-Slot Boat.glb",
+    "method": "meshy"
+  },
+  {
+    "name": "6-Slot Boat",
+    "category": "boat",
+    "source": "import/ChatGPT Image 2 Oct 2026, 13_36_59.png",
+    "crop": [
+      975,
+      0,
+      1260,
+      380
+    ],
+    "reference": "references/6-Slot Boat.png",
+    "file": "6-Slot Boat.glb",
+    "method": "meshy"
+  },
+  {
+    "name": "7-Slot Boat",
+    "category": "boat",
+    "source": "import/ChatGPT Image 2 Oct 2026, 13_36_59.png",
+    "crop": [
+      135,
+      460,
+      415,
+      895
+    ],
+    "reference": "references/7-Slot Boat.png",
+    "file": "7-Slot Boat.glb",
+    "method": "meshy"
+  },
+  {
+    "name": "8-Slot Boat",
+    "category": "boat",
+    "source": "import/ChatGPT Image 2 Oct 2026, 13_36_59.png",
+    "crop": [
+      465,
+      458,
+      730,
+      895
+    ],
+    "reference": "references/8-Slot Boat.png",
+    "file": "8-Slot Boat.glb",
+    "method": "meshy"
+  },
+  {
+    "name": "Private Boat",
+    "category": "boat",
+    "source": "import/ChatGPT Image 2 Oct 2026, 13_36_59.png",
+    "crop": [
+      800,
+      550,
+      1045,
+      884
+    ],
+    "reference": "references/Private Boat.png",
+    "file": "Private Boat.glb",
+    "method": "meshy"
+  },
+  {
+    "name": "Trader Depot",
+    "category": "depot",
+    "source": "import/ChatGPT Image 2 Oct 2026, 13_36_59.png",
+    "crop": [
+      1100,
+      480,
+      1480,
+      895
+    ],
+    "reference": "references/Trader Depot.png",
+    "file": "Trader Depot.glb",
+    "method": "meshy"
+  },
+  {
+    "name": "Craftsman Command Tile",
+    "category": "command",
+    "source": "import/ChatGPT Image 2 Oct 2026, 13_38_12.png",
+    "crop": [
+      41,
+      29,
+      390,
+      481
+    ],
+    "reference": "references/Craftsman Command Tile.png",
+    "file": "Craftsman Command Tile.glb",
+    "method": "local-textured-tile"
+  },
+  {
+    "name": "Trader Command Tile",
+    "category": "command",
+    "source": "import/ChatGPT Image 2 Oct 2026, 13_38_12.png",
+    "crop": [
+      414,
+      29,
+      759,
+      481
+    ],
+    "reference": "references/Trader Command Tile.png",
+    "file": "Trader Command Tile.glb",
+    "method": "local-textured-tile"
+  },
+  {
+    "name": "Captain Command Tile",
+    "category": "command",
+    "source": "import/ChatGPT Image 2 Oct 2026, 13_38_12.png",
+    "crop": [
+      782,
+      29,
+      1129,
+      481
+    ],
+    "reference": "references/Captain Command Tile.png",
+    "file": "Captain Command Tile.glb",
+    "method": "local-textured-tile"
+  },
+  {
+    "name": "Adventurer Command Tile",
+    "category": "command",
+    "source": "import/ChatGPT Image 2 Oct 2026, 13_38_12.png",
+    "crop": [
+      1154,
+      29,
+      1500,
+      481
+    ],
+    "reference": "references/Adventurer Command Tile.png",
+    "file": "Adventurer Command Tile.glb",
+    "method": "local-textured-tile"
+  },
+  {
+    "name": "Planter Command Tile",
+    "category": "command",
+    "source": "import/ChatGPT Image 2 Oct 2026, 13_38_12.png",
+    "crop": [
+      221,
+      514,
+      577,
+      971
+    ],
+    "reference": "references/Planter Command Tile.png",
+    "file": "Planter Command Tile.glb",
+    "method": "local-textured-tile"
+  },
+  {
+    "name": "Recruiter Command Tile",
+    "category": "command",
+    "source": "import/ChatGPT Image 2 Oct 2026, 13_38_12.png",
+    "crop": [
+      599,
+      514,
+      945,
+      971
+    ],
+    "reference": "references/Recruiter Command Tile.png",
+    "file": "Recruiter Command Tile.glb",
+    "method": "local-textured-tile"
+  },
+  {
+    "name": "Builder Command Tile",
+    "category": "command",
+    "source": "import/ChatGPT Image 2 Oct 2026, 13_38_12.png",
+    "crop": [
+      968,
+      514,
+      1320,
+      971
+    ],
+    "reference": "references/Builder Command Tile.png",
+    "file": "Builder Command Tile.glb",
+    "method": "local-textured-tile"
+  }
+]

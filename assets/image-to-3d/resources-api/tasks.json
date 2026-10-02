@@ -1,0 +1,214 @@
+{
+  "settings": {
+    "ai_model": "meshy-6-lite",
+    "should_texture": true,
+    "enable_pbr": true,
+    "texture_resolution": "2k",
+    "should_remesh": false,
+    "target_formats": [
+      "glb"
+    ]
+  },
+  "tasks": {
+    "City Hall": {
+      "status": "SUCCEEDED",
+      "submittedAt": "2026-10-02T03:49:25.989Z",
+      "id": "01a0fabb-2f03-73ab-b9da-90d6fece937f",
+      "progress": 100,
+      "bytes": 15519496,
+      "downloaded": true,
+      "completedAt": "2026-10-02T03:51:19.116Z"
+    },
+    "Customs House": {
+      "status": "SUCCEEDED",
+      "submittedAt": "2026-10-02T03:49:27.386Z",
+      "id": "01a0fabb-334b-7277-ac8b-999fe91bd490",
+      "progress": 100,
+      "bytes": 11137696,
+      "downloaded": true,
+      "completedAt": "2026-10-02T03:50:59.935Z"
+    },
+    "Fire Station": {
+      "status": "SUCCEEDED",
+      "submittedAt": "2026-10-02T03:49:28.461Z",
+      "id": "01a0fabb-3785-775a-a429-553301874708",
+      "progress": 100,
+      "bytes": 14482996,
+      "downloaded": true,
+      "completedAt": "2026-10-02T03:51:20.581Z"
+    },
+    "Fortress": {
+      "status": "SUCCEEDED",
+      "submittedAt": "2026-10-02T03:49:29.411Z",
+      "id": "01a0fabb-3b32-761c-8f16-3102add809aa",
+      "progress": 100,
+      "bytes": 14247196,
+      "downloaded": true,
+      "completedAt": "2026-10-02T03:51:39.620Z"
+    },
+    "Residence": {
+      "status": "SUCCEEDED",
+      "submittedAt": "2026-10-02T03:49:30.354Z",
+      "id": "01a0fabb-3ee8-719a-812e-6fadb9a7493a",
+      "progress": 100,
+      "bytes": 15292888,
+      "downloaded": true,
+      "completedAt": "2026-10-02T03:51:22.581Z"
+    },
+    "Worker 01": {
+      "status": "SUCCEEDED",
+      "submittedAt": "2026-10-02T03:49:31.438Z",
+      "id": "01a0fabb-4321-7387-9ada-8dee58f9934d",
+      "progress": 100,
+      "bytes": 8376664,
+      "downloaded": true,
+      "completedAt": "2026-10-02T03:51:01.640Z"
+    },
+    "Worker 02": {
+      "status": "SUCCEEDED",
+      "submittedAt": "2026-10-02T03:51:55.589Z",
+      "id": "01a0fabd-7783-70c1-8b0b-732cae54add6",
+      "progress": 100,
+      "bytes": 8004256,
+      "downloaded": true,
+      "completedAt": "2026-10-02T03:52:37.617Z"
+    },
+    "Worker 03": {
+      "status": "SUCCEEDED",
+      "submittedAt": "2026-10-02T03:51:56.967Z",
+      "id": "01a0fabd-7ba5-714a-a0e5-49ef3aaaec00",
+      "progress": 100,
+      "bytes": 7851904,
+      "downloaded": true,
+      "completedAt": "2026-10-02T03:52:56.328Z"
+    },
+    "Worker 04": {
+      "status": "SUCCEEDED",
+      "submittedAt": "2026-10-02T03:51:58.014Z",
+      "id": "01a0fabd-7fb0-7690-95ed-2a33337651b4",
+      "progress": 100,
+      "bytes": 8342876,
+      "downloaded": true,
+      "completedAt": "2026-10-02T03:53:16.297Z"
+    },
+    "Worker 05": {
+      "status": "SUCCEEDED",
+      "submittedAt": "2026-10-02T03:51:59.064Z",
+      "id": "01a0fabd-83c7-77ad-ada7-dc1310745fbb",
+      "progress": 100,
+      "bytes": 8080148,
+      "downloaded": true,
+      "completedAt": "2026-10-02T03:52:59.081Z"
+    },
+    "Corn Crate": {
+      "status": "SUCCEEDED",
+      "submittedAt": "2026-10-02T03:52:00.108Z",
+      "id": "01a0fabd-87dd-7077-82c7-87ebe89bc4f8",
+      "progress": 100,
+      "bytes": 27078864,
+      "downloaded": true,
+      "completedAt": "2026-10-02T03:53:54.560Z"
+    },
+    "Sugar Crate": {
+      "status": "SUCCEEDED",
+      "submittedAt": "2026-10-02T03:52:00.922Z",
+      "id": "01a0fabd-8b07-778a-9856-74a569f9a523",
+      "progress": 100,
+      "bytes": 12771204,
+      "downloaded": true,
+      "completedAt": "2026-10-02T03:53:35.701Z"
+    },
+    "Banana Crate": {
+      "status": "SUCCEEDED",
+      "submittedAt": "2026-10-02T03:54:10.292Z",
+      "id": "01a0fabf-85d5-73cf-9090-523c5e004e0c",
+      "progress": 100,
+      "bytes": 15429544,
+      "downloaded": true,
+      "completedAt": "2026-10-02T03:56:38.737Z"
+    },
+    "Coffee Crate": {
+      "status": "SUCCEEDED",
+      "submittedAt": "2026-10-02T03:54:11.476Z",
+      "id": "01a0fabf-8905-70b5-8b21-53b1bd063bcc",
+      "progress": 100,
+      "bytes": 21504912,
+      "downloaded": true,
+      "completedAt": "2026-10-02T03:56:57.433Z"
+    },
+    "Tobacco Crate": {
+      "status": "SUCCEEDED",
+      "submittedAt": "2026-10-02T03:54:12.318Z",
+      "id": "01a0fabf-8c5b-742c-870a-008b21e36eb2",
+      "progress": 100,
+      "bytes": 14872864,
+      "downloaded": true,
+      "completedAt": "2026-10-02T03:55:26.790Z"
+    },
+    "4-Slot Boat": {
+      "status": "SUCCEEDED",
+      "submittedAt": "2026-10-02T03:54:13.343Z",
+      "id": "01a0fabf-9056-7082-a3a2-fa2ae3484eb1",
+      "progress": 100,
+      "bytes": 9060812,
+      "downloaded": true,
+      "completedAt": "2026-10-02T03:56:03.545Z"
+    },
+    "5-Slot Boat": {
+      "status": "SUCCEEDED",
+      "submittedAt": "2026-10-02T03:54:13.960Z",
+      "id": "01a0fabf-92bc-7554-8d39-f819fddd42e2",
+      "progress": 100,
+      "bytes": 11371844,
+      "downloaded": true,
+      "completedAt": "2026-10-02T03:55:45.133Z"
+    },
+    "6-Slot Boat": {
+      "status": "SUCCEEDED",
+      "submittedAt": "2026-10-02T03:54:14.857Z",
+      "id": "01a0fabf-963e-75b8-a59d-73b716928804",
+      "progress": 100,
+      "bytes": 10553220,
+      "downloaded": true,
+      "completedAt": "2026-10-02T03:56:21.416Z"
+    },
+    "7-Slot Boat": {
+      "status": "SUCCEEDED",
+      "submittedAt": "2026-10-02T03:57:13.134Z",
+      "id": "01a0fac2-4fcf-7699-834d-88a96d577d75",
+      "progress": 100,
+      "bytes": 9954672,
+      "downloaded": true,
+      "completedAt": "2026-10-02T03:58:09.629Z"
+    },
+    "8-Slot Boat": {
+      "status": "SUCCEEDED",
+      "submittedAt": "2026-10-02T03:57:14.392Z",
+      "id": "01a0fac2-5388-701f-9c17-158838b3100c",
+      "progress": 100,
+      "bytes": 9503808,
+      "downloaded": true,
+      "completedAt": "2026-10-02T03:57:52.290Z"
+    },
+    "Private Boat": {
+      "status": "SUCCEEDED",
+      "submittedAt": "2026-10-02T03:57:15.307Z",
+      "id": "01a0fac2-571d-734e-a49c-568501c3abf5",
+      "progress": 100,
+      "bytes": 9724884,
+      "downloaded": true,
+      "completedAt": "2026-10-02T03:58:10.965Z"
+    },
+    "Trader Depot": {
+      "status": "SUCCEEDED",
+      "submittedAt": "2026-10-02T03:57:16.100Z",
+      "id": "01a0fac2-5a36-710f-9dbf-94ed14369e0d",
+      "progress": 100,
+      "bytes": 17111176,
+      "downloaded": true,
+      "completedAt": "2026-10-02T03:58:29.553Z"
+    }
+  },
+  "startBalance": 785,
+  "lastBalance": 455
+}

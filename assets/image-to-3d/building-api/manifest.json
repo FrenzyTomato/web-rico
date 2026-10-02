@@ -1,0 +1,218 @@
+[
+  {
+    "name": "Small Market",
+    "source": "import/ChatGPT Image 2 Oct 2026, 12_58_22.png",
+    "crop": [
+      0,
+      0,
+      721,
+      634
+    ],
+    "reference": "references/Small Market.png",
+    "file": "Small Market.glb"
+  },
+  {
+    "name": "Builder's Yard",
+    "source": "import/ChatGPT Image 2 Oct 2026, 12_58_22.png",
+    "crop": [
+      732,
+      0,
+      1453,
+      634
+    ],
+    "reference": "references/Builder's Yard.png",
+    "file": "Builder's Yard.glb"
+  },
+  {
+    "name": "Hacienda",
+    "source": "import/ChatGPT Image 2 Oct 2026, 12_58_22.png",
+    "crop": [
+      1453,
+      0,
+      2172,
+      634
+    ],
+    "reference": "references/Hacienda.png",
+    "file": "Hacienda.glb"
+  },
+  {
+    "name": "Small Warehouse",
+    "source": "import/ChatGPT Image 2 Oct 2026, 12_59_06.png",
+    "crop": [
+      0,
+      0,
+      732,
+      599
+    ],
+    "reference": "references/Small Warehouse.png",
+    "file": "Small Warehouse.glb"
+  },
+  {
+    "name": "Hospital",
+    "source": "import/ChatGPT Image 2 Oct 2026, 12_59_06.png",
+    "crop": [
+      737,
+      0,
+      1419,
+      599
+    ],
+    "reference": "references/Hospital.png",
+    "file": "Hospital.glb"
+  },
+  {
+    "name": "Large Market",
+    "source": "import/ChatGPT Image 2 Oct 2026, 12_59_06.png",
+    "crop": [
+      1426,
+      0,
+      2172,
+      599
+    ],
+    "reference": "references/Large Market.png",
+    "file": "Large Market.glb"
+  },
+  {
+    "name": "Large Warehouse",
+    "source": "import/ChatGPT Image 2 Oct 2026, 12_59_15.png",
+    "crop": [
+      0,
+      0,
+      732,
+      592
+    ],
+    "reference": "references/Large Warehouse.png",
+    "file": "Large Warehouse.glb"
+  },
+  {
+    "name": "Factory",
+    "source": "import/ChatGPT Image 2 Oct 2026, 12_59_15.png",
+    "crop": [
+      737,
+      0,
+      1421,
+      597
+    ],
+    "reference": "references/Factory.png",
+    "file": "Factory.glb"
+  },
+  {
+    "name": "Harbor",
+    "source": "import/ChatGPT Image 2 Oct 2026, 12_59_15.png",
+    "crop": [
+      1426,
+      0,
+      2172,
+      607
+    ],
+    "reference": "references/Harbor.png",
+    "file": "Harbor.glb"
+  },
+  {
+    "name": "Office",
+    "source": "import/ChatGPT Image 2 Oct 2026, 12_59_22.png",
+    "crop": [
+      0,
+      0,
+      721,
+      589
+    ],
+    "reference": "references/Office.png",
+    "file": "Office.glb"
+  },
+  {
+    "name": "School",
+    "source": "import/ChatGPT Image 2 Oct 2026, 12_59_22.png",
+    "crop": [
+      730,
+      0,
+      1400,
+      593
+    ],
+    "reference": "references/School.png",
+    "file": "School.glb"
+  },
+  {
+    "name": "Wharf",
+    "source": "import/ChatGPT Image 2 Oct 2026, 12_59_22.png",
+    "crop": [
+      1411,
+      0,
+      2172,
+      612
+    ],
+    "reference": "references/Wharf.png",
+    "file": "Wharf.glb"
+  },
+  {
+    "name": "Small Fruit Depot",
+    "source": "import/ChatGPT Image 2 Oct 2026, 12_59_28.png",
+    "crop": [
+      0,
+      0,
+      640,
+      578
+    ],
+    "reference": "references/Small Fruit Depot.png",
+    "file": "Small Fruit Depot.glb"
+  },
+  {
+    "name": "Large Fruit Depot",
+    "source": "import/ChatGPT Image 2 Oct 2026, 12_59_28.png",
+    "crop": [
+      647,
+      0,
+      1415,
+      591
+    ],
+    "reference": "references/Large Fruit Depot.png",
+    "file": "Large Fruit Depot.glb"
+  },
+  {
+    "name": "Large Tobacco Storage",
+    "source": "import/ChatGPT Image 2 Oct 2026, 12_59_28.png",
+    "crop": [
+      1418,
+      0,
+      2172,
+      591
+    ],
+    "reference": "references/Large Tobacco Storage.png",
+    "file": "Large Tobacco Storage.glb"
+  },
+  {
+    "name": "Small Sugar Mill",
+    "source": "import/ChatGPT Image 2 Oct 2026, 12_59_38.png",
+    "crop": [
+      0,
+      0,
+      640,
+      585
+    ],
+    "reference": "references/Small Sugar Mill.png",
+    "file": "Small Sugar Mill.glb"
+  },
+  {
+    "name": "Large Sugar Mill",
+    "source": "import/ChatGPT Image 2 Oct 2026, 12_59_38.png",
+    "crop": [
+      647,
+      0,
+      1425,
+      597
+    ],
+    "reference": "references/Large Sugar Mill.png",
+    "file": "Large Sugar Mill.glb"
+  },
+  {
+    "name": "Large Coffee Roaster",
+    "source": "import/ChatGPT Image 2 Oct 2026, 12_59_38.png",
+    "crop": [
+      1442,
+      0,
+      2172,
+      593
+    ],
+    "reference": "references/Large Coffee Roaster.png",
+    "file": "Large Coffee Roaster.glb"
+  }
+]

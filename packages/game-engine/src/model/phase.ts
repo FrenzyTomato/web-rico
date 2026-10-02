@@ -16,7 +16,7 @@ export type DecisionPhase =
   | (PlantingTurn & { readonly kind: 'planter-choice' })
   | (PlantingTurn & { readonly kind: 'planter-worker' })
   | (RoleTurn & { readonly kind: 'recruiter-advantage' })
-  | (RoleTurn & { readonly kind: 'recruiter-placement' })
+  | (RoleTurn & { readonly kind: 'recruiter-placement'; readonly confirmedPlayerIds?: readonly PlayerId[] })
   | (RoleTurn & { readonly kind: 'builder-choice' })
   | (ProductionTurn & { readonly kind: 'craftsman-production' })
   | (ProductionTurn & { readonly kind: 'craftsman-bonus' })

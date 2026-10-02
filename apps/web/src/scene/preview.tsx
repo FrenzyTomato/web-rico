@@ -1,3 +1,6 @@
+import { PHASE } from '../i18n/terms.js';
+import { t, useLanguage, LanguageToggle } from '../i18n/language.js';
+import '../fonts/source-han-sans/font.css';
 // Development-only visual fixture page (not in the production build): /scene-preview.html?game=5p&at=120
 // Renders the scene for any revision of a frozen PR-036 history, so empty/full/exhausted states can be checked.
 import '@fontsource/cormorant-garamond/600.css';
@@ -12,6 +15,8 @@ import * as three from '../../../../packages/game-engine/test/scenarios/fixtures
 import * as four from '../../../../packages/game-engine/test/scenarios/fixtures/full-game-4p.js';
 import * as five from '../../../../packages/game-engine/test/scenarios/fixtures/full-game-5p.js';
 import { TableScene } from './TableScene.js';
+import { ShellPreview } from './ShellPreview.js';
+import { InteractionPreview } from './InteractionPreview.js';
 
 const params = new URLSearchParams(location.search);
 const fixture = { '3p': three, '4p': four, '5p': five }[params.get('game') ?? '3p']!;
@@ -30,6 +35,7 @@ const view: PlayerView = {
 const names = Object.fromEntries(state.seatOrder.map(id => [id, id]));
 /** `?bench=1`: continuous rendering for 3 s, p95 frame time in window.__bench (docs/PERFORMANCE.md). */
 function Bench() {
+  useLanguage();
   useEffect(() => {
     const deltas: number[] = [];
     let last = performance.now(), stop = false;
@@ -51,6 +57,7 @@ function Bench() {
 
 /** `?cycles=N`: mount and unmount the scene N times, sampling resources after each exit (window.__cycles). */
 function Cycles({ n }: { n: number }) {
+  useLanguage();
   const [shown, setShown] = useState(true);
   const [done, setDone] = useState(0);
   useEffect(() => {
@@ -64,13 +71,20 @@ function Cycles({ n }: { n: number }) {
     }, 400);
     return () => clearTimeout(t);
   }, [shown, done, n]);
-  return shown && done < n ? <TableScene view={view} names={names} /> : <p>cycles {done}/{n}</p>;
+  return shown && done < n ? <TableScene view={view} names={names} /> : <p>{t('循环 {0}/{1}', [done, n])}</p>;
 }
 
 const cycles = Number(params.get('cycles') ?? 0);
-createRoot(document.getElementById('root')!).render(
-  <div style={{ height: '100vh' }}>
-    <p>{params.get('game') ?? '3p'} · 版本 {state.revision} · {state.phase.kind}</p>
+const root = createRoot(document.getElementById('root')!);
+if (import.meta.hot) import.meta.hot.dispose(() => root.unmount());
+function Preview() {
+  useLanguage();
+  return (
+  params.has('shell') ? <ShellPreview initial={state} /> : params.has('interact') ? <InteractionPreview initial={state} /> : <div className="scene-fixture" style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <style>{'.scene-fixture > .scene { flex: 1; min-height: 0; height: auto; }'}</style>
+    <p><LanguageToggle />{t('预览：{0} 人 · 版本 {1}', [state.players.length, state.revision])} · {PHASE[state.phase.kind]}</p>
     {params.get('bench') ? <Bench /> : cycles ? <Cycles n={cycles} /> : <TableScene view={view} names={names} />}
-  </div>,
-);
+  </div>
+  );
+}
+root.render(<Preview />);

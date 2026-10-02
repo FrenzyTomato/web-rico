@@ -7,6 +7,7 @@ import { RoomQueues } from '../src/commands/queue.js';
 import { submitCommand } from '../src/commands/submit.js';
 import { InMemoryRoomStore } from '../src/rooms/inMemoryStore.js';
 import { Lobby } from '../src/rooms/lobby.js';
+import { broadcastFor } from '../src/rooms/broadcast.js';
 import type { Room } from '../src/rooms/store.js';
 
 async function started(store = new InMemoryRoomStore()) {
@@ -32,6 +33,37 @@ const request = (commandId: string, expectedRevision: number, action: PlayerActi
 const choose = (roleCardId: string): PlayerAction => ({ kind: 'choose-role', roleCardId: roleCardId as never });
 
 describe('TS-NET: command submission', () => {
+  it('accepts simultaneous confirmations in any order and deduplicates retries', async () => {
+    const { seats, room, submit } = await started();
+    const recruiter = (await room()).room.game!.state.roleCards.find(c => c.kind === 'recruiter')!;
+    await submit(seats[0]!, request('choose-recruiter', 0, choose(recruiter.instanceId)));
+    await submit(seats[0]!, request('extra-worker', 1, { kind: 'recruit-worker', accept: true }));
+    const state = (await room()).room.game!.state;
+    for (const seat of seats) expect(broadcastFor(state, [], seat).legalActions[0]).toMatchObject({ phase: 'recruiter-placement', actorId: seat });
+    const requests = seats.map(actor => {
+      const player = state.players.find(p => p.playerId === actor)!;
+      return request(`allocate-${actor}`, state.revision, { kind: 'allocate-workers', allocation: {
+        countryside: player.countryside.map(t => ({ tileId: t.instanceId, occupied: true })),
+        buildings: [], idleCount: player.idleWorkerCount - player.countryside.length,
+      } });
+    });
+    // A request from before distribution must not be rebased.
+    expect(await submit(seats[1]!, { ...requests[1]!, commandId: 'too-old', expectedRevision: 1 })).toMatchObject({ code: 'STALE_REVISION' });
+    const first = await submit(seats[2]!, requests[2]!);
+    expect(first).toHaveProperty('acceptedRevision');
+    const partial = (await room()).room.game!.state;
+    expect(partial.phase).toMatchObject({ kind: 'recruiter-placement', confirmedPlayerIds: [seats[2]] });
+    expect(partial.supply.workRegisterCount).toBe(0);
+    expect(broadcastFor(partial, [], seats[2]!).legalActions).toEqual([]);
+    expect(await submit(seats[2]!, { ...requests[2]!, commandId: 'twice', expectedRevision: partial.revision })).toMatchObject({ code: 'ILLEGAL_COMMAND' });
+    const results = await Promise.all([submit(seats[1]!, requests[1]!), submit(seats[0]!, requests[0]!)]);
+    expect(results.every(r => 'acceptedRevision' in r)).toBe(true);
+    const done = (await room()).room.game!.state;
+    expect(done.phase.kind).not.toBe('recruiter-placement');
+    expect(done.supply.workRegisterCount).toBe(3);
+    expect(await submit(seats[2]!, requests[2]!)).toEqual(first);
+    expect(await submit(seats[1]!, { ...requests[1]!, commandId: 'after-phase' })).toMatchObject({ code: 'STALE_REVISION' });
+  });
   it('applies a valid command once and records the result with its events', async () => {
     const { seats, cards, room, submit } = await started();
     const storeRevision = (await room()).revision;

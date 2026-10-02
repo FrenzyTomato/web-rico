@@ -38,7 +38,7 @@ describe('lobby', () => {
     expect(socket.sent[0]).toEqual({ event: 'room', payload: { protocolVersion: '1', action: { kind: 'create-room', displayName: 'Ana' } } });
     socket.push('room-state', seats(false));
     expect(screen.getByText('ABC123')).toBeTruthy();
-    expect(screen.getByRole('link').getAttribute('href')).toBe(inviteLink('ABC123'));
+    expect(screen.getByRole('link', { name: inviteLink('ABC123') }).getAttribute('href')).toBe(inviteLink('ABC123'));
     expect(inviteLink('ABC123')).toBe(`${location.origin}/?room=ABC123`);
     // Duplicate names are shown as separate seats.
     expect(screen.getAllByRole('listitem').map(li => li.textContent)).toEqual(['Ana（房主）（你）', 'Ana']);
@@ -151,4 +151,57 @@ describe('lobby', () => {
     expect(localStorage.getItem('vibe-rico.seat')).toBeNull();
     expect(screen.getByText('创建房间')).toBeTruthy();
   });
+  it('explicitly opens the lobby without resuming or deleting a saved game, including after refresh', async () => {
+    localStorage.setItem('vibe-rico.seat', JSON.stringify(granted));
+    history.replaceState(null, '', '/?lobby=1');
+    const socket = new FakeSocket({});
+    const page = view(socket);
+    await flush();
+    expect(socket.sent).toEqual([]);
+    expect(screen.getByText('创建房间')).toBeTruthy();
+    expect(screen.getByRole('link', { name: '继续游戏' }).getAttribute('href')).toBe(inviteLink(granted.roomCode));
+    socket.push('room-state', seats(true, 3));
+    socket.push('connect');
+    await flush();
+    expect(socket.sent).toEqual([]);
+    expect(screen.getByText('创建房间')).toBeTruthy();
+    expect(JSON.parse(localStorage.getItem('vibe-rico.seat')!)).toEqual(granted);
+    page.unmount();
+    view(socket);
+    await flush();
+    expect(screen.getByRole('link', { name: '继续游戏' })).toBeTruthy();
+    expect(socket.sent).toEqual([]);
+  });
+
+  it('resumes the previous game through the explicit resume link', async () => {
+    localStorage.setItem('vibe-rico.seat', JSON.stringify(granted));
+    history.replaceState(null, '', '/?lobby=1');
+    const socket = new FakeSocket({ resume: { ok: true, value: { playerId: 'p1', revision: 12 } } });
+    const page = view(socket);
+    const href = screen.getByRole('link', { name: '继续游戏' }).getAttribute('href')!;
+    page.unmount();
+    history.replaceState(null, '', href);
+    const onSession = vi.fn();
+    render(<Lobby socket={socket as unknown as LobbySocket} onSession={onSession} game={() => <p>resumed game</p>} />);
+    await flush();
+    socket.push('room-state', seats(true, 3));
+    expect(screen.getByText('resumed game')).toBeTruthy();
+    expect(onSession).toHaveBeenCalledTimes(1);
+    expect(socket.sent[0]?.event).toBe('resume');
+  });
+
+  it('returns to normal reconnect behaviour after creating a room from the explicit lobby', async () => {
+    history.replaceState(null, '', '/?lobby=1');
+    const socket = new FakeSocket({ 'create-room': { ok: true, value: granted }, resume: { ok: true, value: { playerId: 'p1', revision: null } } });
+    view(socket);
+    fireEvent.change(screen.getByLabelText('昵称'), { target: { value: 'Ana' } });
+    fireEvent.click(screen.getByText('创建房间'));
+    await flush();
+    expect(location.search).toBe('?room=ABC123');
+    expect(screen.getByRole('link', { name: '返回大厅' }).getAttribute('href')).toBe('/?lobby=1');
+    socket.push('connect');
+    await flush();
+    expect(socket.sent.filter(s => s.event === 'resume')).toHaveLength(1);
+  });
+
 });

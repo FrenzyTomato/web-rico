@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest';
-import { applyCommand, assertGameState, createId, getLegalCommands } from '../../src/index.js';
+import { applyCommand, assertGameState, createId, deserializeGame, getLegalCommands, serializeGame } from '../../src/index.js';
 import type { GameCommand, WorkerAllocation } from '../../src/index.js';
 import { fixture } from '../helpers/state.js';
 function setup(){
@@ -10,12 +10,37 @@ function setup(){
  s.phase={kind:'recruiter-placement',actorId:s.seatOrder[0]!,roleChooserId:s.seatOrder[0]!,actorIndex:0};return s;
 }
 function allocation(s=setup()):WorkerAllocation{return {countryside:[{tileId:s.players[0]!.countryside[0]!.instanceId,occupied:true}],buildings:[{buildingId:s.players[0]!.buildings[0]!.instanceId,occupiedSlots:1}],idleCount:1};}
+it.each([3,4,5])('simultaneous recruitment: %i players confirm in reverse order, with recovery between confirmations', n => {
+ const initial=fixture(n);
+ const chosen=applyCommand(initial,{kind:'choose-role',actorId:initial.governorPlayerId,roleCardId:initial.roleCards[1]!.instanceId});
+ if(!chosen.ok)throw Error(chosen.error.message);
+ const distributed=applyCommand(chosen.state,{kind:'recruit-worker',actorId:initial.governorPlayerId,accept:true});
+ if(!distributed.ok)throw Error(distributed.error.message);
+ let state=distributed.state;
+ const order=[...state.seatOrder].reverse();
+ for(const [i,actorId] of order.entries()) {
+  expect(state.seatOrder.filter(id=>getLegalCommands(state,id).length)).toHaveLength(n-i);
+  const p=state.players.find(p=>p.playerId===actorId)!;
+  const command:GameCommand={kind:'allocate-workers',actorId,allocation:{countryside:p.countryside.map(t=>({tileId:t.instanceId,occupied:true})),buildings:[],idleCount:p.idleWorkerCount-1}};
+  const result=applyCommand(state,command); if(!result.ok)throw Error(result.error.message);
+  state=deserializeGame(serializeGame(result.state)); assertGameState(state);
+  if(i<n-1) {
+   expect(state.phase).toMatchObject({kind:'recruiter-placement',confirmedPlayerIds:order.slice(0,i+1)});
+   expect(state.supply.workRegisterCount).toBe(0);
+   expect(getLegalCommands(state,actorId)).toEqual([]);
+   expect(applyCommand(state,command)).toMatchObject({ok:false,error:{code:'WRONG_ACTOR'}});
+   expect(()=>assertGameState({...state,phase:{...state.phase,confirmedPlayerIds:[actorId,actorId]}} as never)).toThrow();
+  }
+ }
+ expect(state.phase.kind).not.toBe('recruiter-placement');
+ expect(state.supply.workRegisterCount).toBe(n);
+});
 it('REC-02 fills two slots, leaves one idle and advances clockwise with exact events',()=>{
  const s=setup(),a=allocation(s),before=JSON.stringify(s);
  expect(getLegalCommands(s,s.seatOrder[0]!)).toEqual([{phase:'recruiter-placement',actorId:s.seatOrder[0],totalWorkers:3,slots:[{kind:'countryside',instanceId:a.countryside[0]!.tileId,capacity:1},{kind:'building',instanceId:a.buildings[0]!.buildingId,capacity:1}],idleOnlyWhenAllSlotsFilled:true}]);
  const r=applyCommand(s,{kind:'allocate-workers',actorId:s.seatOrder[0]!,allocation:a});if(!r.ok)throw Error(r.error.message);
  expect(r.state.players[0]!.idleWorkerCount).toBe(1);expect(r.state.players[0]!.buildings[0]!.occupiedSlots).toBe(1);
- expect(r.state.phase).toEqual({kind:'recruiter-placement',actorId:s.seatOrder[1],roleChooserId:s.seatOrder[0],actorIndex:1});
+ expect(r.state.phase).toEqual({kind:'recruiter-placement',actorId:s.seatOrder[1],roleChooserId:s.seatOrder[0],actorIndex:1,confirmedPlayerIds:[s.seatOrder[0]]});
  expect(r.events).toEqual([{kind:'workers-allocated',revision:2,index:0,playerId:s.seatOrder[0],allocation:a},{kind:'phase-changed',revision:2,index:1,from:'recruiter-placement',to:'recruiter-placement'}]);
  expect(JSON.stringify(s)).toBe(before);assertGameState(r.state);
 });
@@ -69,7 +94,7 @@ it.each([3,4,5])('completes a full Recruiter phase and round for %i players',n=>
 it('permits moving existing workers and rejects wrong actors or revision overflow',()=>{
  const s=setup();s.players[0]!.idleWorkerCount=0;s.players[0]!.countryside[0]!.occupied=true;s.supply.workerCount+=2;
  const a=allocation(s);const moved={...a,countryside:a.countryside.map(t=>({...t,occupied:false})),idleCount:0};
- expect(applyCommand(s,{kind:'allocate-workers',actorId:s.seatOrder[1]!,allocation:moved})).toMatchObject({ok:false,error:{code:'WRONG_ACTOR'}});
+ expect(applyCommand(s,{kind:'allocate-workers',actorId:s.seatOrder[1]!,allocation:moved})).toMatchObject({ok:false,error:{code:'ILLEGAL_CHOICE'}});
  const r=applyCommand(s,{kind:'allocate-workers',actorId:s.seatOrder[0]!,allocation:moved});if(!r.ok)throw Error(r.error.message);
  expect(r.state.players[0]!.countryside[0]!.occupied).toBe(false);expect(r.state.players[0]!.buildings[0]!.occupiedSlots).toBe(1);
  s.revision=Number.MAX_SAFE_INTEGER;expect(getLegalCommands(s,s.seatOrder[0]!)).toEqual([]);

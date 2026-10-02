@@ -11,3 +11,12 @@
 references
 docs
 *.log
+
+# Authoring inputs and retained model backups are not runtime dependencies.
+assets
+import
+apps/web/public/art/blender-market
+apps/web/public/art/meshy-buildings
+apps/web/public/art/meshy-coffee
+apps/web/public/art/meshy-estates
+apps/web/public/art/meshy-resources

@@ -1,0 +1,214 @@
+[
+  {
+    "name": "Builder's Yard",
+    "source": "apps/web/public/art/meshy-buildings/Builder's Yard.glb"
+  },
+  {
+    "name": "Factory",
+    "source": "apps/web/public/art/meshy-buildings/Factory.glb"
+  },
+  {
+    "name": "Hacienda",
+    "source": "apps/web/public/art/meshy-buildings/Hacienda.glb"
+  },
+  {
+    "name": "Harbor",
+    "source": "apps/web/public/art/meshy-buildings/Harbor.glb"
+  },
+  {
+    "name": "Hospital",
+    "source": "apps/web/public/art/meshy-buildings/Hospital.glb"
+  },
+  {
+    "name": "Large Coffee Roaster",
+    "source": "apps/web/public/art/meshy-buildings/Large Coffee Roaster.glb"
+  },
+  {
+    "name": "Large Fruit Depot",
+    "source": "apps/web/public/art/meshy-buildings/Large Fruit Depot.glb"
+  },
+  {
+    "name": "Large Market",
+    "source": "apps/web/public/art/meshy-buildings/Large Market.glb"
+  },
+  {
+    "name": "Large Sugar Mill",
+    "source": "apps/web/public/art/meshy-buildings/Large Sugar Mill.glb"
+  },
+  {
+    "name": "Large Tobacco Storage",
+    "source": "apps/web/public/art/meshy-buildings/Large Tobacco Storage.glb"
+  },
+  {
+    "name": "Large Warehouse",
+    "source": "apps/web/public/art/meshy-buildings/Large Warehouse.glb"
+  },
+  {
+    "name": "Office",
+    "source": "apps/web/public/art/meshy-buildings/Office.glb"
+  },
+  {
+    "name": "School",
+    "source": "apps/web/public/art/meshy-buildings/School.glb"
+  },
+  {
+    "name": "Small Fruit Depot",
+    "source": "apps/web/public/art/meshy-buildings/Small Fruit Depot.glb"
+  },
+  {
+    "name": "Small Market",
+    "source": "apps/web/public/art/meshy-buildings/Small Market.glb"
+  },
+  {
+    "name": "Small Sugar Mill",
+    "source": "apps/web/public/art/meshy-buildings/Small Sugar Mill.glb"
+  },
+  {
+    "name": "Small Warehouse",
+    "source": "apps/web/public/art/meshy-buildings/Small Warehouse.glb"
+  },
+  {
+    "name": "Wharf",
+    "source": "apps/web/public/art/meshy-buildings/Wharf.glb"
+  },
+  {
+    "name": "4-Slot Boat",
+    "source": "apps/web/public/art/meshy-resources/4-Slot Boat.glb"
+  },
+  {
+    "name": "5-Slot Boat",
+    "source": "apps/web/public/art/meshy-resources/5-Slot Boat.glb"
+  },
+  {
+    "name": "6-Slot Boat",
+    "source": "apps/web/public/art/meshy-resources/6-Slot Boat.glb"
+  },
+  {
+    "name": "7-Slot Boat",
+    "source": "apps/web/public/art/meshy-resources/7-Slot Boat.glb"
+  },
+  {
+    "name": "8-Slot Boat",
+    "source": "apps/web/public/art/meshy-resources/8-Slot Boat.glb"
+  },
+  {
+    "name": "Adventurer Command Tile",
+    "source": "apps/web/public/art/meshy-resources/Adventurer Command Tile.glb"
+  },
+  {
+    "name": "Banana Crate",
+    "source": "apps/web/public/art/meshy-resources/Banana Crate.glb"
+  },
+  {
+    "name": "Builder Command Tile",
+    "source": "apps/web/public/art/meshy-resources/Builder Command Tile.glb"
+  },
+  {
+    "name": "Captain Command Tile",
+    "source": "apps/web/public/art/meshy-resources/Captain Command Tile.glb"
+  },
+  {
+    "name": "City Hall",
+    "source": "apps/web/public/art/meshy-resources/City Hall.glb"
+  },
+  {
+    "name": "Coffee Crate",
+    "source": "apps/web/public/art/meshy-resources/Coffee Crate.glb"
+  },
+  {
+    "name": "Corn Crate",
+    "source": "apps/web/public/art/meshy-resources/Corn Crate.glb"
+  },
+  {
+    "name": "Craftsman Command Tile",
+    "source": "apps/web/public/art/meshy-resources/Craftsman Command Tile.glb"
+  },
+  {
+    "name": "Customs House",
+    "source": "apps/web/public/art/meshy-resources/Customs House.glb"
+  },
+  {
+    "name": "Fire Station",
+    "source": "apps/web/public/art/meshy-resources/Fire Station.glb"
+  },
+  {
+    "name": "Fortress",
+    "source": "apps/web/public/art/meshy-resources/Fortress.glb"
+  },
+  {
+    "name": "Planter Command Tile",
+    "source": "apps/web/public/art/meshy-resources/Planter Command Tile.glb"
+  },
+  {
+    "name": "Private Boat",
+    "source": "apps/web/public/art/meshy-resources/Private Boat.glb"
+  },
+  {
+    "name": "Recruiter Command Tile",
+    "source": "apps/web/public/art/meshy-resources/Recruiter Command Tile.glb"
+  },
+  {
+    "name": "Residence",
+    "source": "apps/web/public/art/meshy-resources/Residence.glb"
+  },
+  {
+    "name": "Sugar Crate",
+    "source": "apps/web/public/art/meshy-resources/Sugar Crate.glb"
+  },
+  {
+    "name": "Tobacco Crate",
+    "source": "apps/web/public/art/meshy-resources/Tobacco Crate.glb"
+  },
+  {
+    "name": "Trader Command Tile",
+    "source": "apps/web/public/art/meshy-resources/Trader Command Tile.glb"
+  },
+  {
+    "name": "Trader Depot",
+    "source": "apps/web/public/art/meshy-resources/Trader Depot.glb"
+  },
+  {
+    "name": "Worker 01",
+    "source": "apps/web/public/art/meshy-resources/Worker 01.glb"
+  },
+  {
+    "name": "Worker 02",
+    "source": "apps/web/public/art/meshy-resources/Worker 02.glb"
+  },
+  {
+    "name": "Worker 03",
+    "source": "apps/web/public/art/meshy-resources/Worker 03.glb"
+  },
+  {
+    "name": "Worker 04",
+    "source": "apps/web/public/art/meshy-resources/Worker 04.glb"
+  },
+  {
+    "name": "Worker 05",
+    "source": "apps/web/public/art/meshy-resources/Worker 05.glb"
+  },
+  {
+    "name": "Corn Estate",
+    "source": "apps/web/public/art/meshy-estates/corn-cleaned.glb"
+  },
+  {
+    "name": "Banana Estate",
+    "source": "apps/web/public/art/meshy-estates/banana.glb"
+  },
+  {
+    "name": "Sugar Estate",
+    "source": "apps/web/public/art/meshy-estates/sugar.glb"
+  },
+  {
+    "name": "Tobacco Estate",
+    "source": "apps/web/public/art/meshy-estates/tobacco.glb"
+  },
+  {
+    "name": "Quarry",
+    "source": "apps/web/public/art/meshy-estates/quarry.glb"
+  },
+  {
+    "name": "Coffee Estate",
+    "source": "apps/web/public/art/meshy-coffee/original.glb"
+  }
+]

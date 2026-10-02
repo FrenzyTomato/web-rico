@@ -28,7 +28,7 @@ The DOM client stays complete on its own (SceneBoundary fallback). The 3D centre
 
 Goods colours in the scene: corn `#e6c34a`, fruit `#c9553f`, sugar `#f4f1ea`, tobacco `#8a5a36`, coffee `#3b2a20`.
 
-Type: a classical serif for headings (Cormorant Garamond, bundled locally, no font CDN), system serif for Chinese (`"Songti SC", "Noto Serif SC", serif`), sans for dense numbers.
+Type: Cormorant Garamond for Latin headings and self-hosted Source Han Sans CN (思源黑体) for Chinese and dense UI text. The lobby and top bar offer a persistent Chinese/English toggle. Each language uses its own UI text, canvas captions, mat headings, and rule descriptions. Role cards use illustration-only crops with localized labels.
 
 ## Scene style
 

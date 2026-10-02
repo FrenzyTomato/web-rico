@@ -1,31 +1,33 @@
+import { useLanguage } from '../i18n/language.js';
 import type { CountrysideTile } from '@vibe-rico/game-engine';
+import { ModelHint } from './ModelHint.js';
+import { estateHint } from './effects.js';
+import { TILE } from '../i18n/terms.js';
 import { Label } from './Label.js';
 import { fieldSlots } from './boardLayout.js';
-import { GOOD_COLOR, QUARRY_COLOR } from './pieces.js';
 import { Workers } from './Workers.js';
 import { Selectable } from './Selectable.js';
-import { box, material } from './resources.js';
-
-// A one-character mark per tile type, so colour is never the only cue (DESIGN.md).
-const MARK = { corn: '玉', fruit: '果', sugar: '糖', tobacco: '烟', coffee: '咖', quarry: '石' } as const;
-export const CELL = 0.8;
+import { Model } from './Model.js';
+import { ESTATE_MODEL } from './modelCatalog.js';
+import { ESTATE_WORKER_SLOTS } from './workerSlots.js';
+import { CELL, ROW } from './Mat.js';
+export { CELL } from './Mat.js';
 
 /** The Countryside: 12 spaces; quarries are taller grey blocks, plantations flat tiles in their goods colour. */
 export function Fields({ countryside, mine = false }: { countryside: readonly CountrysideTile[]; mine?: boolean }) {
+  useLanguage();
   return <>{fieldSlots(countryside).map(({ col, row, tile }) => {
     const body = <>
-      <mesh position={[0, tile?.kind === 'quarry' ? 0.12 : 0.04, 0]} dispose={null}
-        geometry={box(CELL - 0.08, tile?.kind === 'quarry' ? 0.24 : 0.08, CELL - 0.08)}
-        material={material(tile ? (tile.kind === 'quarry' ? QUARRY_COLOR : GOOD_COLOR[tile.kind]) : '#e4d8bb')} />
+      {tile && <Model name={ESTATE_MODEL[tile.kind]} width={CELL - 0.03} depth={1.4} height={1.65} />}
       {tile && <>
-        <Label position={[0, 0.5, -0.1]} height={0.28} text={MARK[tile.kind]} />
-        {tile.occupied && <Workers count={1} capacity={1} y={0.3} />}
+        <Label position={[0, 0.04, 1.16]} height={0.34} maxWidth={CELL - 0.04} text={TILE[tile.kind]} />
+        <group position={[0, 0.025, 0.96]}><Workers slotRow spacing={0.38} count={Number(tile.occupied)} capacity={ESTATE_WORKER_SLOTS[tile.kind]} y={0} {...(mine ? { owner: tile.instanceId } : {})} /></group>
       </>}
     </>;
     return (
-      <group key={tile?.instanceId ?? `empty-${col}-${row}`} position={[col * CELL, 0, row * CELL]}>
+      <group key={tile?.instanceId ?? `empty-${col}-${row}`} position={[col * CELL, 0, row * ROW]}>
         {/* Only the viewer's own tiles can be targets (Hospital placement). */}
-        {mine && tile ? <Selectable target={{ kind: 'tile', id: tile.instanceId }} size={[CELL - 0.08, CELL - 0.08]}>{body}</Selectable> : body}
+        {mine && tile ? <Selectable hint={estateHint(tile.kind)} target={{ kind: 'tile', id: tile.instanceId }} size={[CELL - 0.08, CELL - 0.08]}>{body}</Selectable> : tile ? <ModelHint hint={estateHint(tile.kind)} size={[CELL, 1.4]}>{body}</ModelHint> : body}
       </group>
     );
   })}</>;

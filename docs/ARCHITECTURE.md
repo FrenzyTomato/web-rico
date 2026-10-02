@@ -2,7 +2,7 @@
 
 ## Goals and current decisions
 
-Friends join private rooms through a link, play a complete 3–5-player game, recover their seat after refreshing, and see a final scoring breakdown. The current UI assumptions are desktop browsers first and Chinese display text; these remain adjustable and are not game rules.
+Friends join private rooms through a link, play a complete 3–5-player game, recover their seat after refreshing, and see a final scoring breakdown. The current UI assumptions are desktop browsers first with per-browser Chinese/English display language; these remain adjustable and are not game rules.
 
 Use one authoritative server instance, a pure engine, and deterministic random state. Build headless play and a DOM debug client before a semi-top-down 2.5D tabletop. Role, building, ship, resource, and worker values and behavior must come from the frozen RULES.md.
 

@@ -1,0 +1,36 @@
+{
+  "source": "Canonical RULES.md RECRUITER-002 and BUILDING-001\u2013023. Generated reference; runtime uses the engine catalog.",
+  "estates": {
+    "corn": 1,
+    "fruit": 1,
+    "sugar": 1,
+    "tobacco": 1,
+    "coffee": 1,
+    "quarry": 1
+  },
+  "buildings": {
+    "small-fruit-depot": 1,
+    "small-sugar-mill": 1,
+    "large-fruit-depot": 3,
+    "large-sugar-mill": 3,
+    "large-tobacco-storage": 3,
+    "large-coffee-roaster": 2,
+    "small-market": 1,
+    "hacienda": 1,
+    "builders-yard": 1,
+    "small-warehouse": 1,
+    "hospital": 1,
+    "office": 1,
+    "large-market": 1,
+    "large-warehouse": 1,
+    "factory": 1,
+    "school": 1,
+    "harbor": 1,
+    "wharf": 1,
+    "fire-station": 1,
+    "residence": 1,
+    "fortress": 1,
+    "customs-house": 1,
+    "city-hall": 1
+  }
+}

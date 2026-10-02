@@ -21,3 +21,4 @@ export { startCli, runCliLine } from './cli.js';
 export type { CliSession, CliResult } from './cli.js';
 export { BUILDINGS } from './buildings/definitions.js';
 export type { BuildingDefinition } from './buildings/definitions.js';
+export { confirmedWorkers } from './roles/mayor/progress.js';

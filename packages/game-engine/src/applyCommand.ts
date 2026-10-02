@@ -33,7 +33,7 @@ export function applyCommand(state: GameState, command: GameCommand): GameResult
   if(gate.phase.kind==='planter-choice') return advanceAutomatic(chooseTile(state,record.choice));
   if(gate.phase.kind==='builder-choice') return advanceAutomatic(build(state,record.purchase));
   if(gate.phase.kind==='recruiter-advantage') return advanceAutomatic(recruitWorker(state,record.accept));
-  if(gate.phase.kind==='recruiter-placement') return advanceAutomatic(placeWorkers(state,record.allocation));
+  if(gate.phase.kind==='recruiter-placement') return advanceAutomatic(placeWorkers(state,record.allocation,command.actorId));
   if(gate.phase.kind==='craftsman-production') return advanceAutomatic(produce(state,record.production));
   if(gate.phase.kind==='craftsman-bonus') return advanceAutomatic(takeProductionBonus(state,record.good));
   if(gate.phase.kind==='trader-choice') return advanceAutomatic(trade(state,record.sale));

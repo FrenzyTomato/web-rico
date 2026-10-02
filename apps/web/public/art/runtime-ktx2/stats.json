@@ -1,0 +1,2403 @@
+{
+  "4-Slot Boat": {
+    "originalDownload": 386515,
+    "download": 997317,
+    "textures": [
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      }
+    ],
+    "unchanged": false
+  },
+  "5-Slot Boat": {
+    "originalDownload": 472113,
+    "download": 1122736,
+    "textures": [
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      }
+    ],
+    "unchanged": false
+  },
+  "6-Slot Boat": {
+    "originalDownload": 518881,
+    "download": 1128508,
+    "textures": [
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      }
+    ],
+    "unchanged": false
+  },
+  "7-Slot Boat": {
+    "originalDownload": 414184,
+    "download": 1057324,
+    "textures": [
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      }
+    ],
+    "unchanged": false
+  },
+  "8-Slot Boat": {
+    "originalDownload": 411173,
+    "download": 1045515,
+    "textures": [
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      }
+    ],
+    "unchanged": false
+  },
+  "Adventurer Command Tile": {
+    "originalDownload": 46284,
+    "download": 46284,
+    "textures": [
+      {
+        "original": [
+          346,
+          452
+        ],
+        "size": [
+          346,
+          452
+        ],
+        "beforeRGBA": 833544,
+        "afterRGBA": 833544,
+        "after8bit": 833544,
+        "after4bit": 833544
+      }
+    ],
+    "unchanged": true
+  },
+  "Banana Crate": {
+    "originalDownload": 861594,
+    "download": 957333,
+    "textures": [
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          256,
+          256
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 349524,
+        "after8bit": 87408,
+        "after4bit": 43704
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          256,
+          256
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 349524,
+        "after8bit": 87408,
+        "after4bit": 43704
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          256,
+          256
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 349524,
+        "after8bit": 87408,
+        "after4bit": 43704
+      }
+    ],
+    "unchanged": false
+  },
+  "Banana Estate": {
+    "originalDownload": 1498721,
+    "download": 2138960,
+    "textures": [
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      }
+    ],
+    "unchanged": false
+  },
+  "Builder Command Tile": {
+    "originalDownload": 44952,
+    "download": 44952,
+    "textures": [
+      {
+        "original": [
+          352,
+          457
+        ],
+        "size": [
+          352,
+          457
+        ],
+        "beforeRGBA": 857376,
+        "afterRGBA": 857376,
+        "after8bit": 857376,
+        "after4bit": 857376
+      }
+    ],
+    "unchanged": true
+  },
+  "Builder's Yard": {
+    "originalDownload": 861484,
+    "download": 1467127,
+    "textures": [
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      }
+    ],
+    "unchanged": false
+  },
+  "Captain Command Tile": {
+    "originalDownload": 47293,
+    "download": 47293,
+    "textures": [
+      {
+        "original": [
+          347,
+          452
+        ],
+        "size": [
+          347,
+          452
+        ],
+        "beforeRGBA": 835352,
+        "afterRGBA": 835352,
+        "after8bit": 835352,
+        "after4bit": 835352
+      }
+    ],
+    "unchanged": true
+  },
+  "City Hall": {
+    "originalDownload": 832317,
+    "download": 1494314,
+    "textures": [
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      }
+    ],
+    "unchanged": false
+  },
+  "Coffee Crate": {
+    "originalDownload": 1218877,
+    "download": 1319453,
+    "textures": [
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          256,
+          256
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 349524,
+        "after8bit": 87408,
+        "after4bit": 43704
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          256,
+          256
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 349524,
+        "after8bit": 87408,
+        "after4bit": 43704
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          256,
+          256
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 349524,
+        "after8bit": 87408,
+        "after4bit": 43704
+      }
+    ],
+    "unchanged": false
+  },
+  "Coffee Estate": {
+    "originalDownload": 1770555,
+    "download": 2402706,
+    "textures": [
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      }
+    ],
+    "unchanged": false
+  },
+  "Corn Crate": {
+    "originalDownload": 1506011,
+    "download": 1598318,
+    "textures": [
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          256,
+          256
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 349524,
+        "after8bit": 87408,
+        "after4bit": 43704
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          256,
+          256
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 349524,
+        "after8bit": 87408,
+        "after4bit": 43704
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          256,
+          256
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 349524,
+        "after8bit": 87408,
+        "after4bit": 43704
+      }
+    ],
+    "unchanged": false
+  },
+  "Corn Estate": {
+    "originalDownload": 1237002,
+    "download": 1875896,
+    "textures": [
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      }
+    ],
+    "unchanged": false
+  },
+  "Craftsman Command Tile": {
+    "originalDownload": 46881,
+    "download": 46881,
+    "textures": [
+      {
+        "original": [
+          349,
+          452
+        ],
+        "size": [
+          349,
+          452
+        ],
+        "beforeRGBA": 840324,
+        "afterRGBA": 840324,
+        "after8bit": 840324,
+        "after4bit": 840324
+      }
+    ],
+    "unchanged": true
+  },
+  "Customs House": {
+    "originalDownload": 605898,
+    "download": 1271725,
+    "textures": [
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      }
+    ],
+    "unchanged": false
+  },
+  "Factory": {
+    "originalDownload": 935208,
+    "download": 1566415,
+    "textures": [
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      }
+    ],
+    "unchanged": false
+  },
+  "Fire Station": {
+    "originalDownload": 775308,
+    "download": 1420433,
+    "textures": [
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      }
+    ],
+    "unchanged": false
+  },
+  "Fortress": {
+    "originalDownload": 796056,
+    "download": 1427119,
+    "textures": [
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      }
+    ],
+    "unchanged": false
+  },
+  "Hacienda": {
+    "originalDownload": 908055,
+    "download": 1556406,
+    "textures": [
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      }
+    ],
+    "unchanged": false
+  },
+  "Harbor": {
+    "originalDownload": 643431,
+    "download": 1283250,
+    "textures": [
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      }
+    ],
+    "unchanged": false
+  },
+  "Hospital": {
+    "originalDownload": 887455,
+    "download": 1540148,
+    "textures": [
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      }
+    ],
+    "unchanged": false
+  },
+  "Large Coffee Roaster": {
+    "originalDownload": 1212378,
+    "download": 1859000,
+    "textures": [
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      }
+    ],
+    "unchanged": false
+  },
+  "Large Fruit Depot": {
+    "originalDownload": 1033490,
+    "download": 1654536,
+    "textures": [
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      }
+    ],
+    "unchanged": false
+  },
+  "Large Market": {
+    "originalDownload": 1163593,
+    "download": 1797137,
+    "textures": [
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      }
+    ],
+    "unchanged": false
+  },
+  "Large Sugar Mill": {
+    "originalDownload": 1271230,
+    "download": 1919103,
+    "textures": [
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      }
+    ],
+    "unchanged": false
+  },
+  "Large Tobacco Storage": {
+    "originalDownload": 1000710,
+    "download": 1625126,
+    "textures": [
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      }
+    ],
+    "unchanged": false
+  },
+  "Large Warehouse": {
+    "originalDownload": 890678,
+    "download": 1516043,
+    "textures": [
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      }
+    ],
+    "unchanged": false
+  },
+  "Office": {
+    "originalDownload": 958814,
+    "download": 1571168,
+    "textures": [
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      }
+    ],
+    "unchanged": false
+  },
+  "Planter Command Tile": {
+    "originalDownload": 46638,
+    "download": 46638,
+    "textures": [
+      {
+        "original": [
+          356,
+          457
+        ],
+        "size": [
+          356,
+          457
+        ],
+        "beforeRGBA": 866968,
+        "afterRGBA": 866968,
+        "after8bit": 866968,
+        "after4bit": 866968
+      }
+    ],
+    "unchanged": true
+  },
+  "Private Boat": {
+    "originalDownload": 414822,
+    "download": 1041466,
+    "textures": [
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      }
+    ],
+    "unchanged": false
+  },
+  "Quarry": {
+    "originalDownload": 683709,
+    "download": 1312933,
+    "textures": [
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      }
+    ],
+    "unchanged": false
+  },
+  "Recruiter Command Tile": {
+    "originalDownload": 44448,
+    "download": 44448,
+    "textures": [
+      {
+        "original": [
+          346,
+          457
+        ],
+        "size": [
+          346,
+          457
+        ],
+        "beforeRGBA": 842364,
+        "afterRGBA": 842364,
+        "after8bit": 842364,
+        "after4bit": 842364
+      }
+    ],
+    "unchanged": true
+  },
+  "Residence": {
+    "originalDownload": 800926,
+    "download": 1454979,
+    "textures": [
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      }
+    ],
+    "unchanged": false
+  },
+  "School": {
+    "originalDownload": 898887,
+    "download": 1531936,
+    "textures": [
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      }
+    ],
+    "unchanged": false
+  },
+  "Small Fruit Depot": {
+    "originalDownload": 1278560,
+    "download": 1912971,
+    "textures": [
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      }
+    ],
+    "unchanged": false
+  },
+  "Small Market": {
+    "originalDownload": 1389616,
+    "download": 2019891,
+    "textures": [
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      }
+    ],
+    "unchanged": false
+  },
+  "Small Sugar Mill": {
+    "originalDownload": 1454739,
+    "download": 2087130,
+    "textures": [
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      }
+    ],
+    "unchanged": false
+  },
+  "Small Warehouse": {
+    "originalDownload": 574173,
+    "download": 1203110,
+    "textures": [
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      }
+    ],
+    "unchanged": false
+  },
+  "Sugar Crate": {
+    "originalDownload": 826225,
+    "download": 915170,
+    "textures": [
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          256,
+          256
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 349524,
+        "after8bit": 87408,
+        "after4bit": 43704
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          256,
+          256
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 349524,
+        "after8bit": 87408,
+        "after4bit": 43704
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          256,
+          256
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 349524,
+        "after8bit": 87408,
+        "after4bit": 43704
+      }
+    ],
+    "unchanged": false
+  },
+  "Sugar Estate": {
+    "originalDownload": 1761101,
+    "download": 2420857,
+    "textures": [
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      }
+    ],
+    "unchanged": false
+  },
+  "Tobacco Crate": {
+    "originalDownload": 747184,
+    "download": 849856,
+    "textures": [
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          256,
+          256
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 349524,
+        "after8bit": 87408,
+        "after4bit": 43704
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          256,
+          256
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 349524,
+        "after8bit": 87408,
+        "after4bit": 43704
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          256,
+          256
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 349524,
+        "after8bit": 87408,
+        "after4bit": 43704
+      }
+    ],
+    "unchanged": false
+  },
+  "Tobacco Estate": {
+    "originalDownload": 1379080,
+    "download": 1943634,
+    "textures": [
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      }
+    ],
+    "unchanged": false
+  },
+  "Trader Command Tile": {
+    "originalDownload": 44510,
+    "download": 44510,
+    "textures": [
+      {
+        "original": [
+          345,
+          452
+        ],
+        "size": [
+          345,
+          452
+        ],
+        "beforeRGBA": 830832,
+        "afterRGBA": 830832,
+        "after8bit": 830832,
+        "after4bit": 830832
+      }
+    ],
+    "unchanged": true
+  },
+  "Trader Depot": {
+    "originalDownload": 896435,
+    "download": 1513354,
+    "textures": [
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      }
+    ],
+    "unchanged": false
+  },
+  "Wharf": {
+    "originalDownload": 609897,
+    "download": 1234791,
+    "textures": [
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          512,
+          512
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 1398100,
+        "after8bit": 349552,
+        "after4bit": 174776
+      }
+    ],
+    "unchanged": false
+  },
+  "Worker 01": {
+    "originalDownload": 381013,
+    "download": 478736,
+    "textures": [
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          256,
+          256
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 349524,
+        "after8bit": 87408,
+        "after4bit": 43704
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          256,
+          256
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 349524,
+        "after8bit": 87408,
+        "after4bit": 43704
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          256,
+          256
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 349524,
+        "after8bit": 87408,
+        "after4bit": 43704
+      }
+    ],
+    "unchanged": false
+  },
+  "Worker 02": {
+    "originalDownload": 381415,
+    "download": 478067,
+    "textures": [
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          256,
+          256
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 349524,
+        "after8bit": 87408,
+        "after4bit": 43704
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          256,
+          256
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 349524,
+        "after8bit": 87408,
+        "after4bit": 43704
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          256,
+          256
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 349524,
+        "after8bit": 87408,
+        "after4bit": 43704
+      }
+    ],
+    "unchanged": false
+  },
+  "Worker 03": {
+    "originalDownload": 386737,
+    "download": 483586,
+    "textures": [
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          256,
+          256
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 349524,
+        "after8bit": 87408,
+        "after4bit": 43704
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          256,
+          256
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 349524,
+        "after8bit": 87408,
+        "after4bit": 43704
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          256,
+          256
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 349524,
+        "after8bit": 87408,
+        "after4bit": 43704
+      }
+    ],
+    "unchanged": false
+  },
+  "Worker 04": {
+    "originalDownload": 381803,
+    "download": 479636,
+    "textures": [
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          256,
+          256
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 349524,
+        "after8bit": 87408,
+        "after4bit": 43704
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          256,
+          256
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 349524,
+        "after8bit": 87408,
+        "after4bit": 43704
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          256,
+          256
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 349524,
+        "after8bit": 87408,
+        "after4bit": 43704
+      }
+    ],
+    "unchanged": false
+  },
+  "Worker 05": {
+    "originalDownload": 370636,
+    "download": 470155,
+    "textures": [
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          256,
+          256
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 349524,
+        "after8bit": 87408,
+        "after4bit": 43704
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          256,
+          256
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 349524,
+        "after8bit": 87408,
+        "after4bit": 43704
+      },
+      {
+        "original": [
+          512,
+          512
+        ],
+        "size": [
+          256,
+          256
+        ],
+        "beforeRGBA": 1398100,
+        "afterRGBA": 349524,
+        "after8bit": 87408,
+        "after4bit": 43704
+      }
+    ],
+    "unchanged": false
+  }
+}

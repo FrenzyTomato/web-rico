@@ -1,5 +1,6 @@
 import { BUILDINGS as buildings } from '../buildings/definitions.js';
 import { validateSnapshot } from '../model/serialization.js';
+import { confirmedWorkers } from '../roles/mayor/progress.js';
 import type { BuildingType, GameState, Good, PlayerState, Role } from '../model/state.js';
 
 export class InvariantError extends Error {
@@ -57,7 +58,14 @@ export function assertGameState(input: GameState): void {
     check(phase.actorId===s.seatOrder[(governor+s.roleSelectionIndex+phase.actorIndex)%n],'ROLE-001','actor/offset mismatch');
     if (['recruiter-advantage','craftsman-bonus','adventurer'].includes(phase.kind)) check(phase.actorIndex===0,'ROLE-001','chooser-only decision');
   }
-  if (phase.kind==='recruiter-placement') check(s.supply.workRegisterCount===0,'RECRUITER-001','Register not distributed');
+  if (phase.kind==='recruiter-placement') {
+    check(s.supply.workRegisterCount===0,'RECRUITER-001','Register not distributed');
+    const confirmed=confirmedWorkers(s);
+    check(confirmed.length<n && new Set(confirmed).size===confirmed.length && confirmed.every(id=>s.seatOrder.includes(id)), 'RECRUITER-002','invalid confirmations');
+    const start=s.seatOrder.indexOf(phase.roleChooserId);
+    const next=Array.from({length:n},(_,i)=>s.seatOrder[(start+i)%n]!).find(id=>!confirmed.includes(id));
+    check(phase.actorId===next,'RECRUITER-002','pending player cursor');
+  }
   if (phase.kind==='round-completion') check(s.roleSelectionIndex===n-1,'ROUND-002','unfinished round');
   if ('acquiredTileIds' in phase) {
     const player=byId.get(phase.actorId)!;
@@ -83,9 +91,8 @@ export function assertGameState(input: GameState): void {
       check(p.personalShip.usedThisPhase===(p.personalShip.loadedCount>0),'CAPTAIN-004','Personal Ship use/cargo mismatch');
       if (p.personalShip.usedThisPhase) check(activeRole==='captain' && wharf!.occupiedSlots===1,'CAPTAIN-004','personal cargo outside active Wharf shipping');
     }
-    // Only earlier confirmed actors, or everyone at Recruiter cleanup, must fill slots.
-    const offset=(s.seatOrder.indexOf(p.playerId)-s.seatOrder.indexOf(chooser)+n)%n;
-    const confirmed=(phase.kind==='recruiter-placement' && offset<phase.actorIndex)
+    // Only confirmed players, or everyone at Recruiter cleanup, must fill slots.
+    const confirmed=(phase.kind==='recruiter-placement' && confirmedWorkers(s).includes(p.playerId))
       || (phase.kind==='phase-completion' && phase.role==='recruiter')
       || (phase.kind==='game-over' && currentRole==='recruiter');
     if (confirmed) check(p.idleWorkerCount===0 || emptySlots(p)===0,'RECRUITER-002','idle worker with empty slot after confirmation');

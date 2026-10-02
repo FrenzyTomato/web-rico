@@ -1,23 +1,24 @@
+import { t } from './language.js';
 import type { BuildingType, EndTrigger, Good, Role } from '@vibe-rico/game-engine';
 import type { PlayerView } from '@vibe-rico/protocol';
 
-/** Chinese display terms (ARCHITECTURE: Chinese display text). Engine IDs stay unchanged underneath. */
+/** Live display terms; engine IDs remain independent of the selected language. */
 export const ROLE: Record<Role, string> = {
-  planter: '种植者', recruiter: '招募者', builder: '建筑师', craftsman: '工匠', trader: '商人', captain: '船长', adventurer: '冒险者',
+  get planter() { return t("种植者"); }, get recruiter() { return t("招募者"); }, get builder() { return t("建筑师"); }, get craftsman() { return t("工匠"); }, get trader() { return t("商人"); }, get captain() { return t("船长"); }, get adventurer() { return t("冒险者"); },
 };
-export const GOOD: Record<Good, string> = { corn: '玉米', fruit: '水果', sugar: '糖', tobacco: '烟草', coffee: '咖啡' };
-export const TILE: Record<Good | 'quarry', string> = { ...GOOD, quarry: '采石场' };
+export const GOOD: Record<Good, string> = { get corn() { return t("玉米"); }, get fruit() { return t("水果"); }, get sugar() { return t("糖"); }, get tobacco() { return t("烟草"); }, get coffee() { return t("咖啡"); } };
+export const TILE: Record<Good | 'quarry', string> = { get corn() { return GOOD.corn; }, get fruit() { return GOOD.fruit; }, get sugar() { return GOOD.sugar; }, get tobacco() { return GOOD.tobacco; }, get coffee() { return GOOD.coffee; }, get quarry() { return t("采石场"); } };
 export const BUILDING: Record<BuildingType, string> = {
-  'small-fruit-depot': '小水果仓', 'small-sugar-mill': '小糖厂', 'large-fruit-depot': '大水果仓', 'large-sugar-mill': '大糖厂',
-  'large-tobacco-storage': '烟草仓库', 'large-coffee-roaster': '咖啡烘焙厂', 'small-market': '小市场', hacienda: '大庄园',
-  'builders-yard': '建筑工场', 'small-warehouse': '小仓库', hospital: '医院', office: '办事处', 'large-market': '大市场',
-  'large-warehouse': '大仓库', factory: '工厂', school: '学校', harbor: '港口', wharf: '码头',
-  'fire-station': '消防站', residence: '官邸', fortress: '堡垒', 'customs-house': '海关', 'city-hall': '市政厅',
+  get 'small-fruit-depot'() { return t("小水果仓"); }, get 'small-sugar-mill'() { return t("小糖厂"); }, get 'large-fruit-depot'() { return t("大水果仓"); }, get 'large-sugar-mill'() { return t("大糖厂"); },
+  get 'large-tobacco-storage'() { return t("烟草仓库"); }, get 'large-coffee-roaster'() { return t("咖啡烘焙厂"); }, get 'small-market'() { return t("小市场"); }, get hacienda() { return t("大庄园"); },
+  get 'builders-yard'() { return t("建筑工场"); }, get 'small-warehouse'() { return t("小仓库"); }, get hospital() { return t("医院"); }, get office() { return t("办事处"); }, get 'large-market'() { return t("大市场"); },
+  get 'large-warehouse'() { return t("大仓库"); }, get factory() { return t("工厂"); }, get school() { return t("学校"); }, get harbor() { return t("港口"); }, get wharf() { return t("码头"); },
+  get 'fire-station'() { return t("消防站"); }, get residence() { return t("官邸"); }, get fortress() { return t("堡垒"); }, get 'customs-house'() { return t("海关"); }, get 'city-hall'() { return t("市政厅"); },
 };
 export const PHASE: Record<PlayerView['phase']['kind'], string> = {
-  'role-selection': '选择角色', 'planter-before': '种植（大庄园）', 'planter-choice': '种植', 'planter-worker': '种植（医院）',
-  'recruiter-advantage': '招募特权', 'recruiter-distribution': '分发工人', 'recruiter-placement': '分配工人', 'builder-choice': '建造',
-  'craftsman-production': '生产', 'craftsman-bonus': '工匠特权', 'trader-choice': '交易', 'captain-loading': '装船',
-  'captain-retention': '保留货物', adventurer: '冒险者', 'phase-completion': '阶段结算', 'round-completion': '回合结算', 'game-over': '游戏结束',
+  get 'role-selection'() { return t("选择角色"); }, get 'planter-before'() { return t("种植（大庄园）"); }, get 'planter-choice'() { return t("种植"); }, get 'planter-worker'() { return t("种植（医院）"); },
+  get 'recruiter-advantage'() { return t("招募特权"); }, get 'recruiter-distribution'() { return t("分发工人"); }, get 'recruiter-placement'() { return t("分配工人"); }, get 'builder-choice'() { return t("建造"); },
+  get 'craftsman-production'() { return t("生产"); }, get 'craftsman-bonus'() { return t("工匠特权"); }, get 'trader-choice'() { return t("交易"); }, get 'captain-loading'() { return t("装船"); },
+  get 'captain-retention'() { return t("保留货物"); }, get adventurer() { return t("冒险者"); }, get 'phase-completion'() { return t("阶段结算"); }, get 'round-completion'() { return t("回合结算"); }, get 'game-over'() { return t("游戏结束"); },
 };
-export const END_REASON: Record<EndTrigger['reason'], string> = { 'worker-shortage': '工人不足', 'city-full': '城市建满', 'vp-exhausted': '分数用尽' };
+export const END_REASON: Record<EndTrigger['reason'], string> = { get 'worker-shortage'() { return t("工人不足"); }, get 'city-full'() { return t("城市建满"); }, get 'vp-exhausted'() { return t("分数用尽"); } };

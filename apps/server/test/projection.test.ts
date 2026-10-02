@@ -28,7 +28,7 @@ function revisions(fixture: { input: unknown; commands: readonly unknown[] }) {
 const SUPPLY_KEYS = ['buildingStock', 'goods', 'quarryCount', 'vpOverflow', 'vpRemaining', 'workRegisterCount', 'workerCount'];
 const TURN = ['actorId', 'actorIndex', 'kind', 'roleChooserId'];
 const PHASE_KEYS: Record<string, string[]> = {
-  'role-selection': ['actorId', 'kind'], 'planter-before': TURN, 'recruiter-advantage': TURN, 'recruiter-placement': TURN,
+  'role-selection': ['actorId', 'kind'], 'planter-before': TURN, 'recruiter-advantage': TURN, 'recruiter-placement': [...TURN, 'confirmedPlayerIds'].sort(),
   'builder-choice': TURN, 'trader-choice': TURN, 'captain-retention': TURN, adventurer: TURN,
   'planter-choice': [...TURN, 'acquiredTileIds'].sort(), 'planter-worker': [...TURN, 'acquiredTileIds'].sort(),
   'craftsman-production': [...TURN, 'chooserProducedTypes'].sort(), 'craftsman-bonus': [...TURN, 'chooserProducedTypes'].sort(),
@@ -57,7 +57,7 @@ describe('TS-PRIVACY: projections over complete games', () => {
         for (const word of state.rng.state) expect(json).not.toContain(String(word));
         // PRIV-04: legal actions only for the decision-maker, exactly as the engine offers them.
         expect(message.legalActions).toEqual(getLegalCommands(state, seat));
-        if ('actorId' in state.phase && state.phase.actorId !== seat) expect(message.legalActions).toEqual([]);
+        if ('actorId' in state.phase && state.phase.kind !== 'recruiter-placement' && state.phase.actorId !== seat) expect(message.legalActions).toEqual([]);
         // AUD-04: the VP supply is public (VISIBILITY-001), as in the physical game; inference is accepted (VISIBILITY-003).
         expect(message.view.supply.vpRemaining).toBe(state.supply.vpRemaining);
         // AUD-05: nested objects pass through by reference, so pin their key sets; a new hidden field fails here.
@@ -95,6 +95,40 @@ describe('TS-PRIVACY: messages across independent connections', () => {
   }
   const room = (s: Socket, action: object) => s.emitWithAck('room', { protocolVersion: PROTOCOL_VERSION, action });
   const settle = () => new Promise(resolve => setTimeout(resolve, 50));
+
+  it('three live connections can allocate together, confirm in any order, and recover a confirmed seat', async () => {
+    const { client } = await recorded();
+    const tabs = [await client(), await client(), await client()];
+    const granted: SeatGranted[] = [(await room(tabs[0]!.socket, { kind: 'create-room', displayName: 'A' })).value];
+    for (const tab of tabs.slice(1)) granted.push((await room(tab.socket, { kind: 'join-room', roomCode: granted[0]!.roomCode, displayName: 'B' })).value);
+    const roomId = granted[0]!.roomId;
+    await room(tabs[0]!.socket, { kind: 'start-game', roomId });
+    await settle();
+    const state = (i: number) => tabs[i]!.inbox.filter(m => m.event === 'state').at(-1)!.args[0] as import('@vibe-rico/protocol').PlayerBroadcast;
+    const chooser = tabs.findIndex((_, i) => state(i).legalActions.length > 0);
+    const send = (i: number, commandId: string, expectedRevision: number, action: object) => tabs[i]!.socket.emitWithAck('command', { protocolVersion: PROTOCOL_VERSION, roomId, commandId, expectedRevision, action });
+    await send(chooser, 'recruit', 0, { kind: 'choose-role', roleCardId: state(chooser).view.roleCards.find(c => c.kind === 'recruiter')!.instanceId });
+    await send(chooser, 'bonus', 1, { kind: 'recruit-worker', accept: true });
+    await settle();
+    const allocations = tabs.map((_, i) => {
+      const latest = state(i), p = latest.view.players.find(p => p.playerId === granted[i]!.playerId)!;
+      expect(latest.legalActions[0]).toMatchObject({ phase: 'recruiter-placement', actorId: p.playerId });
+      return { kind: 'allocate-workers', allocation: { countryside: p.countryside.map(t => ({ tileId: t.instanceId, occupied: true })), buildings: [], idleCount: p.idleWorkerCount - 1 } };
+    });
+    const first = (chooser + 2) % 3;
+    expect(await send(first, 'allocate-first', 2, allocations[first]!)).toHaveProperty('acceptedRevision');
+    await settle();
+    expect(state(first).legalActions).toEqual([]);
+    const resumed = await client();
+    await resumed.socket.emitWithAck('resume', { protocolVersion: PROTOCOL_VERSION, roomId, token: granted[first]!.token });
+    await settle();
+    expect(resumed.inbox.find(m => m.event === 'state')!.args[0]).toMatchObject({ legalActions: [], view: { phase: { confirmedPlayerIds: [granted[first]!.playerId] } } });
+    const pending = [0, 1, 2].filter(i => i !== first);
+    const replies = await Promise.all(pending.map(i => send(i, `allocate-${i}`, 2, allocations[i]!)));
+    expect(replies.every(r => 'acceptedRevision' in r)).toBe(true);
+    await settle();
+    for (const i of pending) expect(state(i).view.phase.kind).not.toBe('recruiter-placement');
+  });
 
   it('each connection receives only its own projection; tokens, rejections and full state never reach others', async () => {
     const { app, client } = await recorded();

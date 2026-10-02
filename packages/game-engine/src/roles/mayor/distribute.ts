@@ -29,7 +29,7 @@ export function distributeWorkers(state:GameState):GameResult {
  const next:GameState={...state,
   players:state.players.map(p=>({...p,idleWorkerCount:p.idleWorkerCount+gains.get(p.playerId)!})),
   supply:{...state.supply,workRegisterCount:0},
-  phase:{kind:'recruiter-placement',roleChooserId:chooser,actorId:chooser,actorIndex:0}};
+  phase:{kind:'recruiter-placement',roleChooserId:chooser,actorId:chooser,actorIndex:0,confirmedPlayerIds:[]}};
  assertGameState(next);
  const events:GameEvent[]=[];
  for(const [playerId,quantity] of gains)if(quantity>0)events.push({kind:'workers-received',revision:state.revision,index:events.length,playerId,quantity,source:'register'});

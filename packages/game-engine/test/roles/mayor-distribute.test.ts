@@ -18,7 +18,7 @@ it.each([{n:3,r:8,g:[3,3,2]},{n:4,r:6,g:[2,2,1,1]},{n:5,r:7,g:[2,2,1,1,1]}])('RE
   const order=[s.seatOrder[n-1]!,...s.seatOrder.slice(0,n-1)];
   expect(order.map(id=>result.state.players.find(p=>p.playerId===id)!.idleWorkerCount)).toEqual(g.map((v,i)=>v+(i===0 && accept?1:0)));
   expect(result.state.supply.workRegisterCount).toBe(0);expect(result.state.supply.workerCount).toBe(s.supply.workerCount-Number(accept));
-  expect(result.state.phase).toEqual({kind:'recruiter-placement',roleChooserId:s.governorPlayerId,actorId:s.governorPlayerId,actorIndex:0});
+  expect(result.state.phase).toEqual({kind:'recruiter-placement',roleChooserId:s.governorPlayerId,actorId:s.governorPlayerId,actorIndex:0,confirmedPlayerIds:[]});
   const events=[...(accept?[{kind:'workers-received',playerId:s.governorPlayerId,quantity:1,source:'supply'}]:[]),
    {kind:'phase-changed',from:'recruiter-advantage',to:'recruiter-distribution'},
    ...order.map((playerId,i)=>({kind:'workers-received',playerId,quantity:g[i],source:'register'})),

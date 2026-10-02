@@ -3,18 +3,24 @@ import type { LegalAction, WorkerAllocation } from '../../model/commands.js';
 import type { GameEvent, GameResult } from '../../model/events.js';
 import type { GameState } from '../../model/state.js';
 import { completeRecruiter } from './complete.js';
+import { confirmedWorkers } from './progress.js';
+import type { PlayerId } from '../../model/ids.js';
+import { ERRORS } from '../../dispatch.js';
 
-export function placementOptions(state:GameState):Extract<LegalAction,{phase:'recruiter-placement'}> {
+export function placementOptions(state:GameState,playerId?:PlayerId):Extract<LegalAction,{phase:'recruiter-placement'}> {
  if(state.phase.kind!=='recruiter-placement')throw new Error('Expected recruiter-placement');
- const actorId=state.phase.actorId,p=state.players.find(p=>p.playerId===actorId)!;
+ const actorId=playerId??state.phase.actorId,p=state.players.find(p=>p.playerId===actorId)!;
  return {phase:'recruiter-placement',actorId,totalWorkers:p.idleWorkerCount+p.countryside.filter(t=>t.occupied).length+p.buildings.reduce((n,b)=>n+b.occupiedSlots,0),
   slots:[...p.countryside.map(t=>({kind:'countryside' as const,instanceId:t.instanceId,capacity:1 as const})),...p.buildings.map(b=>({kind:'building' as const,instanceId:b.instanceId,capacity:workerCapacity(b.buildingTypeId)}))],idleOnlyWhenAllSlotsFilled:true};
 }
 const record=(v:unknown):v is Record<string,unknown>=>typeof v==='object' && v!==null && !Array.isArray(v);
 const integer=(v:unknown):v is number=>typeof v==='number' && Number.isSafeInteger(v) && v>=0;
-export function placeWorkers(state:GameState,input:unknown):GameResult {
+export function placeWorkers(state:GameState,input:unknown,playerId?:PlayerId):GameResult {
  if(state.phase.kind!=='recruiter-placement')throw new Error('Expected recruiter-placement');
- const phase=state.phase,options=placementOptions(state),p=state.players.find(p=>p.playerId===phase.actorId)!;
+ const phase=state.phase,actorId=playerId??phase.actorId;
+ const confirmed=confirmedWorkers(state);
+ if(!state.seatOrder.includes(actorId) || confirmed.includes(actorId))return {ok:false,error:{...ERRORS.wrongActor}};
+ const options=placementOptions(state,actorId),p=state.players.find(p=>p.playerId===actorId)!;
  const invalid=():GameResult=>({ok:false,error:{code:'ILLEGAL_CHOICE',ruleId:'RECRUITER-002',message:'Allocate every worker to owned slots, filling all slots before leaving workers idle.'}});
  if(!Number.isSafeInteger(state.revision+1) || !record(input) || Object.keys(input).length!==3 || !integer(input.idleCount) || !Array.isArray(input.countryside) || !Array.isArray(input.buildings))return invalid();
  const tiles=Array.from(input.countryside),buildings=Array.from(input.buildings);
@@ -25,11 +31,13 @@ export function placeWorkers(state:GameState,input:unknown):GameResult {
  const used=tiles.filter(t=>t.occupied).length+buildings.reduce((n,b)=>n+b.occupiedSlots,0);
  if(used+input.idleCount!==options.totalWorkers || (input.idleCount>0 && used!==options.slots.reduce((n,s)=>n+s.capacity,0)))return invalid();
  const allocation:WorkerAllocation={countryside:tiles.map(t=>({tileId:t.tileId,occupied:t.occupied})),buildings:buildings.map(b=>({buildingId:b.buildingId,occupiedSlots:b.occupiedSlots})),idleCount:input.idleCount};
- const revision=state.revision+1,last=phase.actorIndex===state.seatOrder.length-1;
+ const revision=state.revision+1,confirmedPlayerIds=[...confirmed,actorId],last=confirmedPlayerIds.length===state.seatOrder.length;
+ const start=state.seatOrder.indexOf(phase.roleChooserId);
+ const actorIndex=state.seatOrder.findIndex((_,offset)=>!confirmedPlayerIds.includes(state.seatOrder[(start+offset)%state.seatOrder.length]!));
  const next:GameState={...state,revision,players:state.players.map(player=>player.playerId===p.playerId?{...player,idleWorkerCount:allocation.idleCount,
   countryside:player.countryside.map(t=>({...t,occupied:allocation.countryside.find(a=>a.tileId===t.instanceId)!.occupied})),
   buildings:player.buildings.map(b=>({...b,occupiedSlots:allocation.buildings.find(a=>a.buildingId===b.instanceId)!.occupiedSlots}))}:player),
-  phase:last?{kind:'phase-completion',role:'recruiter',roleChooserId:phase.roleChooserId}:{...phase,actorIndex:phase.actorIndex+1,actorId:state.seatOrder[(state.seatOrder.indexOf(phase.roleChooserId)+phase.actorIndex+1)%state.seatOrder.length]!}};
+  phase:last?{kind:'phase-completion',role:'recruiter',roleChooserId:phase.roleChooserId}:{...phase,confirmedPlayerIds,actorIndex,actorId:state.seatOrder[(start+actorIndex)%state.seatOrder.length]!}};
  assertGameState(next);
  const events:GameEvent[]=[{kind:'workers-allocated',revision,index:0,playerId:p.playerId,allocation},{kind:'phase-changed',revision,index:1,from:phase.kind,to:next.phase.kind}];
  if(!last)return {ok:true,state:next,events};

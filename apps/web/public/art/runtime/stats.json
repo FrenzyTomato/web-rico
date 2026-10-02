@@ -1,0 +1,260 @@
+{
+  "Builder's Yard": {
+    "triangles": 31648,
+    "bytes": 861484,
+    "error": 0.0029947618022561073
+  },
+  "Factory": {
+    "triangles": 33916,
+    "bytes": 935208,
+    "error": 0.002996484050527215
+  },
+  "Hacienda": {
+    "triangles": 32570,
+    "bytes": 908055,
+    "error": 0.002991781570017338
+  },
+  "Harbor": {
+    "triangles": 21566,
+    "bytes": 643431,
+    "error": 0.0029573729261755943
+  },
+  "Hospital": {
+    "triangles": 31336,
+    "bytes": 887455,
+    "error": 0.002982368227094412
+  },
+  "Large Coffee Roaster": {
+    "triangles": 45076,
+    "bytes": 1212378,
+    "error": 0.002986717037856579
+  },
+  "Large Fruit Depot": {
+    "triangles": 37892,
+    "bytes": 1033490,
+    "error": 0.002985832281410694
+  },
+  "Large Market": {
+    "triangles": 43276,
+    "bytes": 1163593,
+    "error": 0.0029838760383427143
+  },
+  "Large Sugar Mill": {
+    "triangles": 46786,
+    "bytes": 1271230,
+    "error": 0.002987038344144821
+  },
+  "Large Tobacco Storage": {
+    "triangles": 36784,
+    "bytes": 1000710,
+    "error": 0.002995572052896023
+  },
+  "Large Warehouse": {
+    "triangles": 32280,
+    "bytes": 890678,
+    "error": 0.0029850080609321594
+  },
+  "Office": {
+    "triangles": 35364,
+    "bytes": 958814,
+    "error": 0.002993021160364151
+  },
+  "School": {
+    "triangles": 31778,
+    "bytes": 898887,
+    "error": 0.002961732679978013
+  },
+  "Small Fruit Depot": {
+    "triangles": 48122,
+    "bytes": 1278560,
+    "error": 0.0029293871484696865
+  },
+  "Small Market": {
+    "triangles": 53020,
+    "bytes": 1389616,
+    "error": 0.0029745539650321007
+  },
+  "Small Sugar Mill": {
+    "triangles": 54962,
+    "bytes": 1454739,
+    "error": 0.002998216776177287
+  },
+  "Small Warehouse": {
+    "triangles": 18894,
+    "bytes": 574173,
+    "error": 0.002971427980810404
+  },
+  "Wharf": {
+    "triangles": 19984,
+    "bytes": 609897,
+    "error": 0.002985490718856454
+  },
+  "4-Slot Boat": {
+    "triangles": 12000,
+    "bytes": 386515,
+    "error": 0.0029905554838478565
+  },
+  "5-Slot Boat": {
+    "triangles": 15636,
+    "bytes": 472113,
+    "error": 0.0029801116324961185
+  },
+  "6-Slot Boat": {
+    "triangles": 17758,
+    "bytes": 518881,
+    "error": 0.002941133687272668
+  },
+  "7-Slot Boat": {
+    "triangles": 12812,
+    "bytes": 414184,
+    "error": 0.002997535979375243
+  },
+  "8-Slot Boat": {
+    "triangles": 12808,
+    "bytes": 411173,
+    "error": 0.0029894369654357433
+  },
+  "Adventurer Command Tile": {
+    "triangles": 80,
+    "bytes": 46284
+  },
+  "Banana Crate": {
+    "triangles": 32326,
+    "bytes": 861594,
+    "error": 0.002978651551529765
+  },
+  "Builder Command Tile": {
+    "triangles": 80,
+    "bytes": 44952
+  },
+  "Captain Command Tile": {
+    "triangles": 80,
+    "bytes": 47293
+  },
+  "City Hall": {
+    "triangles": 30178,
+    "bytes": 832317,
+    "error": 0.0029977187514305115
+  },
+  "Coffee Crate": {
+    "triangles": 48396,
+    "bytes": 1218877,
+    "error": 0.0029647143092006445
+  },
+  "Corn Crate": {
+    "triangles": 60370,
+    "bytes": 1506011,
+    "error": 0.0029828320257365704
+  },
+  "Craftsman Command Tile": {
+    "triangles": 80,
+    "bytes": 46881
+  },
+  "Customs House": {
+    "triangles": 20328,
+    "bytes": 605898,
+    "error": 0.0029953450430184603
+  },
+  "Fire Station": {
+    "triangles": 27696,
+    "bytes": 775308,
+    "error": 0.002996589057147503
+  },
+  "Fortress": {
+    "triangles": 28556,
+    "bytes": 796056,
+    "error": 0.002988349413499236
+  },
+  "Planter Command Tile": {
+    "triangles": 80,
+    "bytes": 46638
+  },
+  "Private Boat": {
+    "triangles": 13164,
+    "bytes": 414822,
+    "error": 0.002964765764772892
+  },
+  "Recruiter Command Tile": {
+    "triangles": 80,
+    "bytes": 44448
+  },
+  "Residence": {
+    "triangles": 27942,
+    "bytes": 800926,
+    "error": 0.0029914313927292824
+  },
+  "Sugar Crate": {
+    "triangles": 29444,
+    "bytes": 826225,
+    "error": 0.002985152881592512
+  },
+  "Tobacco Crate": {
+    "triangles": 28224,
+    "bytes": 747184,
+    "error": 0.002994854934513569
+  },
+  "Trader Command Tile": {
+    "triangles": 80,
+    "bytes": 44510
+  },
+  "Trader Depot": {
+    "triangles": 32962,
+    "bytes": 896435,
+    "error": 0.0029691129457205534
+  },
+  "Worker 01": {
+    "triangles": 12000,
+    "bytes": 381013,
+    "error": 0.002515495754778385
+  },
+  "Worker 02": {
+    "triangles": 12000,
+    "bytes": 381415,
+    "error": 0.0022897354792803526
+  },
+  "Worker 03": {
+    "triangles": 12000,
+    "bytes": 386737,
+    "error": 0.0021283181849867105
+  },
+  "Worker 04": {
+    "triangles": 11992,
+    "bytes": 381803,
+    "error": 0.0029280500020831823
+  },
+  "Worker 05": {
+    "triangles": 12000,
+    "bytes": 370636,
+    "error": 0.0025833777617663145
+  },
+  "Corn Estate": {
+    "triangles": 46144,
+    "bytes": 1237002,
+    "error": 0.002994233975186944
+  },
+  "Banana Estate": {
+    "triangles": 56344,
+    "bytes": 1498721,
+    "error": 0.0029295887798070908
+  },
+  "Sugar Estate": {
+    "triangles": 67344,
+    "bytes": 1761101,
+    "error": 0.0029317070730030537
+  },
+  "Tobacco Estate": {
+    "triangles": 52750,
+    "bytes": 1379080,
+    "error": 0.002973272930830717
+  },
+  "Quarry": {
+    "triangles": 24232,
+    "bytes": 683709,
+    "error": 0.002993862610310316
+  },
+  "Coffee Estate": {
+    "triangles": 67606,
+    "bytes": 1770555,
+    "error": 0.002999348333105445
+  }
+}

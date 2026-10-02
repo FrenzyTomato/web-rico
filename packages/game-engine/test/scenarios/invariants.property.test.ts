@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest';
-import { applyCommand, assertGameState, createGame, createId, deserializeGame, getLegalCommands, serializeGame } from '../../src/index.js';
+import { applyCommand, assertGameState, confirmedWorkers, createGame, createId, deserializeGame, getLegalCommands, serializeGame } from '../../src/index.js';
 import type { GameCommand, GameState, Good, LegalAction } from '../../src/index.js';
 import { expectLedgers, independentScores } from '../helpers/verify.js';
 
@@ -81,14 +81,14 @@ it.each([3, 4, 5].flatMap(n => [11, 29, 47].map(seed => ({ n, seed }))))('bounde
   let state = created.state;
   for (let step = 0; step < STEPS && state.phase.kind !== 'game-over'; step++) {
     const holders = seats.filter(id => getLegalCommands(state, id).length > 0);
-    expect(holders, `step ${step}`).toEqual(['actorId' in state.phase ? state.phase.actorId : null]);
-    const actions = getLegalCommands(state, holders[0]!);
+    expect(holders, `step ${step}`).toEqual(state.phase.kind === 'recruiter-placement' ? seats.filter(id => !confirmedWorkers(state).includes(id)) : ['actorId' in state.phase ? state.phase.actorId : null]);
+    const actions = getLegalCommands(state, r.pick(holders));
     expect(actions).toHaveLength(1);
     const command = randomCommand(state, actions[0]!, r);
     const before = serializeGame(state);
     // Every non-actor submission is rejected without changing the state.
-    const other = seats.find(id => id !== command.actorId)!;
-    expect(applyCommand(state, { ...command, actorId: other } as GameCommand)).toMatchObject({ ok: false, error: { code: 'WRONG_ACTOR' } });
+    const other = seats.find(id => !holders.includes(id));
+    if (other) expect(applyCommand(state, { ...command, actorId: other } as GameCommand)).toMatchObject({ ok: false, error: { code: 'WRONG_ACTOR' } });
     const result = applyCommand(state, command);
     if (!result.ok) throw Error(`step ${step} generated command rejected: ${JSON.stringify(command)} ${result.error.message}`);
     expect(serializeGame(state)).toBe(before);

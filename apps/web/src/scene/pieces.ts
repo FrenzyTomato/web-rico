@@ -1,3 +1,4 @@
+import { BUILDINGS } from '@vibe-rico/game-engine';
 import type { BuildingType, CargoShip, Good } from '@vibe-rico/game-engine';
 
 /** DESIGN.md palette for goods in the scene. */
@@ -19,5 +20,5 @@ export const BUILDING_ORDER: readonly BuildingType[] = [
   'factory', 'school', 'harbor', 'wharf', 'fire-station', 'residence', 'fortress', 'customs-house', 'city-hall',
 ];
 export function buildingMarket(stock: Readonly<Record<BuildingType, number>>) {
-  return BUILDING_ORDER.map(type => ({ type, count: stock[type], exhausted: stock[type] === 0 }));
+  return [...BUILDING_ORDER].sort((a, b) => BUILDINGS[a].cost - BUILDINGS[b].cost).map(type => ({ type, count: stock[type], exhausted: stock[type] === 0 }));
 }

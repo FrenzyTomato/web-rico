@@ -3,34 +3,61 @@ import type { ReactNode } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { Vector3 } from 'three';
 import type { Group, Mesh } from 'three';
+import { HoverHint } from './ModelHint.js';
+import type { PieceHint } from './effects.js';
 import { Interaction, targetKey, useSelectable } from './Selection.js';
 import type { SceneTarget } from './Selection.js';
+import { OutlineColor } from './ModelOutline.js';
 
 // Scene-side selection (three.js/R3F): kept apart from Selection.tsx so the lazy scene chunk holds all 3D code.
 /** Development/test registry of selectable objects, so browser tests can click real canvas positions. */
 const registry = new Map<string, { target: SceneTarget; group: Group }>();
 
 /** Wraps a scene object: click selects it; actionable objects get a gold outline and a pointer cursor. */
-export function Selectable({ target, size, children }: { target: SceneTarget; size: [number, number]; children: ReactNode }) {
+export function Selectable({ target, size, children, hint, outline = false, circular = false, hitHeight = 0.6 }: { target: SceneTarget; size: [number, number]; children?: ReactNode; hint?: PieceHint; outline?: boolean; circular?: boolean; hitHeight?: number }) {
+  const showHint = useContext(HoverHint);
   const { active, handlers } = useSelectable(target);
   const ref = useRef<Group>(null);
   const key = targetKey(target);
-  const pulsing = useContext(Interaction).pulse === key;
+  const interaction = useContext(Interaction);
+  const pulsing = interaction.pulse === key;
+  const selected = interaction.selectedKey === key;
+  const modelStroke = ['building', 'owned-building', 'estate', 'quarry', 'tile', 'worker'].includes(target.kind);
   useEffect(() => {
     if (!import.meta.env.DEV || !ref.current) return;
     registry.set(key, { target, group: ref.current });
     return () => { registry.delete(key); };
   }, [key, target]);
   return (
-    <group ref={ref} {...handlers}>
+    <group ref={ref} {...handlers}
+      onPointerOver={() => { handlers.onPointerOver(); if (hint) showHint(hint); }}
+      onPointerMove={() => { if (hint) showHint(hint); }}
+      onPointerDown={() => { if (hint) showHint(hint); }}
+      onPointerOut={() => { handlers.onPointerOut(); if (hint) showHint(null); }}>
       {pulsing && <Pulse size={size} />}
-      {active && (
-        <mesh position={[0, 0.01, 0]}>
-          <boxGeometry args={[size[0] + 0.3, 0.04, size[1] + 0.3]} />
-          <meshBasicMaterial color="#c9a45c" />
+      {(active || selected) && !modelStroke && (
+        circular ? <mesh position={[0, 0.015, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+          <ringGeometry args={[0.17, 0.185, 32]} /><meshBasicMaterial color={selected ? '#d5fff0' : '#87dcca'} />
+        </mesh> : outline ? <group>
+          {[-1, 1].flatMap(side => [
+            <mesh key={`x${side}`} position={[side * size[0] / 2, 0.015, 0]}>
+              <boxGeometry args={[0.025, 0.02, size[1]]} /><meshBasicMaterial color={selected ? '#d5fff0' : '#87dcca'} />
+            </mesh>,
+            <mesh key={`z${side}`} position={[0, 0.015, side * size[1] / 2]}>
+              <boxGeometry args={[size[0], 0.02, 0.025]} /><meshBasicMaterial color={selected ? '#d5fff0' : '#87dcca'} />
+            </mesh>,
+          ])}
+        </group> : <mesh position={[0, 0.035, 0]}>
+          <boxGeometry args={[size[0] * 1.1, 0.025, size[1] * 1.1]} />
+          <meshBasicMaterial color={selected ? '#d5fff0' : '#87dcca'} />
         </mesh>
       )}
-      {children}
+      {/* Stable low-cost hit box also works while art is loading or unavailable. */}
+      <mesh position={[0, hitHeight / 2, 0]}>
+        <boxGeometry args={[size[0], hitHeight, size[1]]} />
+        <meshBasicMaterial transparent opacity={0} depthWrite={false} colorWrite={false} />
+      </mesh>
+      <OutlineColor.Provider value={modelStroke && (active || selected) ? selected ? '#d5fff0' : '#87dcca' : null}>{children}</OutlineColor.Provider>
     </group>
   );
 }

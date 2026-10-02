@@ -94,6 +94,7 @@ const phase: Decoder<GamePhase> = union<GamePhase>(
   object({ kind: values('recruiter-advantage'), ...turn }),
   object({ kind: values('recruiter-distribution'), roleChooserId: id('player') }),
   object({ kind: values('recruiter-placement'), ...turn }),
+  object({ kind: values('recruiter-placement'), ...turn, confirmedPlayerIds: array(id('player')) }),
   object({ kind: values('builder-choice'), ...turn }),
   object({ kind: values('craftsman-production'), ...turn, chooserProducedTypes: array(good) }),
   object({ kind: values('craftsman-bonus'), ...turn, chooserProducedTypes: array(good) }),

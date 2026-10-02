@@ -1,4 +1,5 @@
 import { assertGameState } from './invariants/assertGameState.js';
+import { confirmedWorkers } from './roles/mayor/progress.js';
 import type { CommandByPhase } from './model/commands.js';
 import type { RuleError } from './model/events.js';
 import type { DecisionKind, DecisionPhase } from './model/phase.js';
@@ -28,7 +29,9 @@ export function inspectDecision(state: GameState, actorId: unknown):
   assertGameState(state);
   if(state.phase.kind==='game-over') return {error:ERRORS.gameOver};
   if(!('actorId' in state.phase)) return {error:ERRORS.wrongPhase};
-  if(actorId!==state.phase.actorId) return {error:ERRORS.wrongActor};
+  if(state.phase.kind==='recruiter-placement') {
+    if(!state.seatOrder.some(id=>id===actorId) || confirmedWorkers(state).some(id=>id===actorId)) return {error:ERRORS.wrongActor};
+  } else if(actorId!==state.phase.actorId) return {error:ERRORS.wrongActor};
   return {phase:state.phase};
 }
 

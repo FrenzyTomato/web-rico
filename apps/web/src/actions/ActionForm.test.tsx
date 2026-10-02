@@ -84,6 +84,33 @@ describe('game screen', () => {
   const room: RoomState = { roomCode: 'C', hostPlayerId: 'alice', started: true,
     seats: [{ playerId: 'alice', displayName: 'Alice' }, { playerId: 'bruno', displayName: 'Bruno' }, { playerId: 'chen', displayName: 'Chen' }] };
 
+  it.each(['builder-choice', 'planter-choice'] as const)('%s guides board selection, keeps skip available and collapses keyboard choices', phase => {
+    const { state, legal } = [...decisions(three)].find(t => t.legal.phase === phase)!;
+    const submit = vi.fn();
+    const { container } = render(<ActionForm boardFirst legalActions={[legal]} view={state} submit={submit} />);
+    expect(screen.getByRole('status').textContent).toContain('描边');
+    const details = container.querySelector('details')!;
+    expect(details.open).toBe(false);
+    expect(details.querySelectorAll('button').length).toBeGreaterThan(0);
+    const skip = screen.getByRole('button', { name: phase === 'builder-choice' ? '不建造' : '放弃' });
+    fireEvent.click(skip);
+    expect(submit).toHaveBeenCalledWith(phase === 'builder-choice' ? { kind: 'build', purchase: null } : { kind: 'plant', choice: { kind: 'decline' } });
+  });
+
+  it('selects the second worker without highlighting the first or opening an empty action panel', () => {
+    const { state, legal } = [...decisions(three)].find(({ state, legal }) => legal.phase === 'recruiter-placement'
+      && state.players.find(p => p.playerId === legal.actorId)!.idleWorkerCount >= 2)!;
+    const store = createGameStore({ send: () => new Promise(() => {}) });
+    store.getState().sessionReady();
+    store.getState().receive({ protocolVersion: '1', revision: state.revision, events: [], legalActions: [legal],
+      view: { ...state, players: state.players.map(({ earnedVp: _, ...p }) => p), viewer: { playerId: legal.actorId, earnedVp: 0 } } });
+    render(<GameShell store={store} roomId="r" room={room} />);
+    fireEvent.click(screen.getByRole('button', { name: '选择工人 2' }));
+    expect(screen.getByRole('button', { name: '选择工人 2' }).getAttribute('aria-pressed')).toBe('true');
+    expect(screen.getByRole('button', { name: '选择工人 1' }).getAttribute('aria-pressed')).toBe('false');
+    expect(screen.queryByText('此对象当前没有可执行的行动')).toBeNull();
+  });
+
   it('shows a server rejection clearly and keeps the latest view', () => {
     const store = createGameStore({ send: () => new Promise(() => {}) });
     const created = createGame(three.input as unknown as CreateGameInput);
@@ -97,11 +124,18 @@ describe('game screen', () => {
       store.getState().receive({ protocolVersion: '1', revision: 0, view, legalActions: getLegalCommands(s, 'alice' as never), events: [] } as unknown as PlayerBroadcast);
       store.setState({ rejection: { commandId: 'c', code: 'ILLEGAL_COMMAND', ruleId: 'ROLE-001' } });
     });
-    render(<GameShell store={store} roomId="r" room={room} />);
-    expect(screen.getByRole('alert').textContent).toBe('操作被拒绝：ILLEGAL_COMMAND（规则 ROLE-001）');
+    render(<GameShell store={store} roomId="r" room={room} lobbyHref="/?lobby=1" />);
+    expect(screen.getByRole('link', { name: '返回大厅' }).getAttribute('href')).toBe('/?lobby=1');
+    expect(screen.getByRole('alert').textContent).toBe('操作不符合当前规则，请重新选择');
     expect(rejectionText({ commandId: 'c', code: 'STALE_REVISION', currentRevision: 2 })).toBe('状态已更新，请根据最新局面重新选择');
     expect(within(screen.getByRole('group', { name: '可选行动' })).getAllByRole('button')).toHaveLength(6);
     expect(screen.getByLabelText('回合信息').textContent).toContain('Alice 的回合');
+    expect(screen.getByLabelText('玩家列表').hidden).toBe(true);
+    expect(screen.getByLabelText('回合信息').hidden).toBe(true);
+    fireEvent.click(screen.getByRole('button', { name: /^玩家$/ }));
+    expect(screen.getByLabelText('玩家列表').hidden).toBe(false);
+    fireEvent.click(screen.getByRole('button', { name: /^编年史$/ }));
+    expect(screen.getByLabelText('回合信息').hidden).toBe(false);
   });
 
   it('renders the itemized final scores in rank order with names', () => {

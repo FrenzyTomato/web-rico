@@ -27,3 +27,6 @@ export interface SavedSeat { readonly roomId: string; readonly roomCode: string;
 export const loadSeat = (): SavedSeat | null => JSON.parse(localStorage.getItem(SEAT_KEY) ?? 'null') as SavedSeat | null;
 export const saveSeat = (seat: SavedSeat) => localStorage.setItem(SEAT_KEY, JSON.stringify(seat));
 export const clearSeat = () => localStorage.removeItem(SEAT_KEY);
+
+/** An explicit landing-page URL bypasses automatic seat restoration without deleting credentials. */
+export const lobbyLink = () => `${location.pathname}?lobby=1`;

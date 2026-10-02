@@ -22,7 +22,7 @@ export function getLegalCommands(state: GameState, playerId: PlayerId): LegalAct
   if(gate.phase.kind==='planter-choice') return [{phase:'planter-choice',actorId:gate.phase.actorId,choices:availablePlantingChoices(state)}];
   if(gate.phase.kind==='builder-choice') return [{phase:'builder-choice',actorId:gate.phase.actorId,canDecline:true,purchases:availableBuilds(state)}];
   if(gate.phase.kind==='recruiter-advantage') return [{phase:'recruiter-advantage',actorId:gate.phase.actorId,accept:recruiterChoices(state)}];
-  if(gate.phase.kind==='recruiter-placement') return Number.isSafeInteger(state.revision+1)?[placementOptions(state)]:[];
+  if(gate.phase.kind==='recruiter-placement') return Number.isSafeInteger(state.revision+1)?[placementOptions(state,playerId)]:[];
   if(gate.phase.kind==='craftsman-production') return Number.isSafeInteger(state.revision+1)?[{phase:'craftsman-production',actorId:gate.phase.actorId,canDecline:true,output:productionOutput(state),factoryChoices:factoryChoices(state.players.find(p=>p.playerId===gate.phase.actorId)!,productionOutput(state))}]:[];
   if(gate.phase.kind==='craftsman-bonus') return [{phase:'craftsman-bonus',actorId:gate.phase.actorId,goods:productionBonusChoices(state)}];
   if(gate.phase.kind==='trader-choice') {

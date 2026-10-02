@@ -33,8 +33,14 @@ export function submitCommand(store: RoomStore, queues: RoomQueues, roomId: stri
       return isDeepStrictEqual({ expectedRevision: saved.expectedRevision, action: saved.action }, { expectedRevision, action })
         ? { commandId, acceptedRevision: saved.acceptedRevision } : { commandId, code: 'COMMAND_ID_REUSE' };
     }
-    // Step 4.
-    if (expectedRevision !== game.state.revision) return { commandId, code: 'STALE_REVISION', currentRevision: game.state.revision };
+    // Independent allocations may cross in flight. Rebase only across other seats'
+    // allocations in this same recruitment, never across another action/phase.
+    const intervening = game.commands.filter(c => c.acceptedRevision > expectedRevision);
+    const concurrentAllocation = action.kind === 'allocate-workers' && game.state.phase.kind === 'recruiter-placement'
+      && expectedRevision < game.state.revision
+      && intervening.length === game.state.revision - expectedRevision
+      && intervening.every(c => c.action.kind === 'allocate-workers' && c.playerId !== playerId);
+    if (expectedRevision !== game.state.revision && !concurrentAllocation) return { commandId, code: 'STALE_REVISION', currentRevision: game.state.revision };
     // Step 5: identity is attached by the server.
     const result = applyCommand(game.state, { ...action, actorId: playerId } as GameCommand);
     if (!result.ok) return { commandId, code: 'ILLEGAL_COMMAND', ruleId: result.error.ruleId };
