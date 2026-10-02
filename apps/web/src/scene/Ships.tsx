@@ -1,3 +1,4 @@
+import { boatHint, depotHint } from './harbourHints.js';
 import { t, useLanguage } from '../i18n/language.js';
 import type { CargoShip, Good } from '@vibe-rico/game-engine';
 import { GOOD } from '../i18n/terms.js';
@@ -23,7 +24,7 @@ export function Ships({ ships, tradingHouse }: { ships: readonly CargoShip[]; tr
   useLanguage();
   return <group>
     {ships.map((ship, i) => <group key={ship.instanceId} position={[-6 + i * 6, 0, 0]}>
-      <Selectable target={{ kind: 'ship', id: ship.instanceId }} size={[3.6, 6.2]}>
+      <Selectable hint={boatHint(ship)} target={{ kind: 'ship', id: ship.instanceId }} size={[3.6, 6.2]}>
         <group rotation={[0, Math.PI / 2, 0]}>
           <Model name={`${ship.capacity}-Slot Boat`} {...BOAT_FIT} />
           <CargoSlots slots={shipSlots(ship)} bays={BOAT_BAYS[ship.capacity]!} shipId={ship.instanceId} />
@@ -32,7 +33,7 @@ export function Ships({ ships, tradingHouse }: { ships: readonly CargoShip[]; tr
       </Selectable>
     </group>)}
     <group position={[17.4, 0, -1.8]}>
-      <Selectable target={{ kind: 'depot' }} size={[4, 5]}>
+      <Selectable hint={depotHint(tradingHouse)} target={{ kind: 'depot' }} size={[4, 5]}>
         <Model name="Trader Depot" {...DEPOT_FIT} />
         <CargoSlots slots={tradingSlots(tradingHouse)} bays={DEPOT_BAYS} />
         <Label position={[0, 0.1, 3.6]} height={0.68} text={t("交易所 {0}/4", [tradingHouse.length])} />

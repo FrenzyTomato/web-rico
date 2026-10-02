@@ -1,3 +1,4 @@
+import { AutoProduceHelp } from './AutoProduceHelp.js';
 import { ROLE_HELP } from '../i18n/roleHelp.js';
 import { createPortal } from 'react-dom';
 import { HudIcon } from '../layout/HudIcon.js';
@@ -6,7 +7,7 @@ import { useEffect, useState } from 'react';
 import { ROLE } from '../i18n/terms.js';
 
 const KEY = 'vibe-rico.settings';
-export interface Settings { readonly reducedMotion: boolean; readonly turnSound?: boolean }
+export interface Settings { readonly reducedMotion: boolean; readonly turnSound?: boolean; readonly autoProduce?: boolean }
 const systemReduced = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 /** Per-browser display settings; reduced motion defaults to the system preference. */
@@ -37,6 +38,7 @@ export function SettingsPanel({ settings, onChange, iconOnly = false, open, onOp
   const content = <div className="settings-body">
         <label><input type="checkbox" checked={settings.reducedMotion} onChange={e => onChange({ ...settings, reducedMotion: e.target.checked })} />{t(" 减少动画")}</label>
         <label><input type="checkbox" checked={settings.turnSound ?? true} onChange={e => onChange({ ...settings, turnSound: e.target.checked })} />{t("回合提示音")}</label>
+        <div className="setting-with-help"><label><input type="checkbox" checked={settings.autoProduce ?? false} onChange={e => onChange({ ...settings, autoProduce: e.target.checked })} />{t("自动生产（仅自己）")}</label><AutoProduceHelp /></div>
         <dl aria-label={t("术语说明")}>
           {glossary().map(([term, text]) => <div key={term}><dt>{term}</dt><dd>{text}</dd></div>)}
         </dl>

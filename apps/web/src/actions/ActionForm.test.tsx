@@ -134,7 +134,7 @@ describe('game screen', () => {
     expect(screen.getByLabelText('回合信息').hidden).toBe(true);
     fireEvent.click(screen.getByRole('button', { name: /^玩家$/ }));
     expect(screen.getByLabelText('玩家列表').hidden).toBe(false);
-    fireEvent.click(screen.getByRole('button', { name: /^编年史$/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^时间线$/ }));
     expect(screen.getByLabelText('回合信息').hidden).toBe(false);
   });
 

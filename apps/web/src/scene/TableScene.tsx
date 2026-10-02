@@ -52,7 +52,7 @@ export function TableScene({ view, names, islandRequest, frameloop = 'demand' }:
   // WebGL context loss (PR-055): three.js restores its own state; show a notice while lost, redraw after.
   const [hint, setHint] = useState<PieceHint | null>(null);
   useEffect(() => { setHint(null); }, [language]);
-  const showHint = useCallback((next: PieceHint | null) => setHint(current => current?.title === next?.title ? current : next), []);
+  const showHint = useCallback((next: PieceHint | null) => setHint(current => current?.title === next?.title && current?.detail === next?.detail && current?.meta === next?.meta ? current : next), []);
   const [lost, setLost] = useState(false);
   const [cameraCommand, setCameraCommand] = useState<CameraCommand>({ id: 0, view: 'shared' });
   const [focus, setFocus] = useState<BoardView>('shared');

@@ -436,3 +436,17 @@ html[lang="en"] .role-card span { font-size: 14px; }
 }
 .board-camera.board-zoom button + button { border-top: 1px solid #e2fff033; }
 .board-camera.board-zoom button:focus-visible { outline-offset: -4px; }
+
+.lobby-footer { display: flex; justify-content: center; margin-top: 24px; }
+.lobby-github { display: inline-flex; align-items: center; gap: 9px; padding: 10px 14px; color: inherit; border: 1px solid var(--line); border-radius: 10px; text-decoration: none; font-size: 13px; }
+.lobby-github:hover { background: #d6eee330; }
+.lobby-github svg { flex-shrink: 0; }
+
+.setting-with-help { display: flex; align-items: center; gap: 8px; }
+.setting-with-help .setting-help { padding: 4px 8px; margin: 0; min-width: 32px; min-height: 32px; }
+
+.players .seat-goods { display: flex; flex-wrap: wrap; gap: 5px 12px; list-style: none; padding: 0; margin: 7px 0; }
+.players .seat-goods:empty { display: none; }
+.players .seat-goods li { display: flex; align-items: center; gap: 4px; font-size: 12px; }
+.players .seat-goods img { width: 30px; height: 30px; object-fit: contain; }
+.players .seat-goods b { font-variant-numeric: tabular-nums; }

@@ -1,5 +1,13 @@
 /** English messages keyed by their Chinese source text. Placeholders preserve user content. */
 export const EN = {
+  "自动生产说明": "About auto-production",
+  "仅在你连接游戏且轮到你生产时执行。关闭后可手动生产或放弃，不影响其他玩家。": "Runs only while connected and on your production turn. Turn it off to produce or decline manually; other players are unaffected.",
+  "货船 · {0} 格": "Cargo ship \u00b7 {0} holds",
+  "每船只装一种货物，同种货物不能分装到其他货船。每箱获得 1 分；船长选择者首次装运额外获得 1 分。满船在船长阶段结束时清空。": "Each ship holds one good type; that type cannot occupy another cargo ship. Earn 1 VP per crate. The Captain chooser earns 1 extra VP on their first shipment. Full ships empty at the end of the Captain phase.",
+  "货物：{0} · 已装 {1}/{2} · 空位 {3}": "Cargo: {0} \u00b7 Loaded {1}/{2} \u00b7 Free holds {3}",
+  "商人阶段每人最多卖出一箱，换取金币而非分数。最多容纳 4 箱；通常不能出售已有种类，启用的办事处可例外。装满后在商人阶段结束时清空。": "During the Trader phase, each player may sell one crate for coins, not VP. Holds up to 4 crates. Duplicate types require an occupied Office. A full depot empties at the end of the Trader phase.",
+  "已存 {0}/4：{1}": "Stored {0}/4: {1}",
+
   "轮到你了！": "It’s your turn!",
   "回合提示音": "Turn notification sound",
   "分配工人": "Assign workers",
@@ -158,7 +166,9 @@ export const EN = {
   "分数用尽": "Points exhausted",
   "正在载入局面…": "Loading game…",
   "波多黎各": "Puerto Rico",
-  "编年史": "Chronicle",
+  "自动生产（仅自己）": "Auto-produce (only me)",
+  "自动接受生产及工厂收益；额外货物仍由你选择。此设置保存在当前浏览器。": "Automatically accept production and Factory income; you still choose bonus goods. Saved in this browser.",
+  "时间线": "Chronicle",
   "玩家列表": "Player list",
   "（行动中）": " (acting)",
   "总督": "Governor",
@@ -199,6 +209,7 @@ export const EN = {
   "邀请码 ": "Invite code ",
   "加入房间": "Join room",
   "邀请码：": "Invite code: ",
+  "在 GitHub 上查看源码": "View source on GitHub",
   "邀请链接：": "Invite link: ",
   "复制邀请链接": "Copy invite link",
   "链接已复制": "Link copied",

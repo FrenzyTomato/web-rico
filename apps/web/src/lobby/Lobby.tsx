@@ -159,6 +159,12 @@ export function Lobby({ socket, onSession = () => {}, game }: {
             : room?.hostPlayerId === seat.playerId && <button className="lobby-primary lobby-start" disabled={!connected || replaced} onClick={() => void start()}>{t("开始游戏")}</button>}
         </section>
       )}
+      <footer className="lobby-footer">
+        <a className="lobby-github" href="https://github.com/FrenzyTomato/web-rico" target="_blank" rel="noopener noreferrer" aria-label={t("在 GitHub 上查看源码")}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .75a11.25 11.25 0 0 0-3.558 21.923c.563.104.769-.244.769-.542 0-.267-.01-.975-.015-1.914-3.13.68-3.79-1.51-3.79-1.51-.512-1.3-1.25-1.647-1.25-1.647-1.022-.699.077-.685.077-.685 1.13.08 1.725 1.16 1.725 1.16 1.005 1.722 2.637 1.225 3.279.937.102-.728.393-1.225.715-1.507-2.499-.284-5.126-1.25-5.126-5.566 0-1.23.44-2.233 1.16-3.02-.116-.284-.503-1.43.11-2.98 0 0 .945-.302 3.094 1.154A10.8 10.8 0 0 1 12 6.174c.956.004 1.92.13 2.82.379 2.148-1.456 3.091-1.154 3.091-1.154.615 1.55.228 2.696.112 2.98.723.787 1.159 1.79 1.159 3.02 0 4.327-2.631 5.279-5.138 5.558.404.349.765 1.038.765 2.092 0 1.51-.014 2.728-.014 3.098 0 .3.203.651.774.54A11.25 11.25 0 0 0 12 .75Z" /></svg>
+          <span>{t("在 GitHub 上查看源码")}</span><span aria-hidden="true">↗</span>
+        </a>
+      </footer>
     </main>
     </div>
   );

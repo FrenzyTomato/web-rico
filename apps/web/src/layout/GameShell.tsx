@@ -1,3 +1,4 @@
+import { useAutoProduce } from './useAutoProduce.js';
 import { useTurnChime } from './useTurnChime.js';
 import { HudIcon } from './HudIcon.js';
 import { t, useLanguage, LanguageToggle } from '../i18n/language.js';
@@ -9,7 +10,8 @@ import { ActionForm } from '../actions/ActionForm.js';
 import { ActionPanel } from '../actions/ActionPanel.js';
 import { createEventQueue, PULSE_MS } from '../animation/eventQueue.js';
 import { SettingsPanel, useSettings } from '../settings/Settings.js';
-import { describeOptions } from '../actions/options.js';
+import { GOODS_MODEL } from '../scene/modelCatalog.js';
+import { GOODS, describeOptions } from '../actions/options.js';
 import { SceneInteractionProvider, targetKey } from '../scene/Selection.js';
 import { useBoardActions } from '../actions/useBoardActions.js';
 import { ResourceDock, RoleHand } from './ResourceDock.js';
@@ -60,6 +62,7 @@ export function GameShell({ store, roomId, room, lobbyHref }: { store: GameStore
   const { selected } = board;
   // Event animation (PR-053): purely visual pulses; the scene always renders `latest`.
   const [settings, setSettings] = useSettings();
+  useAutoProduce(latest, roomId, settings.autoProduce ?? false, connected, pending, action => store.getState().submit(roomId, action));
   const yourTurn = Boolean(latest?.legalActions.length);
   useTurnChime(yourTurn, connected, settings.turnSound ?? true);
   // Reduced motion: a zero-length queue shows no pulses at all (PR-054).
@@ -94,7 +97,7 @@ export function GameShell({ store, roomId, room, lobbyHref }: { store: GameStore
         <span className="turn-summary" aria-live="polite" aria-atomic="true">{yourTurn && connected && <strong className="your-turn">{t("轮到你了！")}</strong>}<span>{recruitment ? t('所有玩家 · 同时分配工人') : 'actorId' in phase ? `${name(phase.actorId)} · ${PHASE[phase.kind]}` : PHASE[phase.kind]}</span></span>
         <div className="topbar-tools">
         <button className="hud-icon" aria-label={t("玩家")} title={t("玩家")} aria-expanded={playersOpen} aria-controls="player-sidebar" onClick={() => { setPlayersOpen(v => !v); setChronicleOpen(false); setSettingsOpen(false); }}><HudIcon kind="players" /></button>
-        <button className="hud-icon" aria-label={t("编年史")} title={t("编年史")} aria-expanded={chronicleOpen} aria-controls="chronicle-sidebar" onClick={() => { setChronicleOpen(v => !v); setPlayersOpen(false); setSettingsOpen(false); }}><HudIcon kind="history" /></button>
+        <button className="hud-icon" aria-label={t("时间线")} title={t("时间线")} aria-expanded={chronicleOpen} aria-controls="chronicle-sidebar" onClick={() => { setChronicleOpen(v => !v); setPlayersOpen(false); setSettingsOpen(false); }}><HudIcon kind="history" /></button>
         <LanguageToggle iconOnly />
         <SettingsPanel settings={settings} onChange={setSettings} iconOnly portalHost={shellRef.current} open={settingsOpen} onOpenChange={open => { setSettingsOpen(open); setPlayersOpen(false); setChronicleOpen(false); }} />
         </div>
@@ -112,6 +115,12 @@ export function GameShell({ store, roomId, room, lobbyHref }: { store: GameStore
                 <strong>{name(p.playerId)}{p.playerId === view.viewer.playerId && t("（你）")}{acting && t("（行动中）")}</strong>
                 {p.playerId === view.governorPlayerId && <span className="badge">{t("总督")}</span>}
                 <div>{p.coins}{t(" 金币 · ")}{Object.values(p.goods).reduce((a, b) => a + b, 0)}{t(" 货物")}{role && ` · ${ROLE[role.kind]}`}</div>
+                <ul className="seat-goods" aria-label={t("货物")}>
+                  {GOODS.filter(good => p.goods[good] > 0).map(good => <li key={good} title={`${GOOD[good]} ×${p.goods[good]}`}>
+                    <img src={`/art/dock/${encodeURIComponent(`${GOODS_MODEL[good]} Cutout`)}.webp`} alt="" />
+                    <span>{GOOD[good]} <b>×{p.goods[good]}</b></span>
+                  </li>)}
+                </ul>
                 {p.playerId === view.viewer.playerId && <div>{t("运货分 ")}{view.viewer.earnedVp}</div>}
                 <button className="check-island" onClick={() => {
                   setIslandRequest(previous => ({ id: (previous?.id ?? 0) + 1, playerId: p.playerId }));
@@ -144,8 +153,8 @@ export function GameShell({ store, roomId, room, lobbyHref }: { store: GameStore
         {!recruitment && 'actorId' in phase && <p>{phase.actorId === view.viewer.playerId ? t("轮到你：{0}", [PHASE[phase.kind]]) : t("等待 {0}：{1}", [name(phase.actorId), PHASE[phase.kind]])}</p>}
         {rejection && <p role="alert">{rejectionText(rejection)}</p>}
         {phase.kind === 'game-over' && <ScoreView scores={phase.scores} names={names} />}
-        <h2>{t("编年史")}</h2>
-        <ol className="chronicle" aria-label={t("编年史")}>{lines.map(l => <li key={l.key}>{l.text}</li>)}</ol>
+        <h2>{t("时间线")}</h2>
+        <ol className="chronicle" aria-label={t("时间线")}>{lines.map(l => <li key={l.key}>{l.text}</li>)}</ol>
       </aside>
 
       <footer className="hand" aria-label={t("手牌与行动")}>
