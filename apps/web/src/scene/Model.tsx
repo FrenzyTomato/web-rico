@@ -6,6 +6,7 @@ import { useThree } from '@react-three/fiber';
 import { KTX2Loader } from 'three/addons/loaders/KTX2Loader.js';
 import { withArtBackup } from './artFallback.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { downloadModel, modelUrl } from './assetDownloads.js';
 import { decodeModel } from './modelBytes.js';
 import { box, material } from './resources.js';
 
@@ -27,9 +28,7 @@ async function load(name: string, lib: Library): Promise<Group> {
   active++;
   try {
     async function read(folder: string, compressed: boolean) {
-      const response = await fetch(`/art/${folder}/${encodeURIComponent(name)}.glb.gz`);
-      if (!response.ok || !response.body) throw Error(`Model unavailable: ${name}`);
-      const bytes = await decodeModel(await response.arrayBuffer());
+      const bytes = await decodeModel(await downloadModel(modelUrl(name, folder)));
       const loader = new GLTFLoader();
       if (compressed) loader.setKTX2Loader(lib.ktx);
       return (await loader.parseAsync(bytes, '')).scene;

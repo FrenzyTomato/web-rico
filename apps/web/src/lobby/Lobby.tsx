@@ -26,6 +26,15 @@ export function Lobby({ socket, onSession = () => {}, game }: {
   socket: LobbySocket; onSession?: () => void; game?: (seat: SavedSeat, room: RoomState) => ReactNode;
 }) {
   useLanguage();
+  useEffect(() => {
+    // Let the entry form paint first; no hidden canvas or GPU context is needed.
+    const timer = window.setTimeout(() => {
+      void import('../scene/assetDownloads.js').then(({ preloadBoardModels }) =>
+        preloadBoardModels(new URLSearchParams(location.search).get('art') === 'original' ? 'runtime' : 'runtime-ktx2')
+      ).catch(() => { /* Board loading can retry if this optional warmup fails. */ });
+    }, 750);
+    return () => window.clearTimeout(timer);
+  }, []);
   const manualLobby = useRef(new URLSearchParams(location.search).get('lobby') === '1');
   const [savedGame] = useState(() => manualLobby.current ? loadSeat() : null);
   const [name, setName] = useState('');
