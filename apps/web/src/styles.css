@@ -414,3 +414,9 @@ html[lang="en"] .role-card span { font-size: 14px; }
 
 /* Turn cue stays in the existing glass header, without a separate panel. */
 .turn-summary .your-turn { display: block; color: var(--accent); font-size: 1.08em; font-weight: 750; margin-bottom: 2px; }
+
+.lobby-invite-url { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.lobby-invite-url a { min-width: 0; }
+.lobby-invite-url .lobby-copy-link { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 34px; width: 34px; height: 34px; padding: 0; margin: 0; }
+.lobby-copy-status { flex-basis: 100%; font-size: 12px; }
+.lobby-copy-status:empty { display: none; }

@@ -1,3 +1,4 @@
+import { CopyInviteLink } from './CopyInviteLink.js';
 import { t, useLanguage, LanguageToggle } from '../i18n/language.js';
 import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
@@ -146,7 +147,7 @@ export function Lobby({ socket, onSession = () => {}, game }: {
         <section className="lobby-room">
           <a className="back-to-lobby" href={lobbyLink()}>{t('返回大厅')}</a>
           <div className="lobby-invite"><span>{t("邀请码：")}</span><strong>{seat.roomCode}</strong></div>
-          <div className="lobby-invite-link"><span>{t("邀请链接：")}</span><a href={inviteLink(seat.roomCode)}>{inviteLink(seat.roomCode)}</a></div>
+          <div className="lobby-invite-link"><span>{t("邀请链接：")}</span><div className="lobby-invite-url"><a href={inviteLink(seat.roomCode)}>{inviteLink(seat.roomCode)}</a><CopyInviteLink key={seat.roomCode} url={inviteLink(seat.roomCode)} /></div></div>
           <ol className="lobby-seats" aria-label={t("座位")}>
             {room?.seats.map(s => (
               <li key={s.playerId}>

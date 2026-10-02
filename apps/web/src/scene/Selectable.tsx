@@ -22,7 +22,8 @@ export function Selectable({ target, size, children, hint, outline = false, circ
   const interaction = useContext(Interaction);
   const pulsing = interaction.pulse === key;
   const selected = interaction.selectedKey === key;
-  const modelStroke = ['building', 'owned-building', 'estate', 'quarry', 'tile', 'worker'].includes(target.kind);
+  const buildingBase = target.kind === 'building' || target.kind === 'owned-building';
+  const modelStroke = ['estate', 'quarry', 'tile', 'worker'].includes(target.kind);
   useEffect(() => {
     if (!import.meta.env.DEV || !ref.current) return;
     registry.set(key, { target, group: ref.current });
@@ -36,7 +37,17 @@ export function Selectable({ target, size, children, hint, outline = false, circ
       onPointerOut={() => { handlers.onPointerOut(); if (hint) showHint(null); }}>
       {pulsing && <Pulse size={size} />}
       {(active || selected) && !modelStroke && (
-        circular ? <mesh position={[0, 0.015, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        buildingBase ? <group>
+          {/* A slightly expanded footprint keeps the border outside the model's plinth. */}
+          {[-1, 1].flatMap(side => [
+            <mesh key={`base-x${side}`} position={[side * (size[0] / 2 + 0.06), 0.08, 0]}>
+              <boxGeometry args={[0.06, 0.04, size[1] + 0.18]} /><meshBasicMaterial color={selected ? '#d5fff0' : '#87dcca'} toneMapped={false} />
+            </mesh>,
+            <mesh key={`base-z${side}`} position={[0, 0.08, side * (size[1] / 2 + 0.06)]}>
+              <boxGeometry args={[size[0] + 0.18, 0.04, 0.06]} /><meshBasicMaterial color={selected ? '#d5fff0' : '#87dcca'} toneMapped={false} />
+            </mesh>,
+          ])}
+        </group> : circular ? <mesh position={[0, 0.015, 0]} rotation={[-Math.PI / 2, 0, 0]}>
           <ringGeometry args={[0.17, 0.185, 32]} /><meshBasicMaterial color={selected ? '#d5fff0' : '#87dcca'} />
         </mesh> : outline ? <group>
           {[-1, 1].flatMap(side => [
