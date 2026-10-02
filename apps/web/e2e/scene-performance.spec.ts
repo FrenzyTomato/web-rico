@@ -44,3 +44,8 @@ test('WebGL context loss shows the notice and the scene recovers on restore', as
   // The remounted scene is live: its WebGL context is usable.
   expect(await page.evaluate(() => !document.querySelector('canvas')!.getContext('webgl2')!.isContextLost())).toBe(true);
 });
+
+// These scene assertions exercise the Chinese locale explicitly.
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('vibe-rico.language', 'zh'));
+});

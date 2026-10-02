@@ -5,7 +5,7 @@ import { EN } from './en.js';
 export type Language = 'zh' | 'en';
 const KEY = 'vibe-rico.language';
 function savedLanguage(): Language {
-  try { return localStorage.getItem(KEY) === 'en' ? 'en' : 'zh'; } catch { return 'zh'; }
+  try { return localStorage.getItem(KEY) === 'zh' ? 'zh' : 'en'; } catch { return 'en'; }
 }
 let language = savedLanguage();
 const listeners = new Set<() => void>();
@@ -25,7 +25,7 @@ export function setLanguage(next: Language) {
   updateDocument();
   listeners.forEach(listener => listener());
 }
-export function useLanguage() { return useSyncExternalStore(subscribe, getLanguage, () => 'zh' as const); }
+export function useLanguage() { return useSyncExternalStore(subscribe, getLanguage, () => 'en' as const); }
 
 /** Translate UI text only; interpolate names and codes without modifying user content. */
 export function t(source: keyof typeof EN, values: readonly (string | number)[] = [], locale = language): string {

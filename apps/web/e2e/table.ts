@@ -19,6 +19,7 @@ export async function seatTable(browser: Browser, names: readonly string[], game
   const pages: Page[] = [];
   for (const _ of names) {
     const context = await browser.newContext(options);
+    await context.addInitScript(() => localStorage.setItem('vibe-rico.language', 'zh'));
     // Functional multiplayer tests exercise the real controls and fallback meshes.
     // Art loading and WebGL lifecycle are covered separately in scene-performance.
     await context.route(/\.glb(?:\.gz)?(?:\?.*)?$/, route => route.abort());

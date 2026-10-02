@@ -1,3 +1,6 @@
+import { beforeEach as setTestLocale } from 'vitest';
+import { setLanguage as setTestLanguage } from '../i18n/language.js';
+setTestLocale(() => setTestLanguage('zh'));
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { SettingsPanel, useSettings } from './Settings.js';

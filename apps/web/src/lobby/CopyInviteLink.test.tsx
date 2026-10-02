@@ -1,3 +1,6 @@
+import { beforeEach as setTestLocale } from 'vitest';
+import { setLanguage as setTestLanguage } from '../i18n/language.js';
+setTestLocale(() => setTestLanguage('zh'));
 import { afterEach, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { CopyInviteLink } from './CopyInviteLink.js';

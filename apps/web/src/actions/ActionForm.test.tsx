@@ -1,3 +1,6 @@
+import { beforeEach as setTestLocale } from 'vitest';
+import { setLanguage as setTestLanguage } from '../i18n/language.js';
+setTestLocale(() => setTestLanguage('zh'));
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { applyCommand, createGame, getLegalCommands } from '@vibe-rico/game-engine';
