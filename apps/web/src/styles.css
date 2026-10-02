@@ -109,7 +109,6 @@ summary:hover { color: var(--parchment); }
 .model-tooltip p { margin: 10px 0; font-size: 14px; }
 .model-tooltip small { color: #deebe2; font-size: 14px; }
 .action-panel { position: absolute; left: 12px; bottom: 12px; right: 12px; background: #19383ef5; color: #e6ecdf; border: 1px solid #9cd5c266; border-radius: 12px; padding: 10px 14px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; box-shadow: var(--shadow); }
-.action-panel[role='status'] { background: #19383ef5; }
 .skip { position: absolute; top: 68px; right: 14px; }
 .stage-alert { position: absolute; top: 68px; left: 12px; z-index: 6; }
 .final-scores { position: absolute; z-index: 5; inset: 74px 20px auto; background: var(--surface); color: var(--parchment); border: 1px solid var(--line); border-radius: 14px; padding: 18px; overflow: auto; }
@@ -240,8 +239,10 @@ html[lang="en"] .role-card span { font-size: 14px; }
   position: absolute; inset: 0; z-index: 0; grid-area: auto;
   border: 0; border-radius: 0; box-shadow: none;
 }
-.shell > :is(.topbar, .hand, .text-view) {
-  position: relative; z-index: 4;
+.shell > :is(.topbar, .hand, .text-view) { position: relative; z-index: 4; }
+/* All remaining board overlays use the existing HUD material, including status variants. */
+.shell > :is(.topbar, .hand, .text-view),
+.shell :is(.action-panel, .final-scores, .stage-alert, .skip) {
   background: var(--glass);
   -webkit-backdrop-filter: blur(18px) saturate(120%);
   backdrop-filter: blur(18px) saturate(120%);
@@ -251,7 +252,15 @@ html[lang="en"] .role-card span { font-size: 14px; }
 .shell > .topbar { padding: 9px 12px; border-radius: 13px; color: #e0ece5; }
 .shell > .hand { max-height: min(250px, 34dvh); min-height: min(170px, 24dvh); }
 .shell > .text-view { max-height: 27dvh; }
-.shell .hand :is([role='status'], [role='note']) { background: #16393f40; }
+/* Controls inside glass use the same translucent fills as the lobby controls. */
+.shell :where(button:not(.dock-piece):not(.hud-icon), .card, .role-card) {
+  background: #d6eee31a; border-color: #e2fff033;
+}
+.shell :where(button:not(.dock-piece):not(.hud-icon)):hover:not(:disabled) { background: #d6eee330; }
+.shell :where(input, select) { background: #10313866; border-color: #bcded34d; }
+.shell .hand :is([role='status'], [role='note']),
+.shell .action-panel :is([role='status'], [role='note']) { background: #16393f40; }
+.shell .stage-alert { border-color: #e8cf9e; }
 .shell .board-camera, .shell .supply-hud { top: var(--hud-top); }
 .shell .board-camera, .shell .supply-hud > div {
   background: var(--glass);
@@ -276,10 +285,12 @@ html[lang="en"] .role-card span { font-size: 14px; }
 }
 @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
   .shell { --glass: #193238; }
-  .shell > :is(.topbar, .hand, .text-view), .shell .board-camera, .shell .supply-hud {
+  .shell > :is(.topbar, .hand, .text-view), .shell .board-camera, .shell .supply-hud,
+  .shell :is(.action-panel, .final-scores, .stage-alert, .skip) {
     opacity: 1 !important;
   }
-  .shell > :is(.topbar, .hand, .text-view), .shell .board-camera, .shell .supply-hud > div {
+  .shell > :is(.topbar, .hand, .text-view), .shell .board-camera, .shell .supply-hud > div,
+  .shell :is(.action-panel, .final-scores, .stage-alert, .skip) {
     -webkit-backdrop-filter: none; backdrop-filter: none;
   }
 }
