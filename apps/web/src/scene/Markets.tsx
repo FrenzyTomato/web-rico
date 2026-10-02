@@ -45,7 +45,7 @@ export function WorkerSupply({ supply }: { supply: Supply }) {
   useLanguage();
   return <group>
     <Workers count={supply.workRegisterCount} capacity={supply.workRegisterCount} columns={5} spacing={0.9} scale={3} />
-    <Label position={[0, 0.1, Math.ceil(supply.workRegisterCount / 5) * 0.9 - 1.5]} height={0.68} text={t("可招募工人：{0}", [supply.workRegisterCount])} />
+    <Label position={[0, 0.1, -1.8]} height={0.68} text={t("可招募工人：{0}", [supply.workRegisterCount])} />
   </group>;
 }
 /** One price per column; a price group may span columns, each with up to three buildings. */
