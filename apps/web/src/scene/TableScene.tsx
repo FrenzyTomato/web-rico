@@ -1,5 +1,5 @@
 import { t, useLanguage } from '../i18n/language.js';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Canvas, useThree } from '@react-three/fiber';
 import type { PlayerView } from '@vibe-rico/protocol';
 import { Camera } from './Camera.js';
@@ -45,8 +45,8 @@ function Redraw({ view }: { view: PlayerView }) {
 }
 
 /** A central harbour island and individual player islands surrounded by continuous ocean. */
-export function TableScene({ view, names, frameloop = 'demand' }: {
-  view: PlayerView; names: Readonly<Record<string, string>>; frameloop?: 'demand' | 'always';
+export function TableScene({ view, names, islandRequest, frameloop = 'demand' }: {
+  view: PlayerView; names: Readonly<Record<string, string>>; islandRequest?: { id: number; playerId: string } | undefined; frameloop?: 'demand' | 'always';
 }) {
   const language = useLanguage();
   // WebGL context loss (PR-055): three.js restores its own state; show a notice while lost, redraw after.
@@ -56,13 +56,32 @@ export function TableScene({ view, names, frameloop = 'demand' }: {
   const [lost, setLost] = useState(false);
   const [cameraCommand, setCameraCommand] = useState<CameraCommand>({ id: 0, view: 'shared' });
   const [focus, setFocus] = useState<BoardView>('shared');
-  const focusView = (view: BoardView) => { setFocus(view); setCameraCommand(c => ({ id: c.id + 1, view })); };
+  const [focusedPlayer, setFocusedPlayer] = useState<string | null>(null);
+  const focusView = (view: BoardView) => { setFocusedPlayer(null); setFocus(view); setCameraCommand(c => ({ id: c.id + 1, view })); };
+
+  const focusIsland = useCallback((playerId: string) => {
+    const seat = seatPositions(view.seatOrder, view.viewer.playerId).find(s => s.playerId === playerId);
+    if (!seat) return;
+    setFocusedPlayer(playerId);
+    setFocus('mine');
+    setCameraCommand(c => ({ id: c.id + 1, view: 'mine', island: { x: seat.x, z: seat.z } }));
+  }, [view.seatOrder, view.viewer.playerId]);
+  const lastIslandRequest = useRef<number | null>(null);
+  useEffect(() => {
+    if (!islandRequest || lastIslandRequest.current === islandRequest.id) return;
+    lastIslandRequest.current = islandRequest.id;
+    focusIsland(islandRequest.playerId);
+  }, [islandRequest, focusIsland]);
 
   return (
     <div className="scene" aria-label={t("桌面")}>
       <div className="board-camera" role="group" aria-label={t("棋盘视角")}>
-        {([['shared', t("公共区")], ['buildings', t("建筑市场")], ['boats', t("货船")], ['depot', t("交易所")], ['estates', t("可选田园")], ['mine', t("我的岛屿")], ['overview', t("全桌")]] as const).map(([mode, label]) =>
-          <button key={mode} aria-pressed={focus === mode} onClick={() => focusView(mode)}>{label}</button>)}
+        {([['shared', t("公共区")], ['buildings', t("建筑市场")], ['boats', t("货船")], ['depot', t("交易所")], ['estates', t("可选田园")], ['overview', t("全桌")]] as const).map(([mode, label]) =>
+          <button key={mode} aria-pressed={!focusedPlayer && focus === mode} onClick={() => focusView(mode)}>{label}</button>)}
+        {view.seatOrder.map(id => <button key={id} aria-pressed={focusedPlayer === id}
+          aria-label={t("查看 {0} 的岛屿", [names[id] ?? id])} onClick={() => focusIsland(id)}>
+          {id === view.viewer.playerId ? t("我的岛屿") : t("{0} 的岛屿", [names[id] ?? id])}
+        </button>)}
         <button aria-label={t("放大棋盘")} onClick={() => setCameraCommand(c => ({ id: c.id + 1, zoom: 0.9 }))}>＋</button>
         <button aria-label={t("缩小棋盘")} onClick={() => setCameraCommand(c => ({ id: c.id + 1, zoom: 1 / 0.9 }))}>−</button>
         <span>{t("滚轮缩放 · 左键平移 · 右键旋转")}</span>

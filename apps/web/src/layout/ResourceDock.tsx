@@ -1,5 +1,7 @@
 import { t, useLanguage } from '../i18n/language.js';
-import { useContext } from 'react';
+import { useContext, useId, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { ROLE_HELP } from '../i18n/roleHelp.js';
 import type { PublicPlayerView, PlayerView } from '@vibe-rico/protocol';
 import type { LegalAction } from '@vibe-rico/game-engine';
 import { Interaction, targetKey } from '../scene/Selection.js';
@@ -33,12 +35,26 @@ export function ResourceDock({ player, points }: { player: PublicPlayerView; poi
 }
 export function RoleHand({ legal, view, submit }: { legal: Extract<LegalAction, { phase: 'role-selection' }>; view: PlayerView; submit: (a: Action) => void }) {
   useLanguage();
-  return <div className="role-hand" role="group" aria-label={t("可选行动")}>
+  const tooltipId = useId();
+  const [hint, setHint] = useState<{ id: string; left: number; bottom: number } | null>(null);
+  const cardHint = view.roleCards.find(card => card.instanceId === hint?.id);
+  const showHint = (id: string, element: HTMLElement) => {
+    const rect = element.getBoundingClientRect();
+    setHint({ id, left: Math.max(14, Math.min(rect.left, window.innerWidth - 344)), bottom: window.innerHeight - rect.top + 10 });
+  };
+  return <><div className="role-hand" role="group" aria-label={t("可选行动")}>
     {legal.roleCardIds.map((id, index) => { const card = view.roleCards.find(c => c.instanceId === id)!;
-      return <button key={id} className="role-card" onClick={() => submit({ kind: 'choose-role', roleCardId: id })}
+      return <button key={id} className="role-card"
+        onMouseEnter={event => showHint(id, event.currentTarget)} onMouseLeave={() => setHint(null)}
+        onFocus={event => showHint(id, event.currentTarget)} onBlur={() => setHint(null)}
+        onKeyDown={event => { if (event.key === 'Escape') setHint(null); }}
+        aria-describedby={hint?.id === id ? tooltipId : undefined} onClick={() => submit({ kind: 'choose-role', roleCardId: id })}
         aria-label={t("选择角色 {0}（{1} 金币，序号 {2}）", [ROLE[card.kind], card.accumulatedCoins, index + 1])}>
         <img src={imageUrl(`${ROLE_MODEL[card.kind]} Illustration`)} alt="" draggable={false} /><span>{ROLE[card.kind]}</span><small>🪙 {card.accumulatedCoins}</small>
       </button>;
     })}
-  </div>;
+  </div>{hint && cardHint && createPortal(<div id={tooltipId} className="model-tooltip" role="tooltip"
+    style={{ position: 'fixed', top: 'auto', left: hint.left, right: 'auto', bottom: hint.bottom, zIndex: 100 }}>
+    <strong>{ROLE[cardHint.kind]}</strong><p>{ROLE_HELP[cardHint.kind]}</p>
+  </div>, document.body)}</>;
 }

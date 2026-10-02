@@ -28,6 +28,7 @@ import type { GameStore } from '../state/gameStore.js';
 /** DESIGN.md layout: top bar, players, 3D harbour, turn and chronicle, the viewer's hand and actions. */
 export function GameShell({ store, roomId, room, lobbyHref }: { store: GameStore; roomId: string; room: RoomState; lobbyHref?: string }) {
   const language = useLanguage();
+  const [islandRequest, setIslandRequest] = useState<{ id: number; playerId: string }>();
   const [playersOpen, setPlayersOpen] = useState(false);
   const [chronicleOpen, setChronicleOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -112,6 +113,10 @@ export function GameShell({ store, roomId, room, lobbyHref }: { store: GameStore
                 {p.playerId === view.governorPlayerId && <span className="badge">{t("总督")}</span>}
                 <div>{p.coins}{t(" 金币 · ")}{Object.values(p.goods).reduce((a, b) => a + b, 0)}{t(" 货物")}{role && ` · ${ROLE[role.kind]}`}</div>
                 {p.playerId === view.viewer.playerId && <div>{t("运货分 ")}{view.viewer.earnedVp}</div>}
+                <button className="check-island" onClick={() => {
+                  setIslandRequest(previous => ({ id: (previous?.id ?? 0) + 1, playerId: p.playerId }));
+                  setPlayersOpen(false);
+                }}>{p.playerId === view.viewer.playerId ? t("查看我的岛屿") : t("查看他的岛屿")}</button>
               </div>
             </section>
           );
@@ -123,7 +128,7 @@ export function GameShell({ store, roomId, room, lobbyHref }: { store: GameStore
           <div><dt>{t("剩余工人")}</dt><dd>{view.supply.workerCount}</dd></div>
           <div><dt><span aria-hidden="true">★ </span>{t("剩余分数")}</dt><dd>{view.supply.vpRemaining}</dd></div>
         </dl>
-          <SceneBoundary><Suspense fallback={<p role="status">{t("正在载入立体视图…")}</p>}><TableScene view={board.player ? { ...view, players: view.players.map(p => p.playerId === board.player!.playerId ? board.player! : p) } : view} names={names} /></Suspense></SceneBoundary>
+          <SceneBoundary><Suspense fallback={<p role="status">{t("正在载入立体视图…")}</p>}><TableScene islandRequest={islandRequest} view={board.player ? { ...view, players: view.players.map(p => p.playerId === board.player!.playerId ? board.player! : p) } : view} names={names} /></Suspense></SceneBoundary>
         {rejection && <p className="stage-alert" role="alert">{rejectionText(rejection)}</p>}
         {phase.kind === 'game-over' && <div className="final-scores"><ScoreView scores={phase.scores} names={names} /></div>}
         {animating && <button className="skip" onClick={() => { queue.skip(); setPulse(null); setAnimating(false); }}>{t("跳过动画")}</button>}

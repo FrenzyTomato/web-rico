@@ -1,3 +1,4 @@
+import { ROLE_HELP } from '../i18n/roleHelp.js';
 import { createPortal } from 'react-dom';
 import { HudIcon } from '../layout/HudIcon.js';
 import { t, useLanguage } from '../i18n/language.js';
@@ -20,13 +21,13 @@ export function useSettings(): [Settings, (s: Settings) => void] {
 
 /** Short terminology help (RULES.md roles and components), in the display language. */
 const glossary = (): readonly [string, string][] => [
-  [ROLE.planter, t("每人可取一块种植园；选择者也可改取采石场")],
-  [ROLE.recruiter, t("分发工人，并把工人分配到种植园和建筑")],
-  [ROLE.builder, t("每人可建造一栋建筑；选择者便宜 1 金币，采石场再降价")],
-  [ROLE.craftsman, t("有工人的种植园和生产建筑产出货物；选择者另得 1 个")],
-  [ROLE.trader, t("每人可向交易所卖出一种货物；选择者多得 1 金币")],
-  [ROLE.captain, t("依次把货物装上货船换取分数，最后多余货物需丢弃")],
-  [ROLE.adventurer, t("选择者获得 1 金币（4–5 人游戏）")],
+  [ROLE.planter, ROLE_HELP.planter],
+  [ROLE.recruiter, ROLE_HELP.recruiter],
+  [ROLE.builder, ROLE_HELP.builder],
+  [ROLE.craftsman, ROLE_HELP.craftsman],
+  [ROLE.trader, ROLE_HELP.trader],
+  [ROLE.captain, ROLE_HELP.captain],
+  [ROLE.adventurer, ROLE_HELP.adventurer],
   [t("总督"), t("每轮最先选择角色的玩家，每轮顺时针轮换")],
   [t("运货分"), t("装船获得的分数，只有你自己能看到，终局时公开")],
 ];

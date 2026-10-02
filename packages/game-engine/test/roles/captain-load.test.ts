@@ -209,3 +209,24 @@ it('rejects wrong actors and numeric revision exhaustion without turning a manda
   expect(submit(s,{kind:'cargo',good:'corn',shipId:s.ships[0]!.instanceId})).toMatchObject({ok:false,error:{code:'ILLEGAL_CHOICE'}});
   expect(advanceAutomatic({ok:true,state:s,events:[]})).toEqual({ok:true,state:s,events:[]});expect(JSON.stringify(s)).toBe(before);
 });
+
+it.each([0, 1, 2])('Captain chooser seat %i earns 3 for two corn, then next corn owner gets a turn', chooser => {
+  const s = fixture(3), a = s.seatOrder[chooser]!, b = s.seatOrder[(chooser + 1) % 3]!;
+  s.governorPlayerId = a;
+  s.phase = { kind: 'role-selection', actorId: a };
+  s.players.find(p => p.playerId === a)!.goods.corn = 2;
+  s.players.find(p => p.playerId === b)!.goods.corn = 2;
+  s.supply.goods.corn -= 4;
+  assertGameState(s);
+  const chosen = applyCommand(s, { kind: 'choose-role', actorId: a, roleCardId: s.roleCards.find(c => c.kind === 'captain')!.instanceId });
+  if (!chosen.ok) throw Error(chosen.error.message);
+  const shipment = { kind: 'cargo' as const, good: 'corn' as const, shipId: s.ships[0]!.instanceId };
+  const first = applyCommand(chosen.state, { kind: 'load', actorId: a, shipment, useHarbor: false });
+  if (!first.ok) throw Error(first.error.message);
+  expect(first.state.players.find(p => p.playerId === a)!.earnedVp).toBe(3);
+  expect(first.state.phase).toMatchObject({ kind: 'captain-loading', actorId: b });
+  expect(getLegalCommands(first.state, b)).toEqual(expect.arrayContaining([expect.objectContaining({ phase: 'captain-loading', loads: expect.arrayContaining([{ shipment, quantity: 2 }]) })]));
+  const second = applyCommand(first.state, { kind: 'load', actorId: b, shipment, useHarbor: false });
+  if (!second.ok) throw Error(second.error.message);
+  expect(second.state.players.find(p => p.playerId === b)!.earnedVp).toBe(2);
+});

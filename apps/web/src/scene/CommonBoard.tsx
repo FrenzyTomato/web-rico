@@ -9,6 +9,6 @@ export function CommonBoard({ view }: { view: PlayerView; names: Readonly<Record
     <group position={[-17, 0, -9.5]}><SupplyRow supply={view.supply} /></group>
     <group position={[23, 0, -6]}><WorkerSupply supply={view.supply} /></group>
     <group position={[-20, 0, 0.5]}><EstateMarket market={view.estateMarket} discard={view.estateDiscard.length} quarries={view.supply.quarryCount} /></group>
-    <group position={[-4.7, 0, 1.2]}><BuildingMarket stock={view.supply.buildingStock} /></group>
+    <group position={[-8.5, 0, 1.2]}><BuildingMarket stock={view.supply.buildingStock} /></group>
   </group>;
 }

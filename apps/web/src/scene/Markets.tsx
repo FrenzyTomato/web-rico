@@ -51,28 +51,39 @@ export function WorkerSupply({ supply }: { supply: Supply }) {
 /** One price per column; a price group may span columns, each with up to three buildings. */
 export function BuildingMarket({ stock }: { stock: Supply['buildingStock'] }) {
   useLanguage();
-  const groups = new Map<number, ReturnType<typeof buildingMarket>>();
+  const tiers = new Map<number, Map<number, ReturnType<typeof buildingMarket>>>();
   for (const item of buildingMarket(stock)) {
-    const price = BUILDINGS[item.type].cost;
-    const group = groups.get(price) ?? [];
+    const { cost, quarryCap } = BUILDINGS[item.type];
+    const prices = tiers.get(quarryCap) ?? new Map();
+    const group = prices.get(cost) ?? [];
     group.push(item);
-    groups.set(price, group);
+    prices.set(cost, group);
+    tiers.set(quarryCap, prices);
   }
   let nextX = 0;
-  return <group>{[...groups].map(([price, buildings]) => {
-    const columns = Math.ceil(buildings.length / 3);
-    const x = nextX;
-    nextX += columns * 2.55 + 0.22;
-    const centre = (columns - 1) * 2.55 / 2;
-    return <group key={price} position={[x, 0, 0]}>
-      {buildings.map(({ type, count, exhausted }, i) => <group key={type} position={[Math.floor(i / 3) * 2.55, 0, i % 3 * 2.7]}>
-        <Selectable hint={buildingHint(type)} target={{ kind: 'building', type }} size={[2.3, 1.8]}>
-          <Model name={BUILDING_MODEL[type]} width={2.3} depth={1.8} height={2.2} muted={exhausted} />
-          <Label position={[0, 0.1, 0.98]} height={0.68} maxWidth={2.45} ink={exhausted ? '#8f8778' : '#2a2118'} text={`${BUILDING[type]} ×${count}`} />
-        </Selectable>
-      </group>)}
-      <mesh position={[centre, 0.025, -1.15]} dispose={null} geometry={box((columns - 1) * 2.55 + 2.1, 0.02, 0.025)} material={material('#aa946b')} />
-      <Label position={[centre, 0.1, -1.7]} height={0.95} text={`🪙 ${price}`} />
+  return <group>{[...tiers].sort(([a], [b]) => a - b).map(([cap, prices]) => {
+    const tierStart = nextX;
+    const priceGroups = [...prices].sort(([a], [b]) => a - b).map(([price, buildings]) => {
+      const columns = Math.ceil(buildings.length / 3);
+      const x = nextX;
+      nextX += columns * 2.55 + 0.22;
+      const centre = (columns - 1) * 2.55 / 2;
+      return <group key={price} position={[x, 0, 0]}>
+        {buildings.map(({ type, count, exhausted }, i) => <group key={type} position={[Math.floor(i / 3) * 2.55, 0, i % 3 * 2.7]}>
+          <Selectable hint={buildingHint(type)} target={{ kind: 'building', type }} size={[2.3, 1.8]}>
+            <Model name={BUILDING_MODEL[type]} width={2.3} depth={1.8} height={2.2} muted={exhausted} />
+            <Label position={[0, 0.1, 0.98]} height={0.68} maxWidth={2.45} ink={exhausted ? '#8f8778' : '#2a2118'} text={`${BUILDING[type]} ×${count}`} />
+          </Selectable>
+        </group>)}
+        <Label position={[centre, 0.1, -1.7]} height={0.95} text={`🪙 ${price}`} />
+      </group>;
+    });
+    const tierEnd = nextX - 2.77;
+    return <group key={cap}>
+      {priceGroups}
+      <Label position={[(tierStart + tierEnd) / 2, 0.1, -3]} height={0.65} maxWidth={tierEnd - tierStart + 2.4} text={t("最高折扣：{0}", [cap])} />
+      {tierStart > 0 && <mesh position={[tierStart - 1.385, 0.035, 2]} dispose={null}
+        geometry={box(0.025, 0.02, 10.8)} material={material('#aa946b')} />}
     </group>;
   })}</group>;
 }

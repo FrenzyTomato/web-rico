@@ -42,5 +42,11 @@ describe('board camera', () => {
     expect(camera.position.toArray()).toEqual(before.toArray());
     ui.rerender(<Camera command={{ id: 3, view: 'mine' }} />);
     expect(camera.position.x).toBe(0); // Clicking the active preset resets it.
+    const homePosition = camera.position.clone();
+    ui.rerender(<Camera command={{ id: 4, view: 'mine', island: { x: -17, z: -27 } }} />);
+    expect(camera.position.x).toBe(-17);
+    expect(camera.position.y).toBeCloseTo(homePosition.y);
+    expect(camera.position.z).toBeCloseTo(homePosition.z - 54);
+
   });
 });
