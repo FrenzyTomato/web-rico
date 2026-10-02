@@ -17,7 +17,7 @@ export function ResourceDock({ player, points }: { player: PublicPlayerView; poi
   const piece = (target: SceneTarget, model: string, label: string) => <button key={targetKey(target)} className={`dock-piece${target.kind === 'worker' ? ' dock-worker' : ''}`}
     aria-label={label} aria-pressed={interaction.selectedKey === targetKey(target)} disabled={!interaction.actionable(target)}
     onClick={() => interaction.select(target)} title={label}>
-    <img src={imageUrl(target.kind === 'worker' ? `${model} Cutout` : model)} alt="" draggable={false} />
+    <img src={imageUrl(`${model} Cutout`)} alt="" draggable={false} />
   </button>;
   return <div className="dock-resources">
     <div className="dock-counters"><span>🪙 <strong>{player.coins}</strong></span><span>★ <strong>{points}</strong></span></div>
