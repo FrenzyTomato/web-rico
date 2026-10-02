@@ -74,3 +74,7 @@ Share `https://game.example.com/` invite links. localhost without TLS is fine fo
 Compose defaults `CORS_ORIGINS` to `https://webri.co`. Override it with a comma-separated list in `.env` if needed; origins must match exactly (no trailing slash). Direct server launches default to no cross-origin browser access.
 
 Set Vercel’s public build variable `VITE_SERVER_URL=https://api.webri.co` and redeploy. Configure Caddy on the Droplet to reverse proxy `api.webri.co` to `127.0.0.1:3000`. After pulling backend changes, run `docker compose up -d --build`. Keep the existing database password and volume.
+
+### Room creation password
+
+Set `VITE_ROOM_CREATION_PASSWORD` in `apps/web/.env` for local development and in the Vercel project environment variables for Production (and Preview if used). Restart Vite locally and rebuild/redeploy on Vercel after changing it. The lobby requires an exact password match to create a room; joining and resuming are unaffected. Missing configuration blocks creation. This is a frontend-only gate: the value is public in the JavaScript bundle and does not protect the backend room API.

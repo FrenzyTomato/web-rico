@@ -1,5 +1,11 @@
 /** English messages keyed by their Chinese source text. Placeholders preserve user content. */
 export const EN = {
+  "查看演示": "View demo",
+  "演示 · 仅供浏览": "Demo · View only",
+  "探索棋盘、岛屿和提示；演示中无法进行游戏操作。": "Explore the board, islands and tooltips. Gameplay actions are disabled in this demo.",
+  "创建房间密码": "Room creation password",
+  "密码不正确，请重试": "Incorrect password. Please try again.",
+  "暂时无法创建房间，请联系房主": "Room creation is unavailable. Please contact the host.",
   "自动生产说明": "About auto-production",
   "仅在你连接游戏且轮到你生产时执行。关闭后可手动生产或放弃，不影响其他玩家。": "Runs only while connected and on your production turn. Turn it off to produce or decline manually; other players are unaffected.",
   "货船 · {0} 格": "Cargo ship \u00b7 {0} holds",

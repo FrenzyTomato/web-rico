@@ -5,6 +5,7 @@ test.use({ viewport: { width: 1920, height: 1080 } });
 const FULL_TABLE = '/scene-preview.html?game=5p&at=396';
 
 test('full table: p95 frame time is at most 33 ms with continuous rendering', async ({ page }) => {
+  test.skip(Boolean(process.env.CI) && !process.env.RUN_GPU_BENCHMARK, '33 ms GPU budget requires a hardware-accelerated benchmark runner; CI still checks scene lifecycle and context recovery.');
   await page.goto(`${FULL_TABLE}&bench=1`);
   const bench = await page.waitForFunction(() => (window as unknown as { __bench?: unknown }).__bench, null, { timeout: 15_000 }).then(h => h.jsonValue()) as { frames: number; p50: number; p95: number };
   console.log(`bench ${JSON.stringify(bench)}`);
@@ -36,7 +37,7 @@ test('WebGL context loss shows the notice and the scene recovers on restore', as
     (window as unknown as { __ext: WEBGL_lose_context }).__ext = ext;
     ext.loseContext();
   });
-  await expect(page.getByRole('note')).toHaveText('3D 视图暂时不可用，正在恢复…');
+  await expect(page.getByRole('note')).toHaveText('立体视图暂时不可用，正在恢复…');
   await page.evaluate(() => (window as unknown as { __ext: WEBGL_lose_context }).__ext.restoreContext());
   await expect(page.getByRole('note')).toHaveCount(0);
   await expect(page.locator('.scene canvas')).toBeVisible();

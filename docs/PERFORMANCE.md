@@ -19,7 +19,9 @@
 | Resource growth | none sustained across 10 enter/exit cycles | `?cycles=10` mounts and unmounts the scene ten times, sampling after each exit | label textures 0 and canvases 0 after every exit; shared caches fixed at 9 geometries / 12 materials; JS heap 54–72 MB with no trend |
 | WebGL recovery | the scene recovers after context loss | `WEBGL_lose_context.loseContext()` then `restoreContext()` once the renderer is live | the notice 「3D 视图暂时不可用，正在恢复…」 shows while lost; on restore it clears and the context is usable |
 
-The checks run automatically in `apps/web/e2e/scene-performance.spec.ts` (part of `pnpm --filter @vibe-rico/web test:e2e`).
+The checks live in `apps/web/e2e/scene-performance.spec.ts`. Hosted CI runs the resource-lifecycle and WebGL-recovery checks using Playwright's pinned Chromium. The strict p95 ≤ 33 ms benchmark runs locally on the agreed hardware; it is skipped on general-purpose CI runners, whose software rendering is not a comparable GPU measurement. Set `RUN_GPU_BENCHMARK=1` to include it on a hardware-accelerated CI runner.
+
+Multiplayer functional tests use selectable fallback meshes to avoid loading duplicate high-resolution models for every browser seat. The separate scene tests load the real artwork.
 
 ## What keeps it cheap
 

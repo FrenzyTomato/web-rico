@@ -30,7 +30,7 @@ it('accepts raw gzip and HTTP-decoded model responses, and rejects bad responses
   const compressed = readFileSync('public/art/runtime/City Hall.glb.gz');
   const plain = gunzipSync(compressed);
   const asArrayBuffer = (b: Uint8Array) => Uint8Array.from(b).buffer;
-  expect(new Uint8Array(await decodeModel(asArrayBuffer(compressed)))).toEqual(new Uint8Array(plain));
-  expect(new Uint8Array(await decodeModel(asArrayBuffer(plain)))).toEqual(new Uint8Array(plain));
+  expect(Buffer.from(await decodeModel(asArrayBuffer(compressed))).equals(plain)).toBe(true);
+  expect(Buffer.from(await decodeModel(asArrayBuffer(plain))).equals(plain)).toBe(true);
   await expect(decodeModel(new TextEncoder().encode('404 missing').buffer)).rejects.toThrow('Invalid model response');
 });

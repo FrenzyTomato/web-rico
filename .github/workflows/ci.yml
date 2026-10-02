@@ -1,16 +1,22 @@
-# Regression checks (PR-062). Each job runs the same root command used locally (docs/EXECUTION.md).
-# Not yet run on a hosted service: the repository has no remote; local results are recorded in BACKLOG.md.
 name: ci
 on:
   push:
   pull_request:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   check:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
       - run: corepack enable
@@ -19,10 +25,11 @@ jobs:
       - run: pnpm check
 
   database:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
       - run: corepack enable
@@ -31,18 +38,23 @@ jobs:
       - run: pnpm test:db
 
   e2e:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
       - run: corepack enable
       - run: pnpm install --frozen-lockfile
-      # Playwright uses the runner's Google Chrome (channel: 'chrome').
+      - name: Install Playwright Chromium and system dependencies
+        run: pnpm --filter @vibe-rico/web exec playwright install --with-deps chromium
       - run: pnpm test:e2e
       - if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: playwright-results
-          path: apps/web/test-results
+          path: |
+            apps/web/test-results
+            apps/web/playwright-report
+          retention-days: 7

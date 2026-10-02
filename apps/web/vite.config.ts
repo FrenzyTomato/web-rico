@@ -19,7 +19,7 @@ export default defineConfig({
   build: { copyPublicDir: false },
   // Development proxy keeps the browser on one origin with the server (default port 3000).
   server: { proxy: { '/socket.io': { target: 'http://127.0.0.1:3000', ws: true } } },
-  // Playtests use the production build (no developer panel) through the same proxy (docs/PLAYTEST.md).
+  // Playtests use the production build (no developer panel) through the same proxy.
   preview: { proxy: { '/socket.io': { target: 'http://127.0.0.1:3000', ws: true } } },
   test: { environment: 'jsdom', exclude: ['e2e/**', 'node_modules/**'] },
 });

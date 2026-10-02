@@ -15,7 +15,7 @@ const subscribe = (listener: () => void) => { listeners.add(listener); return ()
 function updateDocument() {
   if (typeof document === 'undefined') return;
   document.documentElement.lang = language === 'zh' ? 'zh-CN' : 'en';
-  document.title = language === 'zh' ? '波多黎各 在线' : 'Web Rico';
+  document.title = 'Web Rico';
 }
 updateDocument();
 export function setLanguage(next: Language) {

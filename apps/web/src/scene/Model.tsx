@@ -1,7 +1,7 @@
 import { useContext, useEffect, useMemo, useState } from 'react';
 import { ModelOutline, OutlineColor } from './ModelOutline.js';
 import { Box3, Vector3 } from 'three';
-import type { Group, WebGLRenderer } from 'three';
+import type { Group, WebGLRenderer, Mesh, Material, Texture } from 'three';
 import { useThree } from '@react-three/fiber';
 import { KTX2Loader } from 'three/addons/loaders/KTX2Loader.js';
 import { withArtBackup } from './artFallback.js';
@@ -11,12 +11,38 @@ import { decodeModel } from './modelBytes.js';
 import { box, material } from './resources.js';
 
 // One download and shared geometry/materials per asset. Limit decoding/upload bursts.
-type Library = { cache: Map<string, Promise<Group>>; ktx: KTX2Loader };
+type Library = { cache: Map<string, Promise<Group>>; ktx: KTX2Loader; scenes: Set<Group>; disposed: boolean; pending: number };
+function disposeModel(scene: Group) {
+  const geometries = new Set<Mesh['geometry']>(), materials = new Set<Material>(), textures = new Set<Texture>();
+  scene.traverse(object => {
+    const mesh = object as Mesh;
+    if (!mesh.isMesh) return;
+    geometries.add(mesh.geometry);
+    for (const mat of Array.isArray(mesh.material) ? mesh.material : [mesh.material]) {
+      materials.add(mat);
+      for (const value of Object.values(mat)) if (value?.isTexture) textures.add(value);
+    }
+  });
+  textures.forEach(t => t.dispose()); materials.forEach(m => m.dispose()); geometries.forEach(g => g.dispose());
+}
+/** Release renderer-owned assets after its Canvas unmounts; in-flight decodes drain before worker disposal. */
+export function ModelLibraryLifecycle() {
+  const gl = useThree(s => s.gl);
+  useEffect(() => () => {
+    const lib = libraries.get(gl);
+    if (!lib) return;
+    lib.disposed = true;
+    lib.scenes.forEach(disposeModel); lib.scenes.clear(); lib.cache.clear();
+    if (!lib.pending) lib.ktx.dispose();
+    libraries.delete(gl);
+  }, [gl]);
+  return null;
+}
 const libraries = new WeakMap<WebGLRenderer, Library>();
 function library(gl: WebGLRenderer): Library {
   let result = libraries.get(gl);
   if (!result) {
-    result = { cache: new Map(), ktx: new KTX2Loader().setTranscoderPath('/art/basis/').setWorkerLimit(2).detectSupport(gl) };
+    result = { cache: new Map(), scenes: new Set(), disposed: false, pending: 0, ktx: new KTX2Loader().setTranscoderPath('/art/basis/').setWorkerLimit(2).detectSupport(gl) };
     libraries.set(gl, result);
   }
   return result;
@@ -24,14 +50,19 @@ function library(gl: WebGLRenderer): Library {
 let active = 0;
 const waiting: (() => void)[] = [];
 async function load(name: string, lib: Library): Promise<Group> {
+  lib.pending++;
   if (active >= 3) await new Promise<void>(resolve => waiting.push(resolve));
   active++;
   try {
     async function read(folder: string, compressed: boolean) {
+      if (lib.disposed) throw new Error("Scene closed");
       const bytes = await decodeModel(await downloadModel(modelUrl(name, folder)));
+      if (lib.disposed) throw new Error('Scene closed');
       const loader = new GLTFLoader();
       if (compressed) loader.setKTX2Loader(lib.ktx);
-      return (await loader.parseAsync(bytes, '')).scene;
+      const scene = (await loader.parseAsync(bytes, '')).scene;
+      if (lib.disposed) { disposeModel(scene); throw new Error('Scene closed'); }
+      return scene;
     }
     const original = () => read('runtime', false);
     const scene = new URLSearchParams(location.search).get('art') === 'original'
@@ -39,13 +70,17 @@ async function load(name: string, lib: Library): Promise<Group> {
       : await withArtBackup(() => read('runtime-ktx2', true), original);
     // Hit testing is handled by simple Selectable footprints, not dense model triangles.
     scene.traverse(object => { object.raycast = () => {}; });
+    lib.scenes.add(scene);
     return scene;
-  } finally { active--; waiting.shift()?.(); }
+  } finally {
+    active--; lib.pending--; waiting.shift()?.();
+    if (lib.disposed && !lib.pending) lib.ktx.dispose();
+  }
 }
 function asset(name: string, gl: WebGLRenderer) {
   const lib = library(gl), cache = lib.cache;
   let pending = cache.get(name);
-  if (!pending) { pending = load(name, lib).catch(error => { cache.delete(name); console.warn('Could not load board art:', name, error); throw error; }); cache.set(name, pending); }
+  if (!pending) { pending = load(name, lib).catch(error => { cache.delete(name); if (!lib.disposed) console.warn('Could not load board art:', name, error); throw error; }); cache.set(name, pending); }
   return pending;
 }
 

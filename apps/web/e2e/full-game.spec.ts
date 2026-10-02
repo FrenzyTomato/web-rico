@@ -24,7 +24,7 @@ for (const [name, fixture] of [['3p', three], ['4p', four], ['5p', five]] as con
       if (k === refreshAt) {
         // Refresh the next actor: the saved seat resumes and the game continues without a duplicate action.
         await page(command.actorId).reload();
-        await expect(page(command.actorId).getByText(`${command.actorId}（你）`, { exact: false }).first()).toBeVisible();
+        await expect(page(command.actorId).locator(`[data-revision="${state.revision}"]`)).toBeVisible();
       }
       await play(page(command.actorId), state, command);
       const result = applyCommand(state, command);

@@ -28,7 +28,7 @@ import type { GameStore } from '../state/gameStore.js';
 
 
 /** DESIGN.md layout: top bar, players, 3D harbour, turn and chronicle, the viewer's hand and actions. */
-export function GameShell({ store, roomId, room, lobbyHref }: { store: GameStore; roomId: string; room: RoomState; lobbyHref?: string }) {
+export function GameShell({ store, roomId, room, lobbyHref, demo = false }: { store: GameStore; roomId: string; room: RoomState; lobbyHref?: string; demo?: boolean }) {
   const language = useLanguage();
   const [islandRequest, setIslandRequest] = useState<{ id: number; playerId: string }>();
   const [playersOpen, setPlayersOpen] = useState(false);
@@ -90,10 +90,10 @@ export function GameShell({ store, roomId, room, lobbyHref }: { store: GameStore
     <SceneInteractionProvider value={interaction}>
     <div ref={shellRef} onKeyDown={event => { if (event.key === 'Escape') { setPlayersOpen(false); setChronicleOpen(false); setSettingsOpen(false); } }} className="shell" data-revision={latest.revision}>
       <header className="topbar">
-        <div className="topbar-brand"><div className="topbar-brand-line"><h1>{t("波多黎各")}</h1>
+        <div className="topbar-brand"><div className="topbar-brand-line"><h1>Web Rico</h1>
         {lobbyHref && <a className="back-to-lobby" href={lobbyHref}>{t('返回大厅')}</a>}</div><div className="topbar-meta">
         <span>{t('第 {0} 轮 · 总督 {1}', [view.roundNumber, name(view.governorPlayerId)])}</span>
-        <span>{t('房间 {0} · 版本 {1}', [room.roomCode, latest.revision])}</span></div></div>
+        <span>{demo ? t('演示 · 仅供浏览') : t('房间 {0} · 版本 {1}', [room.roomCode, latest.revision])}</span></div></div>
         <span className="turn-summary" aria-live="polite" aria-atomic="true">{yourTurn && connected && <strong className="your-turn">{t("轮到你了！")}</strong>}<span>{recruitment ? t('所有玩家 · 同时分配工人') : 'actorId' in phase ? `${name(phase.actorId)} · ${PHASE[phase.kind]}` : PHASE[phase.kind]}</span></span>
         <div className="topbar-tools">
         <button className="hud-icon" aria-label={t("玩家")} title={t("玩家")} aria-expanded={playersOpen} aria-controls="player-sidebar" onClick={() => { setPlayersOpen(v => !v); setChronicleOpen(false); setSettingsOpen(false); }}><HudIcon kind="players" /></button>
@@ -161,7 +161,7 @@ export function GameShell({ store, roomId, room, lobbyHref }: { store: GameStore
         <ResourceDock player={board.player ?? me} points={phase.kind === 'game-over' ? phase.scores.find(s => s.playerId === me.playerId)!.totalVp : view.viewer.earnedVp} />
         <div className="actions">
           {recruitment && <p className="recruitment-progress">{t('分配进度：{0}/{1} 已确认', [confirmations.length, view.players.length])}</p>}
-          {connected && !pending
+          {demo ? <p role="status">{t('探索棋盘、岛屿和提示；演示中无法进行游戏操作。')}</p> : connected && !pending
             ? board.placement ? <><p>{t('同时分配你的工人；所有玩家确认后继续。')}</p><WorkerControls board={board} player={me} /></> : recruitment && confirmations.includes(me.playerId) ? <p role="status">{t('已确认分配，等待其他玩家。')}</p> : latest.legalActions[0]?.phase === 'role-selection' ? <RoleHand legal={latest.legalActions[0]} view={view} submit={action => store.getState().submit(roomId, action)} /> : <ActionForm boardFirst legalActions={latest.legalActions} view={view} submit={action => store.getState().submit(roomId, action)} />
             : <p>{pending ? t("正在提交行动…") : t("连接已断开，暂时不能行动")}</p>}
         </div>

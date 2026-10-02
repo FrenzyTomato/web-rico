@@ -24,29 +24,17 @@ test('clicking scene objects offers only their legal actions and submits through
   const governor = pages[input.seatOrder.indexOf(first.actorId)]!, other = pages[(input.seatOrder.indexOf(first.actorId) + 1) % 3]!;
   for (const p of pages) await expect(p.locator('[data-revision="0"]')).toBeVisible();
 
-  // Another seat's click selects but offers nothing to run, and changes nothing.
-  expect((await clickObject(other, `role:${first.roleCardId}`)).actionable).toBe(false);
-  await expect(other.getByText('此对象当前没有可执行的行动')).toBeVisible();
-  await expect(other.locator('[data-revision="0"]')).toBeVisible();
-
-  // The Governor's click on the role card offers exactly that card's action.
-  expect((await clickObject(governor, `role:${first.roleCardId}`)).actionable).toBe(true);
-  const panel = governor.getByRole('group', { name: '所选对象的行动' });
-  await expect(panel.getByRole('button')).toHaveCount(2);
-  await panel.getByRole('button', { name: /^选择角色/ }).click();
+  // Command tiles now live in the hand; estate choices still use the real canvas.
+  await governor.getByRole('button', { name: /^选择角色 种植者/ }).click();
   for (const p of pages) await expect(p.locator('[data-revision="1"]')).toBeVisible();
-});
-
-test('a server rejection from the scene panel keeps every view consistent', async ({ browser }) => {
-  const pages = await seatTable(browser, input.seatOrder, { seed: input.seed, governor: input.seatOrder.indexOf(input.governorPlayerId) });
-  const oldTab = pages[input.seatOrder.indexOf(first.actorId)]!;
-  await expect(oldTab.locator('[data-revision="0"]')).toBeVisible();
-  await clickObject(oldTab, `role:${first.roleCardId}`);
-  // The seat is taken over by a second tab while the old tab's panel is open; its submission is rejected.
-  const newTab = await oldTab.context().newPage();
-  await newTab.goto('/');
-  await expect(newTab.locator('[data-revision="0"]')).toBeVisible();
-  await oldTab.getByRole('group', { name: '所选对象的行动' }).getByRole('button', { name: /^选择角色/ }).click();
-  await expect(oldTab.getByRole('alert')).toHaveText('此座位已在其他窗口中打开');
-  for (const p of [...pages, newTab]) await expect(p.locator('[data-revision="0"]')).toBeVisible();
+  await governor.getByRole('button', { name: '可选田园', exact: true }).click();
+  await other.getByRole('button', { name: '可选田园', exact: true }).click();
+  await expect.poll(() => governor.evaluate(() => (window as unknown as { __sceneTargets?: () => Target[] }).__sceneTargets?.().some(t => t.key.startsWith('estate:') && t.actionable))).toBe(true);
+  const key = await governor.evaluate(() => (window as unknown as { __sceneTargets: () => Target[] }).__sceneTargets().find(t => t.key.startsWith('estate:') && t.actionable)!.key);
+  expect((await clickObject(other, key)).actionable).toBe(false);
+  await expect(other.getByRole('group', { name: '所选对象的行动' })).toHaveCount(0);
+  expect((await clickObject(governor, key)).actionable).toBe(true);
+  const panel = governor.getByRole('group', { name: '所选对象的行动' });
+  await panel.getByRole('button').first().click();
+  for (const p of pages) await expect(p.locator('[data-revision="2"]')).toBeVisible();
 });

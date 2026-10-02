@@ -8,7 +8,7 @@
 
 A mechanical check then mapped every rule ID to scenario cases and test files (table below).
 
-**Result:** no BLOCKER or MAJOR finding. All in-scope tests pass: 144 for A; 385 engine and 4 projection for B. Seven MINOR findings are recorded below. Per EXECUTION.md, regression tests were ticketed (PR-060A) before any fix. No rule was changed.
+**Result:** no BLOCKER or MAJOR finding. All in-scope tests pass: 144 for A; 385 engine and 4 projection for B. Seven MINOR findings are recorded below. Regression tests were ticketed (PR-060A) before any fix. No rule was changed.
 
 ## Findings
 

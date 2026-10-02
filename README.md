@@ -1,8 +1,8 @@
-# Vibe Rico
+# Web Rico
 
 A private online Puerto Rico (1897 Special Edition) game for 3–5 friends. A pure TypeScript engine enforces the rules, a single server adjudicates every action, and browsers render each player's filtered view.
 
-**Status:** release candidate awaiting its first real game. A complete multiplayer game runs in the browser with a 3D harbour table and a full DOM client (Chinese UI), reconnects across refreshes and server restarts (PostgreSQL), and ships as a Docker deployment. Covered by unit, database and browser tests (`pnpm check`, `pnpm test:db`, `pnpm test:e2e`). Friend playtests and release acceptance are still pending. Ticket-level status lives in [the backlog](docs/BACKLOG.md).
+A multiplayer browser game with a 3D island board, Chinese and English UI, PostgreSQL persistence, and Docker deployment. Validation commands include `pnpm check`, `pnpm test:db`, and `pnpm test:e2e`.
 
 ## Layout
 
@@ -54,15 +54,14 @@ Headless engine play in a terminal (seed, then 3–5 player IDs clockwise; the f
 pnpm --filter @vibe-rico/game-engine cli 42 a b c
 ```
 
-Playtests on a local network: see [docs/PLAYTEST.md](docs/PLAYTEST.md). Private deployment with Docker: see [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
+Private deployment with Docker: see [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 
 ## Documentation
 
-1. [Implementation plan and milestones](docs/IMPLEMENTATION_PLAN.md)
-2. [Backlog and ticket status](docs/BACKLOG.md)
-3. [Architecture and engineering constraints](docs/ARCHITECTURE.md)
-4. [Rules specification](docs/RULES.md) and [open rule questions](docs/RULE_QUESTIONS.md)
-5. [Protocol](docs/PROTOCOL.md) and [game state](docs/GAME_STATE.md)
-6. [Single-task execution guide](docs/EXECUTION.md)
+- [Architecture and engineering constraints](docs/ARCHITECTURE.md)
+- [Rules specification](docs/RULES.md) and [rule questions](docs/RULE_QUESTIONS.md)
+- [Protocol](docs/PROTOCOL.md) and [game state](docs/GAME_STATE.md)
+- [Deployment](docs/DEPLOYMENT.md) and [recovery](docs/RECOVERY.md)
+- [Test scenarios](docs/TEST_SCENARIOS.md)
 
 The [local Special Edition rulebook](references/puerto-rico-1897-special-edition-rulebook-en.pdf) is canonical whenever a rule is uncertain ([reference policy](references/README.md)).

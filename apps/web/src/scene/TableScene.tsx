@@ -1,3 +1,4 @@
+import { ModelLibraryLifecycle } from './Model.js';
 import { t, useLanguage } from '../i18n/language.js';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Canvas, useThree } from '@react-three/fiber';
@@ -97,6 +98,7 @@ export function TableScene({ view, names, islandRequest, frameloop = 'demand' }:
         gl.domElement.addEventListener('webglcontextrestored', () => { setLost(false); invalidate(); });
       }}>
         <color attach="background" args={['#2f7f86']} />
+        <ModelLibraryLifecycle />
         <Camera command={cameraCommand} />
         <Redraw view={view} />
         {import.meta.env.DEV && <TargetProbe />}

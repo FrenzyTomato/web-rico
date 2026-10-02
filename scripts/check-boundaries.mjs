@@ -1,4 +1,4 @@
-// Engine boundary lint (ARCHITECTURE "Build dependencies"; IMPLEMENTATION_PLAN "Global Constraints"):
+// Engine boundary lint (ARCHITECTURE "Build dependencies"):
 // engine source imports only its own relative modules (no frameworks, network or IO), and neither
 // Math.random() nor system time may drive rules. Usage: node scripts/check-boundaries.mjs [engine-src-dir]
 import { readdirSync, readFileSync, statSync } from 'node:fs';

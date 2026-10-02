@@ -437,10 +437,6 @@ html[lang="en"] .role-card span { font-size: 14px; }
 .board-camera.board-zoom button + button { border-top: 1px solid #e2fff033; }
 .board-camera.board-zoom button:focus-visible { outline-offset: -4px; }
 
-.lobby-footer { position: fixed; right: max(18px, env(safe-area-inset-right)); bottom: max(18px, env(safe-area-inset-bottom)); z-index: 5; }
-.lobby-github { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; color: #edf3e9; border-radius: 50%; text-decoration: none; }
-.lobby-github:hover { background: #d6eee330; }
-.lobby-github svg { flex-shrink: 0; }
 
 .setting-with-help { display: flex; align-items: center; gap: 8px; }
 .setting-with-help .setting-help { padding: 4px 8px; margin: 0; min-width: 32px; min-height: 32px; }

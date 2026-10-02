@@ -24,8 +24,8 @@ const seats = (started: boolean, n = 2): RoomState => ({ roomCode: 'ABC123', hos
 const view = (socket: FakeSocket, onSession = () => {}) => render(<Lobby socket={socket as unknown as LobbySocket} onSession={onSession} />);
 const flush = () => act(async () => {});
 
-beforeEach(() => { localStorage.clear(); history.replaceState(null, '', '/'); });
-afterEach(cleanup);
+beforeEach(() => { vi.stubEnv('VITE_ROOM_CREATION_PASSWORD', 'test-room-password'); localStorage.clear(); history.replaceState(null, '', '/'); });
+afterEach(() => { cleanup(); vi.unstubAllEnvs(); });
 
 describe('lobby', () => {
   it('creates a room, shows the code, invite link and seats, and saves the seat for refresh', async () => {
@@ -33,6 +33,7 @@ describe('lobby', () => {
     const onSession = vi.fn();
     view(socket, onSession);
     fireEvent.change(screen.getByLabelText('昵称'), { target: { value: 'Ana' } });
+    fireEvent.change(screen.getByLabelText('创建房间密码'), { target: { value: 'test-room-password' } });
     fireEvent.click(screen.getByText('创建房间'));
     await flush();
     expect(socket.sent[0]).toEqual({ event: 'room', payload: { protocolVersion: '1', action: { kind: 'create-room', displayName: 'Ana' } } });
@@ -89,6 +90,7 @@ describe('lobby', () => {
     const socket = new FakeSocket({ 'create-room': { ok: true, value: granted }, 'start-game': { ok: false, code: 'ILLEGAL_COMMAND' } });
     view(socket);
     fireEvent.change(screen.getByLabelText('昵称'), { target: { value: 'Ana' } });
+    fireEvent.change(screen.getByLabelText('创建房间密码'), { target: { value: 'test-room-password' } });
     fireEvent.click(screen.getByText('创建房间'));
     await flush();
     socket.push('room-state', seats(false));
@@ -124,6 +126,7 @@ describe('lobby', () => {
     const socket = new FakeSocket({ 'create-room': { ok: true, value: granted } });
     view(socket);
     fireEvent.change(screen.getByLabelText('昵称'), { target: { value: 'Ana' } });
+    fireEvent.change(screen.getByLabelText('创建房间密码'), { target: { value: 'test-room-password' } });
     fireEvent.click(screen.getByText('创建房间'));
     await flush();
     socket.push('room-state', seats(false));
@@ -195,6 +198,7 @@ describe('lobby', () => {
     const socket = new FakeSocket({ 'create-room': { ok: true, value: granted }, resume: { ok: true, value: { playerId: 'p1', revision: null } } });
     view(socket);
     fireEvent.change(screen.getByLabelText('昵称'), { target: { value: 'Ana' } });
+    fireEvent.change(screen.getByLabelText('创建房间密码'), { target: { value: 'test-room-password' } });
     fireEvent.click(screen.getByText('创建房间'));
     await flush();
     expect(location.search).toBe('?room=ABC123');
@@ -204,4 +208,34 @@ describe('lobby', () => {
     expect(socket.sent.filter(s => s.event === 'resume')).toHaveLength(1);
   });
 
+});
+
+it.each(['', 'wrong-password'])('blocks room creation for an invalid password (%s)', async password => {
+  const socket = new FakeSocket({});
+  view(socket);
+  fireEvent.change(screen.getByLabelText('昵称'), { target: { value: 'Ana' } });
+  fireEvent.change(screen.getByLabelText('创建房间密码'), { target: { value: password } });
+  fireEvent.click(screen.getByText('创建房间'));
+  await flush();
+  expect(socket.sent).toHaveLength(0);
+  expect(screen.getByRole('alert').textContent).toBe('密码不正确，请重试');
+});
+it('blocks room creation when the environment password is missing', async () => {
+  vi.stubEnv('VITE_ROOM_CREATION_PASSWORD', '');
+  const socket = new FakeSocket({});
+  view(socket);
+  fireEvent.change(screen.getByLabelText('昵称'), { target: { value: 'Ana' } });
+  fireEvent.click(screen.getByText('创建房间'));
+  await flush();
+  expect(socket.sent).toHaveLength(0);
+  expect(screen.getByRole('alert').textContent).toBe('暂时无法创建房间，请联系房主');
+});
+
+it('offers a demo without a password, nickname or connection', () => {
+  vi.stubEnv('VITE_ROOM_CREATION_PASSWORD', '');
+  const socket = new FakeSocket({});
+  socket.connected = false;
+  view(socket);
+  expect(screen.getByRole('link', { name: '查看演示' }).getAttribute('href')).toBe('?demo=1');
+  expect(socket.sent).toHaveLength(0);
 });

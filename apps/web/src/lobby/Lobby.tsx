@@ -26,7 +26,7 @@ export const inviteLink = (roomCode: string) => `${location.origin}${location.pa
 export function Lobby({ socket, onSession = () => {}, game }: {
   socket: LobbySocket; onSession?: () => void; game?: (seat: SavedSeat, room: RoomState) => ReactNode;
 }) {
-  const language = useLanguage();
+  useLanguage();
   useEffect(() => {
     // Let the entry form paint first; no hidden canvas or GPU context is needed.
     const timer = window.setTimeout(() => {
@@ -39,6 +39,9 @@ export function Lobby({ socket, onSession = () => {}, game }: {
   const manualLobby = useRef(new URLSearchParams(location.search).get('lobby') === '1');
   const [savedGame] = useState(() => manualLobby.current ? loadSeat() : null);
   const [name, setName] = useState('');
+  const [password, setPassword] = useState('');
+  const [passwordError, setPasswordError] = useState(false);
+  const createPassword = import.meta.env.VITE_ROOM_CREATION_PASSWORD as string | undefined;
   const [code, setCode] = useState(() => new URLSearchParams(location.search).get('room') ?? '');
   const [seat, setSeat] = useState<SavedSeat | null>(null);
   const [room, setRoom] = useState<RoomState | null>(null);
@@ -77,6 +80,11 @@ export function Lobby({ socket, onSession = () => {}, game }: {
 
   const enter = async (action: { kind: 'create-room'; displayName: string } | { kind: 'join-room'; roomCode: string; displayName: string }) => {
     setError(null);
+    if (action.kind === 'create-room' && (!createPassword || password !== createPassword)) {
+      setPasswordError(true);
+      return;
+    }
+    setPasswordError(false);
     const reply = await sendRoom(socket, action);
     if (!reply.ok) return setError({ source: 'join', code: reply.code });
     saveSeat(reply.value);
@@ -106,8 +114,7 @@ export function Lobby({ socket, onSession = () => {}, game }: {
     <main className="lobby">
       <header className="lobby-header">
         <div className="lobby-brand">
-          <span className="lobby-edition">1897</span>
-          <h1>{language === 'en' ? 'Web Rico' : <>波多黎各 <small className="lobby-online">在线</small></>}</h1>
+          <h1>Web Rico</h1>
           <p>{t('私人桌游，与好友共赴海岛。')}</p>
         </div>
         <LanguageToggle />
@@ -128,10 +135,15 @@ export function Lobby({ socket, onSession = () => {}, game }: {
           <label className="lobby-field lobby-name">{t("昵称 ")}
             <input autoComplete="nickname" value={name} onChange={e => setName(e.target.value)} />
           </label>
+          <a className="lobby-resume-link lobby-demo" href="?demo=1">{t('查看演示')}</a>
           <div className="lobby-choices">
             <form className="lobby-choice" onSubmit={e => { e.preventDefault(); if (connected && name.trim()) void enter({ kind: 'create-room', displayName: name }); }}>
               <h2>{t('开启新游戏')}</h2>
               <p>{t('创建一张新桌，分享邀请码，邀请好友加入。')}</p>
+              <label className="lobby-field">{t('创建房间密码')}
+                <input type="password" autoComplete="off" value={password} aria-invalid={passwordError} aria-describedby={passwordError ? 'create-password-error' : undefined} onChange={e => { setPassword(e.target.value); setPasswordError(false); }} />
+              </label>
+              {passwordError && <p id="create-password-error" role="alert">{createPassword ? t('密码不正确，请重试') : t('暂时无法创建房间，请联系房主')}</p>}
               <button className="lobby-primary" type="submit" disabled={!connected || !name.trim()}>{t("创建房间")}<span aria-hidden="true">↗</span></button>
             </form>
             <form className="lobby-choice" onSubmit={e => { e.preventDefault(); if (connected && name.trim()) void enter({ kind: 'join-room', roomCode: code, displayName: name }); }}>
@@ -160,11 +172,6 @@ export function Lobby({ socket, onSession = () => {}, game }: {
         </section>
       )}
     </main>
-      <footer className="lobby-footer">
-        <a className="lobby-github" href="https://github.com/FrenzyTomato/web-rico" target="_blank" rel="noopener noreferrer" aria-label={t("在 GitHub 上查看源码")} title={t("在 GitHub 上查看源码")}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .75a11.25 11.25 0 0 0-3.558 21.923c.563.104.769-.244.769-.542 0-.267-.01-.975-.015-1.914-3.13.68-3.79-1.51-3.79-1.51-.512-1.3-1.25-1.647-1.25-1.647-1.022-.699.077-.685.077-.685 1.13.08 1.725 1.16 1.725 1.16 1.005 1.722 2.637 1.225 3.279.937.102-.728.393-1.225.715-1.507-2.499-.284-5.126-1.25-5.126-5.566 0-1.23.44-2.233 1.16-3.02-.116-.284-.503-1.43.11-2.98 0 0 .945-.302 3.094 1.154A10.8 10.8 0 0 1 12 6.174c.956.004 1.92.13 2.82.379 2.148-1.456 3.091-1.154 3.091-1.154.615 1.55.228 2.696.112 2.98.723.787 1.159 1.79 1.159 3.02 0 4.327-2.631 5.279-5.138 5.558.404.349.765 1.038.765 2.092 0 1.51-.014 2.728-.014 3.098 0 .3.203.651.774.54A11.25 11.25 0 0 0 12 .75Z" /></svg>
-        </a>
-      </footer>
     </div>
   );
 }

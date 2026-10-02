@@ -48,7 +48,8 @@ function allText(element: HTMLElement) {
   return [element.textContent, ...Array.from(element.querySelectorAll('[aria-label], [title]')).flatMap(e => [e.getAttribute('aria-label'), e.getAttribute('title')])].join(' ');
 }
 function singleLanguage(text: string, locale: 'en' | 'zh') {
-  expect(text).not.toMatch(locale === 'en' ? /\p{Script=Han}/u : /[A-Za-z]/);
+  // The Web Rico brand is intentionally identical in both languages.
+  expect(text.replaceAll('Web Rico', '')).not.toMatch(locale === 'en' ? /\p{Script=Han}/u : /[A-Za-z]/);
 }
 
 it('has English-only translations with matching interpolation placeholders', () => {

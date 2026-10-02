@@ -1,6 +1,6 @@
 # Visual Design Direction
 
-User direction (2026-10-01): follow the look of a reference Three.js Catan client (dark wood frame, parchment panels, gold trim, classical serif type, a 3D island in a teal sea), adapted to Puerto Rico. Take only its **structure, palette and typography**. All art is original (IMPLEMENTATION_PLAN: no commercial images, scans, textures or icons): simple lit geometry, flat drawn icons, and initials medallions instead of portraits.
+User direction (2026-10-01): follow the look of a reference Three.js Catan client (dark wood frame, parchment panels, gold trim, classical serif type, a 3D island in a teal sea), adapted to Puerto Rico. Take only its **structure, palette and typography**. All art is original (no commercial images, scans, textures or icons): simple lit geometry, flat drawn icons, and initials medallions instead of portraits.
 
 ## Screen layout
 
