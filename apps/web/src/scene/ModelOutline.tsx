@@ -1,15 +1,19 @@
 import { createContext, useEffect, useMemo } from 'react';
 import { useThree } from '@react-three/fiber';
-import { AlwaysStencilFunc, BackSide, Color, DoubleSide, MeshBasicMaterial, NotEqualStencilFunc, ReplaceStencilOp, ShaderMaterial, Vector2 } from 'three';
+import { AlwaysStencilFunc, Color, DoubleSide, MeshBasicMaterial, NotEqualStencilFunc, ReplaceStencilOp, ShaderMaterial, Vector2 } from 'three';
 import type { Group, Mesh } from 'three';
 
 export const OutlineColor = createContext<string | null>(null);
 
-/** A glossy screen-space stroke, sharing the original geometry and silhouette mask. */
+/** A glossy screen-space stroke, sharing the original geometry and silhouette mask.
+ * Draw both sides of the expanded hull: imported roofs and foliage can be open
+ * surfaces, so a back-face-only hull loses their outlines. The stencil mask
+ * still excludes the complete model interior, leaving only the outside stroke.
+ */
 export function ModelOutline({ instance, color }: { instance: Group; color: string }) {
   const size = useThree(s => s.size);
   const material = useMemo(() => new ShaderMaterial({
-    side: BackSide, depthWrite: false, stencilWrite: true, stencilRef: 1, stencilFunc: NotEqualStencilFunc,
+    side: DoubleSide, depthWrite: false, stencilWrite: true, stencilRef: 1, stencilFunc: NotEqualStencilFunc,
     uniforms: { ink: { value: new Color(color) }, viewport: { value: new Vector2(size.width, size.height) } },
     vertexShader: `uniform vec2 viewport;
       varying float shine;

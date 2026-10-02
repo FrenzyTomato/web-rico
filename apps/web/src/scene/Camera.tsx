@@ -5,7 +5,7 @@ import { OrbitControls } from '@react-three/drei';
 import { useThree } from '@react-three/fiber';
 import { MOUSE, TOUCH, Vector3 } from 'three';
 
-export type BoardView = 'shared' | 'buildings' | 'mine' | 'overview';
+export type BoardView = 'shared' | 'buildings' | 'boats' | 'depot' | 'estates' | 'mine' | 'overview';
 export type CameraCommand = { id: number; view: BoardView } | { id: number; zoom: number };
 const WIDE_ASPECT = 1.6;
 export const cameraDistanceScale = (aspect: number) => Math.min(2, Math.max(1, WIDE_ASPECT / aspect));
@@ -15,6 +15,9 @@ export function boardFrame(view: BoardView, aspect: number) {
   const frames = {
     shared: { width: 58, depth: 29, x: 0, z: 0 },
     buildings: { width: 35, depth: 12, x: 10, z: 6 },
+    boats: { width: 20, depth: 12, x: 0.6, z: -6.5 },
+    depot: { width: 10, depth: 12, x: 18, z: -8 },
+    estates: { width: 11, depth: 13, x: -17.5, z: 4.5 },
     mine: { width: 16, depth: 20, x: 0, z: HOME_Z + 0.5 },
     overview: { width: 104, depth: 78, x: 0, z: 1 },
   };

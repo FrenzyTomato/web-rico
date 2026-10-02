@@ -61,7 +61,7 @@ export function TableScene({ view, names, frameloop = 'demand' }: {
   return (
     <div className="scene" aria-label={t("桌面")}>
       <div className="board-camera" role="group" aria-label={t("棋盘视角")}>
-        {([['shared', t("公共区")], ['buildings', t("建筑市场")], ['mine', t("我的岛屿")], ['overview', t("全桌")]] as const).map(([mode, label]) =>
+        {([['shared', t("公共区")], ['buildings', t("建筑市场")], ['boats', t("货船")], ['depot', t("交易所")], ['estates', t("可选田园")], ['mine', t("我的岛屿")], ['overview', t("全桌")]] as const).map(([mode, label]) =>
           <button key={mode} aria-pressed={focus === mode} onClick={() => focusView(mode)}>{label}</button>)}
         <button aria-label={t("放大棋盘")} onClick={() => setCameraCommand(c => ({ id: c.id + 1, zoom: 0.9 }))}>＋</button>
         <button aria-label={t("缩小棋盘")} onClick={() => setCameraCommand(c => ({ id: c.id + 1, zoom: 1 / 0.9 }))}>−</button>
