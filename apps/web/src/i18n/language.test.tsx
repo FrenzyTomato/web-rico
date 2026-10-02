@@ -81,7 +81,7 @@ it.each(['role-selection', 'recruiter-placement', 'builder-choice', 'trader-choi
     fireEvent.click(screen.getByRole('button', { name: '切换为英文' }));
     singleLanguage(allText(container), 'en');
     expect(document.documentElement.lang).toBe('en');
-    expect(document.title).toBe('Puerto Rico');
+    expect(document.title).toBe('Web Rico');
     expect(localStorage.getItem('vibe-rico.language')).toBe('en');
     fireEvent.click(screen.getByRole('button', { name: 'Switch to Chinese' }));
     singleLanguage(allText(container), 'zh');

@@ -437,8 +437,8 @@ html[lang="en"] .role-card span { font-size: 14px; }
 .board-camera.board-zoom button + button { border-top: 1px solid #e2fff033; }
 .board-camera.board-zoom button:focus-visible { outline-offset: -4px; }
 
-.lobby-footer { display: flex; justify-content: center; margin-top: 24px; }
-.lobby-github { display: inline-flex; align-items: center; gap: 9px; padding: 10px 14px; color: inherit; border: 1px solid var(--line); border-radius: 10px; text-decoration: none; font-size: 13px; }
+.lobby-footer { position: fixed; right: max(18px, env(safe-area-inset-right)); bottom: max(18px, env(safe-area-inset-bottom)); z-index: 5; }
+.lobby-github { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; color: #edf3e9; border-radius: 50%; text-decoration: none; }
 .lobby-github:hover { background: #d6eee330; }
 .lobby-github svg { flex-shrink: 0; }
 
@@ -450,3 +450,5 @@ html[lang="en"] .role-card span { font-size: 14px; }
 .players .seat-goods li { display: flex; align-items: center; gap: 4px; font-size: 12px; }
 .players .seat-goods img { width: 30px; height: 30px; object-fit: contain; }
 .players .seat-goods b { font-variant-numeric: tabular-nums; }
+
+.lobby-brand .lobby-online { font-size: .36em; font-weight: 500; color: var(--muted); vertical-align: baseline; letter-spacing: .08em; white-space: nowrap; }
