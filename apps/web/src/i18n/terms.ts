@@ -10,7 +10,7 @@ export const GOOD: Record<Good, string> = { get corn() { return t("玉米"); }, 
 export const TILE: Record<Good | 'quarry', string> = { get corn() { return GOOD.corn; }, get fruit() { return GOOD.fruit; }, get sugar() { return GOOD.sugar; }, get tobacco() { return GOOD.tobacco; }, get coffee() { return GOOD.coffee; }, get quarry() { return t("采石场"); } };
 export const BUILDING: Record<BuildingType, string> = {
   get 'small-fruit-depot'() { return t("小水果仓"); }, get 'small-sugar-mill'() { return t("小糖厂"); }, get 'large-fruit-depot'() { return t("大水果仓"); }, get 'large-sugar-mill'() { return t("大糖厂"); },
-  get 'large-tobacco-storage'() { return t("烟草仓库"); }, get 'large-coffee-roaster'() { return t("咖啡烘焙厂"); }, get 'small-market'() { return t("小市场"); }, get hacienda() { return t("大庄园"); },
+  get 'large-tobacco-storage'() { return t("烟草厂"); }, get 'large-coffee-roaster'() { return t("咖啡烘焙厂"); }, get 'small-market'() { return t("小市场"); }, get hacienda() { return t("大庄园"); },
   get 'builders-yard'() { return t("建筑工场"); }, get 'small-warehouse'() { return t("小仓库"); }, get hospital() { return t("医院"); }, get office() { return t("办事处"); }, get 'large-market'() { return t("大市场"); },
   get 'large-warehouse'() { return t("大仓库"); }, get factory() { return t("工厂"); }, get school() { return t("学校"); }, get harbor() { return t("港口"); }, get wharf() { return t("码头"); },
   get 'fire-station'() { return t("消防站"); }, get residence() { return t("官邸"); }, get fortress() { return t("堡垒"); }, get 'customs-house'() { return t("海关"); }, get 'city-hall'() { return t("市政厅"); },

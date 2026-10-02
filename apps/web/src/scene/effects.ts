@@ -33,7 +33,7 @@ export const ESTATE_EFFECT: Record<CountrysideTile['kind'], string> = {
   get corn() { return t("每块有工人的玉米田园生产一箱玉米，不需要生产建筑，受公共货物供应限制。"); },
   get fruit() { return t("每块有工人的香蕉田园可支持生产一箱香蕉，还需水果仓的工人位已启用且供应充足。"); },
   get sugar() { return t("每块有工人的甘蔗田园可支持生产一箱糖，还需糖厂的工人位已启用且供应充足。"); },
-  get tobacco() { return t("每块有工人的烟草田园可支持生产一箱烟草，还需烟草仓库的工人位已启用且供应充足。"); },
+  get tobacco() { return t("每块有工人的烟草田园可支持生产一箱烟草，还需烟草厂的工人位已启用且供应充足。"); },
   get coffee() { return t("每块有工人的咖啡田园可支持生产一箱咖啡，还需咖啡烘焙厂的工人位已启用且供应充足。"); },
   get quarry() { return t("有工人的采石场可使建造费用减少一枚金币，最多使用该建筑允许的采石场数量。费用不能低于零。"); },
 };
