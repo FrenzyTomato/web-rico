@@ -3,8 +3,8 @@ import type { Socket } from 'socket.io-client';
 import { PROTOCOL_VERSION } from '@vibe-rico/protocol';
 import type { Resumed, RoomReply, SeatGranted } from '@vibe-rico/protocol';
 
-/** Same-origin connection; in development Vite proxies /socket.io to the server (vite.config.ts). */
-export const createSocket = (): Socket => io();
+/** Split hosting uses a public backend URL; local and Docker builds retain the same-origin proxy. */
+export const createSocket = (): Socket => io(import.meta.env.VITE_SERVER_URL?.trim() || undefined);
 
 /** The part of a socket the lobby uses, so tests can supply a fake. */
 export type LobbySocket = Pick<Socket, 'emitWithAck' | 'on' | 'off' | 'connected' | 'timeout'>;
