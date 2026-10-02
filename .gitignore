@@ -15,3 +15,9 @@ playwright-report/
 
 # Machine-specific local tooling (Claude Code preview servers)
 .claude/launch.json
+
+# Original Meshy model backups; keep locally, ship runtime and runtime-ktx2 instead.
+/apps/web/public/art/meshy-buildings/
+/apps/web/public/art/meshy-coffee/
+/apps/web/public/art/meshy-estates/
+/apps/web/public/art/meshy-resources/
