@@ -82,9 +82,11 @@ export function TableScene({ view, names, islandRequest, frameloop = 'demand' }:
           aria-label={t("查看 {0} 的岛屿", [names[id] ?? id])} onClick={() => focusIsland(id)}>
           {id === view.viewer.playerId ? t("我的岛屿") : t("{0} 的岛屿", [names[id] ?? id])}
         </button>)}
+        <span>{t("滚轮缩放 · 左键平移 · 右键旋转")}</span>
+      </div>
+      <div className="board-camera board-zoom" role="group" aria-label={t("棋盘缩放")}>
         <button aria-label={t("放大棋盘")} onClick={() => setCameraCommand(c => ({ id: c.id + 1, zoom: 0.9 }))}>＋</button>
         <button aria-label={t("缩小棋盘")} onClick={() => setCameraCommand(c => ({ id: c.id + 1, zoom: 1 / 0.9 }))}>−</button>
-        <span>{t("滚轮缩放 · 左键平移 · 右键旋转")}</span>
       </div>
       {lost && <p role="note">{t("立体视图暂时不可用，正在恢复…")}</p>}
       {/* Redraw only when props change: a board game is static between states (continuous 60 fps starved e2e tabs). */}

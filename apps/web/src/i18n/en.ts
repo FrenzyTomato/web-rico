@@ -219,6 +219,7 @@ export const EN = {
   "空船": "Empty boat",
   "交易所 {0}/4": "Trading depot {0}/4",
   "桌面": "Tabletop",
+  "棋盘缩放": "Board zoom",
   "棋盘视角": "Board camera",
   "公共区": "Public area",
   "最高折扣：{0}": "Max discount: {0}",

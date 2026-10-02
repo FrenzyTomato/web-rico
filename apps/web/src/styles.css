@@ -422,3 +422,17 @@ html[lang="en"] .role-card span { font-size: 14px; }
 .lobby-copy-status:empty { display: none; }
 
 .players .check-island { margin: 7px 0 0; padding: 5px 9px; font-size: 12px; }
+
+/* Map-style zoom stack shares the camera toolbar's glass material. */
+.board-camera.board-zoom, .shell .board-camera.board-zoom {
+  top: auto; left: auto; right: max(14px, env(safe-area-inset-right));
+  bottom: var(--hud-bottom, 18px); width: 44px; max-width: none;
+  flex-direction: column; flex-wrap: nowrap; gap: 0; padding: 0; overflow: hidden;
+}
+.board-camera.board-zoom button {
+  width: 44px; height: 44px; min-height: 44px; padding: 0;
+  border: 0; border-radius: 0; font-size: 25px; line-height: 1;
+  background: transparent; box-shadow: none; touch-action: manipulation;
+}
+.board-camera.board-zoom button + button { border-top: 1px solid #e2fff033; }
+.board-camera.board-zoom button:focus-visible { outline-offset: -4px; }
