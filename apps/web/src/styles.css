@@ -411,3 +411,6 @@ html[lang="en"] .role-card span { font-size: 14px; }
 @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
   .model-tooltip { background: #193238; -webkit-backdrop-filter: none; backdrop-filter: none; }
 }
+
+/* Turn cue stays in the existing glass header, without a separate panel. */
+.turn-summary .your-turn { display: block; color: var(--accent); font-size: 1.08em; font-weight: 750; margin-bottom: 2px; }

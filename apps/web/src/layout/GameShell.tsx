@@ -1,3 +1,4 @@
+import { useTurnChime } from './useTurnChime.js';
 import { HudIcon } from './HudIcon.js';
 import { t, useLanguage, LanguageToggle } from '../i18n/language.js';
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
@@ -58,6 +59,8 @@ export function GameShell({ store, roomId, room, lobbyHref }: { store: GameStore
   const { selected } = board;
   // Event animation (PR-053): purely visual pulses; the scene always renders `latest`.
   const [settings, setSettings] = useSettings();
+  const yourTurn = Boolean(latest?.legalActions.length);
+  useTurnChime(yourTurn, connected, settings.turnSound ?? true);
   // Reduced motion: a zero-length queue shows no pulses at all (PR-054).
   const queue = useMemo(() => createEventQueue(settings.reducedMotion ? 0 : PULSE_MS), [settings.reducedMotion]);
   const [pulse, setPulse] = useState<string | null>(null);
@@ -87,7 +90,7 @@ export function GameShell({ store, roomId, room, lobbyHref }: { store: GameStore
         {lobbyHref && <a className="back-to-lobby" href={lobbyHref}>{t('返回大厅')}</a>}</div><div className="topbar-meta">
         <span>{t('第 {0} 轮 · 总督 {1}', [view.roundNumber, name(view.governorPlayerId)])}</span>
         <span>{t('房间 {0} · 版本 {1}', [room.roomCode, latest.revision])}</span></div></div>
-        <span className="turn-summary">{recruitment ? t('所有玩家 · 同时分配工人') : 'actorId' in phase ? `${name(phase.actorId)} · ${PHASE[phase.kind]}` : PHASE[phase.kind]}</span>
+        <span className="turn-summary" aria-live="polite" aria-atomic="true">{yourTurn && connected && <strong className="your-turn">{t("轮到你了！")}</strong>}<span>{recruitment ? t('所有玩家 · 同时分配工人') : 'actorId' in phase ? `${name(phase.actorId)} · ${PHASE[phase.kind]}` : PHASE[phase.kind]}</span></span>
         <div className="topbar-tools">
         <button className="hud-icon" aria-label={t("玩家")} title={t("玩家")} aria-expanded={playersOpen} aria-controls="player-sidebar" onClick={() => { setPlayersOpen(v => !v); setChronicleOpen(false); setSettingsOpen(false); }}><HudIcon kind="players" /></button>
         <button className="hud-icon" aria-label={t("编年史")} title={t("编年史")} aria-expanded={chronicleOpen} aria-controls="chronicle-sidebar" onClick={() => { setChronicleOpen(v => !v); setPlayersOpen(false); setSettingsOpen(false); }}><HudIcon kind="history" /></button>

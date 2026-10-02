@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { ROLE } from '../i18n/terms.js';
 
 const KEY = 'vibe-rico.settings';
-export interface Settings { readonly reducedMotion: boolean }
+export interface Settings { readonly reducedMotion: boolean; readonly turnSound?: boolean }
 const systemReduced = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 /** Per-browser display settings; reduced motion defaults to the system preference. */
@@ -34,7 +34,8 @@ const glossary = (): readonly [string, string][] => [
 export function SettingsPanel({ settings, onChange, iconOnly = false, open, onOpenChange, portalHost }: { settings: Settings; onChange: (s: Settings) => void; iconOnly?: boolean; open?: boolean; onOpenChange?: (open: boolean) => void; portalHost?: HTMLElement | null }) {
   useLanguage();
   const content = <div className="settings-body">
-        <label><input type="checkbox" checked={settings.reducedMotion} onChange={e => onChange({ reducedMotion: e.target.checked })} />{t(" 减少动画")}</label>
+        <label><input type="checkbox" checked={settings.reducedMotion} onChange={e => onChange({ ...settings, reducedMotion: e.target.checked })} />{t(" 减少动画")}</label>
+        <label><input type="checkbox" checked={settings.turnSound ?? true} onChange={e => onChange({ ...settings, turnSound: e.target.checked })} />{t("回合提示音")}</label>
         <dl aria-label={t("术语说明")}>
           {glossary().map(([term, text]) => <div key={term}><dt>{term}</dt><dd>{text}</dd></div>)}
         </dl>

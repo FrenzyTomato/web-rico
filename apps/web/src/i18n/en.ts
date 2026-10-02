@@ -1,5 +1,7 @@
 /** English messages keyed by their Chinese source text. Placeholders preserve user content. */
 export const EN = {
+  "轮到你了！": "It’s your turn!",
+  "回合提示音": "Turn notification sound",
   "分配工人": "Assign workers",
   "确认分配": "Confirm assignment",
   "保留货物": "Keep goods",
