@@ -8,7 +8,8 @@ import { allocationAction, draftPlayer, idleWorkers, initialWorkers, moveWorker 
 import type { WorkerDraft } from './workerDraft.js';
 
 /** Local, revision-scoped previews. Only explicit completed actions go to the authoritative server. */
-export function useBoardActions(latest: PlayerBroadcast | null, enabled: boolean, options: readonly Option[], submit: (a: Action) => void) {
+export function useBoardActions(latest: PlayerBroadcast | null, enabled: boolean, options: readonly Option[], submit: (a: Action) => void,
+  allowTarget?: (target: SceneTarget, draft: WorkerDraft | null, good: Good | null) => boolean) {
   const legal = latest?.legalActions[0];
   const me = latest?.view.players.find(p => p.playerId === latest.view.viewer.playerId);
   // Other players confirming recruitment must not erase this player's local draft.
@@ -28,6 +29,7 @@ export function useBoardActions(latest: PlayerBroadcast | null, enabled: boolean
   });
   function actionable(target: SceneTarget): boolean {
     if (!enabled) return false;
+    if (allowTarget && !allowTarget(target, draft, current.good)) return false;
     if ((target.kind === 'ship-slot' || target.kind === 'depot-slot') && !current.good) return false;
     if (placement && draft) {
       if (target.kind === 'worker') return target.id === 'pool' ? target.index >= 0 && target.index < idleWorkers(placement, draft)

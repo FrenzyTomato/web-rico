@@ -47,7 +47,8 @@ function Redraw({ view }: { view: PlayerView }) {
 }
 
 /** A central harbour island and individual player islands surrounded by continuous ocean. */
-export function TableScene({ view, names, islandRequest, initialMobileView = 'boats', frameloop = 'demand' }: {
+export function TableScene({ view, names, islandRequest, guidedView, initialMobileView = 'boats', frameloop = 'demand' }: {
+  guidedView?: { id: number; view: BoardView };
   initialMobileView?: BoardView; view: PlayerView; names: Readonly<Record<string, string>>; islandRequest?: { id: number; playerId: string } | undefined; frameloop?: 'demand' | 'always';
 }) {
   const language = useLanguage();
@@ -62,6 +63,11 @@ export function TableScene({ view, names, islandRequest, initialMobileView = 'bo
   const [focus, setFocus] = useState<BoardView>(initialView);
   const [focusedPlayer, setFocusedPlayer] = useState<string | null>(initialView === 'mine' ? view.viewer.playerId : null);
   const focusView = (view: BoardView) => { setFocusedPlayer(null); setFocus(view); setCameraCommand(c => ({ id: c.id + 1, view })); };
+  useEffect(() => {
+    if (!guidedView) return;
+    setHint(null); setFocusedPlayer(null); setFocus(guidedView.view);
+    setCameraCommand(c => ({ id: c.id + 1, view: guidedView.view }));
+  }, [guidedView]);
 
   const focusIsland = useCallback((playerId: string) => {
     const seat = seatPositions(view.seatOrder, view.viewer.playerId).find(s => s.playerId === playerId);

@@ -56,7 +56,7 @@ export function BuildingMarket({ stock }: { stock: Supply['buildingStock'] }) {
     {tier.items.map(({ type, price, x, z }) => <group key={type} position={[x, 0, z]}>
       <Selectable hint={buildingHint(type)} target={{ kind: 'building', type }} size={[2.3, 1.8]}>
         <Model name={BUILDING_MODEL[type]} width={2.3} depth={1.8} height={2.2} muted={stock[type] === 0} />
-        <Label position={[0, 0.1, 0.98]} height={0.68} maxWidth={2.45} text={`${BUILDING[type]} ×${stock[type]}`} />
+        <Label position={[0, 0.1, 0.98]} height={0.68} maxWidth={2.45} text={BUILDING[type]} suffix={`×${stock[type]}`} />
         <Label position={[0, 0.1, 1.3]} height={0.55} maxWidth={2.45} text={`🪙 ${price}　 👤 ${BUILDINGS[type].workerSlots}`} />
       </Selectable>
     </group>)}

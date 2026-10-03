@@ -2,6 +2,8 @@ import { useEffect, useRef } from 'react';
 
 /** A long press inspects a piece; dragging/pinching never opens a tooltip or selects it. */
 export function useTouchHint(show: () => void) {
+  const latestShow = useRef(show);
+  latestShow.current = show;
   const press = useRef<{ x: number; y: number; id: number } | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const suppress = useRef(false);
@@ -23,7 +25,7 @@ export function useTouchHint(show: () => void) {
     down: (e: { clientX: number; clientY: number; pointerId: number }) => {
       clear(); suppress.current = false;
       press.current = { x: e.clientX, y: e.clientY, id: e.pointerId };
-      timer.current = setTimeout(() => { suppress.current = true; show(); timer.current = null; }, 500);
+      timer.current = setTimeout(() => { suppress.current = true; latestShow.current(); timer.current = null; }, 500);
     },
     cancel: clear,
     suppressClick: () => suppress.current,

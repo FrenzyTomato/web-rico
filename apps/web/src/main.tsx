@@ -11,6 +11,7 @@ import { createSocket, lobbyLink } from './network/socket.js';
 import { createGameStore } from './state/gameStore.js';
 
 const Demo = lazy(() => import('./demo/Demo.js').then(m => ({ default: m.Demo })));
+const Tutorial = lazy(() => import('./tutorial/Tutorial.js').then(m => ({ default: m.Tutorial })));
 
 function liveApp() {
   const socket = createSocket();
@@ -27,8 +28,9 @@ function liveApp() {
 
 // Demo visits never create a socket or attempt to resume an existing seat.
 const isDemo = new URLSearchParams(location.search).get('demo') === '1';
+const isTutorial = new URLSearchParams(location.search).get('tutorial') === '1';
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    {isDemo ? <Suspense fallback={null}><Demo /></Suspense> : liveApp()}
+    {isTutorial ? <Suspense fallback={null}><Tutorial /></Suspense> : isDemo ? <Suspense fallback={null}><Demo /></Suspense> : liveApp()}
   </StrictMode>,
 );

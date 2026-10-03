@@ -2,13 +2,16 @@ import { useTouchHint } from './useTouchHint.js';
 import { createContext, useContext } from 'react';
 import type { ReactNode } from 'react';
 import type { PieceHint } from './effects.js';
+import { Interaction } from './Selection.js';
 
 export const HoverHint = createContext<(hint: PieceHint | null) => void>(() => {});
 /** Cheap hover footprint works independently of selection and the detailed model triangles. */
 export function ModelHint({ hint, size, children }: { hint: PieceHint; size: [number, number]; children: ReactNode }) {
-  const show = useContext(HoverHint);
+  const context = useContext(HoverHint);
+  const interaction = useContext(Interaction);
+  const show = (next: PieceHint | null) => { if (!next || !interaction.inspect || interaction.inspect(null)) context(next); };
   const touch = useTouchHint(() => show(hint));
-  return <group onPointerOver={e => { if (!touch.isTouch(e)) show(hint); }}
+  return <group onClick={e => { if (interaction.inspect) e.stopPropagation(); }} onPointerOver={e => { if (!touch.isTouch(e)) show(hint); }}
     onPointerDown={e => { if (touch.isTouch(e)) { e.stopPropagation(); touch.down(e); } }}
     onPointerOut={e => { if (touch.isTouch(e)) touch.cancel(); else show(null); }}>
 

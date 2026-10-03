@@ -10,8 +10,8 @@ const FONT = '700 64px "Source Han Sans CN", "PingFang SC", "Microsoft YaHei", s
  * labels zoom with their models, without screen-size floors or zoom-dependent hiding.
  * Everything labelled here is also in the DOM client.
  */
-export function Label({ text, position, height = 0.8, ink = '#fff4de', color = '#fff4de', maxWidth = Infinity }: {
-  text: string; position: [number, number, number]; height?: number; ink?: string; color?: string; maxWidth?: number;
+export function Label({ text, suffix = '', position, height = 0.8, ink = '#fff4de', color = '#fff4de', maxWidth = Infinity }: {
+  text: string; suffix?: string; position: [number, number, number]; height?: number; ink?: string; color?: string; maxWidth?: number;
 }) {
   const [loadedText, setLoadedText] = useState('');
   useEffect(() => {
@@ -26,21 +26,30 @@ export function Label({ text, position, height = 0.8, ink = '#fff4de', color = '
     const canvas = document.createElement('canvas');
     const measure = canvas.getContext('2d')!;
     measure.font = FONT;
-    canvas.width = Math.ceil(measure.measureText(text).width) + 40;
+    const nameWidth = measure.measureText(text).width;
+    const smallFont = FONT.replace('64px', '42px');
+    measure.font = smallFont;
+    const suffixWidth = suffix ? measure.measureText(` ${suffix}`).width : 0;
+    canvas.width = Math.ceil(nameWidth + suffixWidth) + 40;
     canvas.height = 104;
     const g = canvas.getContext('2d')!;
-    g.fillStyle = color; g.font = FONT; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillStyle = color; g.font = FONT; g.textAlign = 'left'; g.textBaseline = 'middle';
     // A dark silhouette separates ivory glyphs from water, sand and forest without a backing panel.
     g.strokeStyle = '#102c30';
     g.lineWidth = 10; g.lineJoin = 'round'; g.miterLimit = 2;
     g.shadowColor = '#071b26'; g.shadowBlur = 5; g.shadowOffsetY = 3;
-    g.strokeText(text, canvas.width / 2, 52);
+    g.strokeText(text, 20, 52);
     g.shadowColor = 'transparent';
-    g.fillText(text, canvas.width / 2, 52);
+    g.fillText(text, 20, 52);
+    if (suffix) {
+      g.font = smallFont; g.lineWidth = 7;
+      g.strokeText(` ${suffix}`, 20 + nameWidth, 56);
+      g.fillText(` ${suffix}`, 20 + nameWidth, 56);
+    }
     liveTextures.count++;
     const texture = new CanvasTexture(canvas); texture.colorSpace = SRGBColorSpace; texture.anisotropy = 8;
     return { texture, canvasWidth: canvas.width, canvasHeight: canvas.height };
-  }, [text, ink, color, loadedText]);
+  }, [text, suffix, ink, color, loadedText]);
   useEffect(() => () => { texture.dispose(); liveTextures.count--; }, [texture]);
   const [width, worldHeight] = labelWorldSize(height, canvasWidth, canvasHeight, maxWidth);
   // Buildings occlude labels naturally. Transparent glyph margins must not write depth,

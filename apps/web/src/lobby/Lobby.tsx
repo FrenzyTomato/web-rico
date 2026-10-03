@@ -137,6 +137,7 @@ export function Lobby({ socket, onSession = () => {}, game }: {
             <input autoComplete="nickname" value={name} onChange={e => setName(e.target.value)} />
           </label>
           <a className="lobby-resume-link lobby-demo" href="?demo=1">{t('查看演示')}</a>
+          <a className="lobby-resume-link lobby-demo" href="?tutorial=1">{t('学习游戏')}</a>
           <div className="lobby-choices">
             <form className="lobby-choice" onSubmit={e => { e.preventDefault(); if (connected && name.trim()) void enter({ kind: 'create-room', displayName: name }); }}>
               <h2>{t('开启新游戏')}</h2>

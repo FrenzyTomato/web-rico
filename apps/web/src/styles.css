@@ -242,7 +242,7 @@ html[lang="en"] .role-card span { font-size: 14px; }
 .shell > :is(.topbar, .hand, .text-view) { position: relative; z-index: 4; }
 /* All remaining board overlays use the existing HUD material, including status variants. */
 .shell > :is(.topbar, .hand, .text-view),
-.shell :is(.action-panel, .final-scores, .stage-alert, .skip) {
+.shell :is(.action-panel, .final-scores, .stage-alert, .skip, .tutorial-instruction) {
   background: var(--glass);
   -webkit-backdrop-filter: blur(18px) saturate(120%);
   backdrop-filter: blur(18px) saturate(120%);
@@ -286,11 +286,11 @@ html[lang="en"] .role-card span { font-size: 14px; }
 @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
   .shell { --glass: #193238; }
   .shell > :is(.topbar, .hand, .text-view), .shell .board-camera, .shell .supply-hud,
-  .shell :is(.action-panel, .final-scores, .stage-alert, .skip) {
+  .shell :is(.action-panel, .final-scores, .stage-alert, .skip, .tutorial-instruction) {
     opacity: 1 !important;
   }
   .shell > :is(.topbar, .hand, .text-view), .shell .board-camera, .shell .supply-hud > div,
-  .shell :is(.action-panel, .final-scores, .stage-alert, .skip) {
+  .shell :is(.action-panel, .final-scores, .stage-alert, .skip, .tutorial-instruction) {
     -webkit-backdrop-filter: none; backdrop-filter: none;
   }
 }
@@ -537,4 +537,36 @@ html[lang="en"] .role-card span { font-size: 14px; }
   .shell .scene .model-tooltip p { margin: 5px 0; font-size: 12px; line-height: 1.45; }
   .shell .scene .model-tooltip small { font-size: 11px; line-height: 1.45; }
   .shell .scene .model-tooltip .mobile-hint-close { margin: -6px -8px 0 4px; }
+}
+
+/* Tutorial chrome reuses the global HUD material; only its placement differs. */
+.tutorial-shell { --hud-top: 88px; --hud-bottom: 168px; }
+.tutorial-shell > .topbar { display: flex; align-items: center; justify-content: space-between; }
+.tutorial-shell .tutorial-tools { display: flex; align-items: center; gap: 8px; }
+.tutorial-shell .board-camera:not(.board-zoom) { display: none; }
+.tutorial-shell > .tutorial-instruction { position: absolute; z-index: 4; left: 14px; top: var(--hud-top); bottom: auto; width: min(360px, calc(100% - 28px)); padding: 14px 18px; }
+.tutorial-shell .tutorial-instruction h2 { margin: 0 0 6px; font-size: 19px; }
+.tutorial-shell .tutorial-instruction p { margin: 0 0 8px; line-height: 1.5; }
+.tutorial-shell .tutorial-focus { font-size: 12px; min-height: 32px; padding: 4px 8px; }
+.tutorial-shell > .hand { min-height: 100px; max-height: 26dvh; display: flex; align-items: center; justify-content: space-between; gap: 16px; overflow-y: auto; }
+.tutorial-actions { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.tutorial-actions button { min-height: 44px; }
+.tutorial-shell .scene .model-tooltip { pointer-events: auto; }
+.tutorial-shell .mobile-hint-close { display: block; float: right; min-height: 36px; }
+@media (max-width: 700px) {
+  .tutorial-shell > .topbar { min-height: 64px; padding: 8px 10px; }
+  .tutorial-shell > .topbar h1 { font-size: 22px; }
+  .tutorial-shell .tutorial-tools { gap: 4px; }
+  .tutorial-shell .tutorial-tools button { min-height: 44px; font-size: 12px; }
+  .tutorial-shell > .tutorial-instruction { top: auto; bottom: var(--hud-bottom); left: 10px; right: 64px; width: auto; height: var(--mobile-view-controls-height); padding: 10px 12px; overflow-y: auto; }
+  .tutorial-shell .tutorial-instruction h2 { font-size: 15px; }
+  .tutorial-shell .tutorial-instruction p { font-size: 12px; margin-bottom: 4px; }
+  .tutorial-shell:has(.model-tooltip) > .tutorial-instruction { visibility: hidden; }
+  .tutorial-shell > .hand { padding: 10px 12px; flex-direction: column; align-items: stretch; gap: 5px; min-height: 94px; max-height: 26dvh; }
+  .tutorial-shell .dock-resources { display: flex; align-items: center; gap: 12px; width: 100%; min-width: 0; flex: none; }
+  .tutorial-shell .dock-counters { display: flex; flex-direction: row; padding-top: 0; gap: 8px; font-size: 15px; }
+  .tutorial-shell .dock-workers h3, .tutorial-shell .dock-goods h3, .tutorial-shell .dock-empty { display: none; }
+  .tutorial-shell .dock-pieces { gap: 3px; }
+  .tutorial-shell .dock-piece { width: 32px; height: 32px; }
+  .tutorial-shell .tutorial-actions { justify-content: flex-end; }
 }

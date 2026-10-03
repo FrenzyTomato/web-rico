@@ -41,7 +41,7 @@ export function optionsForTarget(options: readonly Option[], target: SceneTarget
 }
 
 /** `pulse` is the target key the event animation is highlighting (PR-053), if any. */
-export interface SceneInteraction { actionable(target: SceneTarget): boolean; select(target: SceneTarget): void; pulse: string | null; selectedKey?: string | null }
+export interface SceneInteraction { actionable(target: SceneTarget): boolean; select(target: SceneTarget): void; pulse: string | null; selectedKey?: string | null; inspect?: (target: SceneTarget | null) => boolean }
 export const Interaction = createContext<SceneInteraction>({ actionable: () => false, select: () => {}, pulse: null });
 export const SceneInteractionProvider = Interaction.Provider;
 

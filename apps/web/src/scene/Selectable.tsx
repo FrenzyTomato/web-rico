@@ -16,12 +16,13 @@ const registry = new Map<string, { target: SceneTarget; group: Group }>();
 
 /** Wraps a scene object: click selects it; actionable objects get a gold outline and a pointer cursor. */
 export function Selectable({ target, size, children, hint, outline = false, circular = false, hitHeight = 0.6 }: { target: SceneTarget; size: [number, number]; children?: ReactNode; hint?: PieceHint; outline?: boolean; circular?: boolean; hitHeight?: number }) {
-  const showHint = useContext(HoverHint);
+  const hintContext = useContext(HoverHint);
+  const interaction = useContext(Interaction);
+  const showHint = (next: PieceHint | null) => { if (!next || !interaction.inspect || interaction.inspect(target)) hintContext(next); };
   const touch = useTouchHint(() => { if (hint) showHint(hint); });
   const { active, handlers } = useSelectable(target);
   const ref = useRef<Group>(null);
   const key = targetKey(target);
-  const interaction = useContext(Interaction);
   const pulsing = interaction.pulse === key;
   const selected = interaction.selectedKey === key;
   const buildingBase = target.kind === 'building' || target.kind === 'owned-building';
