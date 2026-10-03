@@ -454,6 +454,9 @@ html[lang="en"] .role-card span { font-size: 14px; }
 .mobile-menu-button, .mobile-menu-info, .mobile-text-button, .mobile-lobby-link,
 .mobile-sheet-toggle, .board-camera.mobile-camera { display: none; }
 @media (max-width: 700px) {
+  /* Long presses inspect board pieces instead of opening the phone's text-selection menu. */
+  .shell { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+  .shell :where(input, textarea) { -webkit-user-select: text; user-select: text; -webkit-touch-callout: default; }
   .shell { padding: max(8px, env(safe-area-inset-top)) 10px max(8px, env(safe-area-inset-bottom)); gap: 8px; }
   .shell > .topbar { grid-template-columns: auto minmax(0, 1fr) 44px; gap: 8px; min-height: 56px; padding: 4px 8px 4px 12px; }
   .shell .topbar h1 { font-size: 23px; margin: 0; }

@@ -57,7 +57,7 @@ export function Camera({ command, touchRotate = false }: { command: CameraComman
   }, [camera, command, size.width, size.height, invalidate]);
   return <OrbitControls ref={controls} makeDefault enableRotate zoomToCursor screenSpacePanning={false} enableDamping={false}
     minPolarAngle={0.15} maxPolarAngle={Math.PI / 3} rotateSpeed={0.5}
-    minDistance={4} maxDistance={300} zoomSpeed={0.12} panSpeed={0.8}
+    minDistance={4} maxDistance={300} zoomSpeed={size.width <= 700 ? 1 : 0.12} panSpeed={0.8}
     mouseButtons={{ LEFT: MOUSE.PAN, MIDDLE: MOUSE.DOLLY, RIGHT: MOUSE.ROTATE }}
     touches={{ ONE: touchRotate && size.width <= 700 ? TOUCH.ROTATE : TOUCH.PAN, TWO: TOUCH.DOLLY_PAN }} />;
 }
