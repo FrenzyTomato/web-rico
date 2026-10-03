@@ -1,3 +1,4 @@
+import { setLanguage } from '../src/i18n/language.js';
 import { isDeepStrictEqual } from 'node:util';
 import { expect } from '@playwright/test';
 import type { Browser, BrowserContext, BrowserContextOptions, Locator, Page } from '@playwright/test';
@@ -5,6 +6,9 @@ import { getLegalCommands } from '@vibe-rico/game-engine';
 import type { GameCommand, GameState, Good } from '@vibe-rico/game-engine';
 import { describeOptions } from '../src/actions/options.js';
 import { GOOD } from '../src/i18n/terms.js';
+
+// Match the explicit Chinese locale used by the browser contexts.
+setLanguage('zh');
 
 const GOODS: Good[] = ['corn', 'fruit', 'sugar', 'tobacco', 'coffee'];
 const withoutActor = (c: GameCommand) => { const { actorId: _, ...rest } = c; return rest; };

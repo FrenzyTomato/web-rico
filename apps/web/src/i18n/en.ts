@@ -1,5 +1,12 @@
 /** English messages keyed by their Chinese source text. Placeholders preserve user content. */
 export const EN = {
+  "旋转视角": "Rotate view",
+  "拖动旋转；轻触切回平移": "Drag to rotate; tap to return to panning",
+  "轻触后拖动旋转视角": "Tap, then drag to rotate the view",
+  "关闭提示": "Close tooltip",
+  "金币": "Coins",
+  "菜单": "Menu",
+  "查看区域": "Viewing",
   "查看演示": "View demo",
   "演示 · 仅供浏览": "Demo · View only",
   "探索棋盘、岛屿和提示；演示中无法进行游戏操作。": "Explore the board, islands and tooltips. Gameplay actions are disabled in this demo.",

@@ -7,7 +7,7 @@ import { Selectable } from './Selectable.js';
 import { Model } from './Model.js';
 import { BUILDING_MODEL, ESTATE_MODEL, GOODS_MODEL } from './modelCatalog.js';
 import { Workers } from './Workers.js';
-import { buildingMarket } from './pieces.js';
+import { compactBuildingTiers } from './pieces.js';
 import { box, material } from './resources.js';
 import { buildingHint, estateHint } from './effects.js';
 
@@ -48,42 +48,18 @@ export function WorkerSupply({ supply }: { supply: Supply }) {
     <Label position={[0, 0.1, -1.8]} height={0.68} text={t("可招募工人：{0}", [supply.workRegisterCount])} />
   </group>;
 }
-/** One price per column; a price group may span columns, each with up to three buildings. */
+/** Compact discount groups with an individual price below every building name. */
 export function BuildingMarket({ stock }: { stock: Supply['buildingStock'] }) {
   useLanguage();
-  const tiers = new Map<number, Map<number, ReturnType<typeof buildingMarket>>>();
-  for (const item of buildingMarket(stock)) {
-    const { cost, quarryCap } = BUILDINGS[item.type];
-    const prices = tiers.get(quarryCap) ?? new Map();
-    const group = prices.get(cost) ?? [];
-    group.push(item);
-    prices.set(cost, group);
-    tiers.set(quarryCap, prices);
-  }
-  let nextX = 0;
-  return <group>{[...tiers].sort(([a], [b]) => a - b).map(([cap, prices]) => {
-    const tierStart = nextX;
-    const priceGroups = [...prices].sort(([a], [b]) => a - b).map(([price, buildings]) => {
-      const columns = Math.ceil(buildings.length / 3);
-      const x = nextX;
-      nextX += columns * 2.55 + 0.22;
-      const centre = (columns - 1) * 2.55 / 2;
-      return <group key={price} position={[x, 0, 0]}>
-        {buildings.map(({ type, count, exhausted }, i) => <group key={type} position={[Math.floor(i / 3) * 2.55, 0, i % 3 * 2.7]}>
-          <Selectable hint={buildingHint(type)} target={{ kind: 'building', type }} size={[2.3, 1.8]}>
-            <Model name={BUILDING_MODEL[type]} width={2.3} depth={1.8} height={2.2} muted={exhausted} />
-            <Label position={[0, 0.1, 0.98]} height={0.68} maxWidth={2.45} ink={exhausted ? '#8f8778' : '#2a2118'} text={`${BUILDING[type]} ×${count}`} />
-          </Selectable>
-        </group>)}
-        <Label position={[centre, 0.1, -1.7]} height={0.95} text={`🪙 ${price}`} />
-      </group>;
-    });
-    const tierEnd = nextX - 2.77;
-    return <group key={cap}>
-      {priceGroups}
-      <Label position={[(tierStart + tierEnd) / 2, 0.1, -3]} height={0.65} maxWidth={tierEnd - tierStart + 2.4} text={t("最高折扣：{0}", [cap])} />
-      {tierStart > 0 && <mesh position={[tierStart - 1.385, 0.035, 2]} dispose={null}
-        geometry={box(0.025, 0.02, 10.8)} material={material('#aa946b')} />}
-    </group>;
-  })}</group>;
+  return <group>{compactBuildingTiers().map(tier => <group key={tier.cap}>
+    <Label position={[(tier.start + tier.end) / 2, 0.1, -1.8]} height={0.65} maxWidth={5.3} color="#9cd5c2" text={t('最高折扣：{0}', [tier.cap])} />
+    {tier.items.map(({ type, price, x, z }) => <group key={type} position={[x, 0, z]}>
+      <Selectable hint={buildingHint(type)} target={{ kind: 'building', type }} size={[2.3, 1.8]}>
+        <Model name={BUILDING_MODEL[type]} width={2.3} depth={1.8} height={2.2} muted={stock[type] === 0} />
+        <Label position={[0, 0.1, 0.98]} height={0.68} maxWidth={2.45} text={`${BUILDING[type]} ×${stock[type]}`} />
+        <Label position={[0, 0.1, 1.3]} height={0.55} maxWidth={2.45} text={`🪙 ${price}　 👤 ${BUILDINGS[type].workerSlots}`} />
+      </Selectable>
+    </group>)}
+    {tier.start > 0 && <mesh position={[tier.start - 1.8, 0.035, (tier.depth - 4) / 2]} dispose={null} geometry={box(0.025, 0.02, 9)} material={material('#aa946b')} />}
+  </group>)}</group>;
 }

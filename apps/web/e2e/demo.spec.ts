@@ -4,7 +4,7 @@ test('demo opens without room credentials and stays offline and view-only', asyn
   const requests: string[] = [];
   page.on('request', request => { if (request.url().includes('/socket.io')) requests.push(request.url()); });
   await page.goto('/?demo=1');
-  await expect(page.getByText('Demo · View only', { exact: true })).toBeVisible();
+  await expect(page.locator('.topbar-meta').getByText('Demo · View only', { exact: true })).toBeVisible();
   await expect(page.locator('canvas')).toBeVisible();
   await expect(page.getByText('Explore the board, islands and tooltips. Gameplay actions are disabled in this demo.')).toBeVisible();
   await expect(page.locator('.actions button')).toHaveCount(0);

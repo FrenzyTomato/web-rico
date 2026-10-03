@@ -128,7 +128,7 @@ describe('game screen', () => {
       store.setState({ rejection: { commandId: 'c', code: 'ILLEGAL_COMMAND', ruleId: 'ROLE-001' } });
     });
     render(<GameShell store={store} roomId="r" room={room} lobbyHref="/?lobby=1" />);
-    expect(screen.getByRole('link', { name: '返回大厅' }).getAttribute('href')).toBe('/?lobby=1');
+    expect(screen.getAllByRole('link', { name: '返回大厅' })[0]!.getAttribute('href')).toBe('/?lobby=1');
     expect(screen.getByRole('alert').textContent).toBe('操作不符合当前规则，请重新选择');
     expect(rejectionText({ commandId: 'c', code: 'STALE_REVISION', currentRevision: 2 })).toBe('状态已更新，请根据最新局面重新选择');
     expect(within(screen.getByRole('group', { name: '可选行动' })).getAllByRole('button')).toHaveLength(6);

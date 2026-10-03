@@ -10,6 +10,6 @@ export default defineConfig({
   use: { actionTimeout: 15_000, navigationTimeout: 30_000, baseURL: 'http://127.0.0.1:5173', ...(process.env.CI ? {} : { channel: 'chrome' }), trace: 'retain-on-failure' },
   webServer: [
     { command: 'node e2e/server.mjs', url: 'http://127.0.0.1:3000/health', reuseExistingServer: false },
-    { env: { VITE_ROOM_CREATION_PASSWORD: 'e2e-room-password' }, command: 'vite --port 5173 --strictPort --host 127.0.0.1', url: 'http://127.0.0.1:5173', reuseExistingServer: false },
+    { env: { VITE_ROOM_CREATION_PASSWORD_ENABLED: 'true', VITE_ROOM_CREATION_PASSWORD: 'e2e-room-password' }, command: 'vite --port 5173 --strictPort --host 127.0.0.1', url: 'http://127.0.0.1:5173', reuseExistingServer: false },
   ],
 });

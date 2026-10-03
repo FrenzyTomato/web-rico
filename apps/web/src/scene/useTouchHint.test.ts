@@ -1,0 +1,30 @@
+import { act, renderHook, cleanup } from '@testing-library/react';
+import { afterEach, expect, it, vi } from 'vitest';
+import { useTouchHint } from './useTouchHint.js';
+afterEach(() => { cleanup(); vi.useRealTimers(); });
+it('a held touch shows a hint and suppresses its release click', () => {
+  vi.useFakeTimers();
+  const show = vi.fn();
+  const { result } = renderHook(() => useTouchHint(show));
+  act(() => result.current.down({ clientX: 20, clientY: 20, pointerId: 1 }));
+  act(() => vi.advanceTimersByTime(499));
+  expect(show).not.toHaveBeenCalled();
+  act(() => vi.advanceTimersByTime(1));
+  expect(show).toHaveBeenCalledOnce();
+  expect(result.current.suppressClick()).toBe(true);
+  act(() => window.dispatchEvent(new Event('pointerup')));
+  expect(result.current.suppressClick()).toBe(true);
+  act(() => result.current.down({ clientX: 20, clientY: 20, pointerId: 1 }));
+  act(() => window.dispatchEvent(new Event('pointerup')));
+  expect(result.current.suppressClick()).toBe(false);
+});
+it('movement cancels a long press and suppresses selection after dragging', () => {
+  vi.useFakeTimers();
+  const show = vi.fn();
+  const { result } = renderHook(() => useTouchHint(show));
+  act(() => result.current.down({ clientX: 20, clientY: 20, pointerId: 1 }));
+  act(() => window.dispatchEvent(Object.assign(new Event('pointermove'), { clientX: 40, clientY: 20, pointerId: 1 })));
+  act(() => vi.advanceTimersByTime(600));
+  expect(show).not.toHaveBeenCalled();
+  expect(result.current.suppressClick()).toBe(true);
+});

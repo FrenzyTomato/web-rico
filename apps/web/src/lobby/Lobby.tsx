@@ -41,6 +41,7 @@ export function Lobby({ socket, onSession = () => {}, game }: {
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [passwordError, setPasswordError] = useState(false);
+  const passwordRequired = import.meta.env.VITE_ROOM_CREATION_PASSWORD_ENABLED === 'true';
   const createPassword = import.meta.env.VITE_ROOM_CREATION_PASSWORD as string | undefined;
   const [code, setCode] = useState(() => new URLSearchParams(location.search).get('room') ?? '');
   const [seat, setSeat] = useState<SavedSeat | null>(null);
@@ -80,7 +81,7 @@ export function Lobby({ socket, onSession = () => {}, game }: {
 
   const enter = async (action: { kind: 'create-room'; displayName: string } | { kind: 'join-room'; roomCode: string; displayName: string }) => {
     setError(null);
-    if (action.kind === 'create-room' && (!createPassword || password !== createPassword)) {
+    if (action.kind === 'create-room' && passwordRequired && (!createPassword || password !== createPassword)) {
       setPasswordError(true);
       return;
     }
@@ -140,10 +141,10 @@ export function Lobby({ socket, onSession = () => {}, game }: {
             <form className="lobby-choice" onSubmit={e => { e.preventDefault(); if (connected && name.trim()) void enter({ kind: 'create-room', displayName: name }); }}>
               <h2>{t('开启新游戏')}</h2>
               <p>{t('创建一张新桌，分享邀请码，邀请好友加入。')}</p>
-              <label className="lobby-field">{t('创建房间密码')}
+              {passwordRequired && <label className="lobby-field">{t('创建房间密码')}
                 <input type="password" autoComplete="off" value={password} aria-invalid={passwordError} aria-describedby={passwordError ? 'create-password-error' : undefined} onChange={e => { setPassword(e.target.value); setPasswordError(false); }} />
-              </label>
-              {passwordError && <p id="create-password-error" role="alert">{createPassword ? t('密码不正确，请重试') : t('暂时无法创建房间，请联系房主')}</p>}
+              </label>}
+              {passwordRequired && passwordError && <p id="create-password-error" role="alert">{createPassword ? t('密码不正确，请重试') : t('暂时无法创建房间，请联系房主')}</p>}
               <button className="lobby-primary" type="submit" disabled={!connected || !name.trim()}>{t("创建房间")}<span aria-hidden="true">↗</span></button>
             </form>
             <form className="lobby-choice" onSubmit={e => { e.preventDefault(); if (connected && name.trim()) void enter({ kind: 'join-room', roomCode: code, displayName: name }); }}>

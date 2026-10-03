@@ -31,6 +31,9 @@ import type { GameStore } from '../state/gameStore.js';
 export function GameShell({ store, roomId, room, lobbyHref, demo = false }: { store: GameStore; roomId: string; room: RoomState; lobbyHref?: string; demo?: boolean }) {
   const language = useLanguage();
   const [islandRequest, setIslandRequest] = useState<{ id: number; playerId: string }>();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [textOpen, setTextOpen] = useState(false);
   const [playersOpen, setPlayersOpen] = useState(false);
   const [chronicleOpen, setChronicleOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -65,6 +68,7 @@ export function GameShell({ store, roomId, room, lobbyHref, demo = false }: { st
   useAutoProduce(latest, roomId, settings.autoProduce ?? false, connected, pending, action => store.getState().submit(roomId, action));
   const yourTurn = Boolean(latest?.legalActions.length);
   useTurnChime(yourTurn, connected, settings.turnSound ?? true);
+  useEffect(() => { setSheetOpen(yourTurn && !demo); }, [yourTurn, latest?.view.phase.kind, demo]);
   // Reduced motion: a zero-length queue shows no pulses at all (PR-054).
   const queue = useMemo(() => createEventQueue(settings.reducedMotion ? 0 : PULSE_MS), [settings.reducedMotion]);
   const [pulse, setPulse] = useState<string | null>(null);
@@ -88,17 +92,21 @@ export function GameShell({ store, roomId, room, lobbyHref, demo = false }: { st
   const lines = chronicle.map(e => ({ key: `${e.revision}-${e.index}`, text: describeEvent(e, names) })).filter(l => l.text).slice(-20).reverse();
   return (
     <SceneInteractionProvider value={interaction}>
-    <div ref={shellRef} onKeyDown={event => { if (event.key === 'Escape') { setPlayersOpen(false); setChronicleOpen(false); setSettingsOpen(false); } }} className="shell" data-revision={latest.revision}>
+    <div ref={shellRef} onKeyDown={event => { if (event.key === 'Escape') { setPlayersOpen(false); setChronicleOpen(false); setSettingsOpen(false); setMenuOpen(false); setTextOpen(false); } }} className={`shell${menuOpen ? ' mobile-menu-open' : ''}${sheetOpen ? ' mobile-sheet-open' : ''}${textOpen ? ' mobile-text-open' : ''}`} data-revision={latest.revision}>
       <header className="topbar">
         <div className="topbar-brand"><div className="topbar-brand-line"><h1>Web Rico</h1>
         {lobbyHref && <a className="back-to-lobby" href={lobbyHref}>{t('返回大厅')}</a>}</div><div className="topbar-meta">
         <span>{t('第 {0} 轮 · 总督 {1}', [view.roundNumber, name(view.governorPlayerId)])}</span>
         <span>{demo ? t('演示 · 仅供浏览') : t('房间 {0} · 版本 {1}', [room.roomCode, latest.revision])}</span></div></div>
         <span className="turn-summary" aria-live="polite" aria-atomic="true">{yourTurn && connected && <strong className="your-turn">{t("轮到你了！")}</strong>}<span>{recruitment ? t('所有玩家 · 同时分配工人') : 'actorId' in phase ? `${name(phase.actorId)} · ${PHASE[phase.kind]}` : PHASE[phase.kind]}</span></span>
-        <div className="topbar-tools">
+        <button className="mobile-menu-button hud-icon" aria-label={t('菜单')} aria-expanded={menuOpen} aria-controls="game-tools" onClick={() => setMenuOpen(v => !v)}><span aria-hidden="true">{menuOpen ? '×' : '☰'}</span></button>
+        <div className="topbar-tools" id="game-tools">
+        <div className="mobile-menu-info"><strong>{demo ? t('演示 · 仅供浏览') : t('房间 {0}', [room.roomCode])}</strong><span>{t('第 {0} 轮 · 总督 {1}', [view.roundNumber, name(view.governorPlayerId)])}</span><span>{t('剩余工人')} {view.supply.workerCount} · {t('剩余分数')} {view.supply.vpRemaining}</span></div>
         <button className="hud-icon" aria-label={t("玩家")} title={t("玩家")} aria-expanded={playersOpen} aria-controls="player-sidebar" onClick={() => { setPlayersOpen(v => !v); setChronicleOpen(false); setSettingsOpen(false); }}><HudIcon kind="players" /></button>
         <button className="hud-icon" aria-label={t("时间线")} title={t("时间线")} aria-expanded={chronicleOpen} aria-controls="chronicle-sidebar" onClick={() => { setChronicleOpen(v => !v); setPlayersOpen(false); setSettingsOpen(false); }}><HudIcon kind="history" /></button>
         <LanguageToggle iconOnly />
+        <button className="mobile-text-button" onClick={() => { setTextOpen(v => !v); setMenuOpen(false); }}>{t('文字界面（完整局面）')}</button>
+        {lobbyHref && <a className="mobile-lobby-link back-to-lobby" href={lobbyHref}>{t('返回大厅')}</a>}
         <SettingsPanel settings={settings} onChange={setSettings} iconOnly portalHost={shellRef.current} open={settingsOpen} onOpenChange={open => { setSettingsOpen(open); setPlayersOpen(false); setChronicleOpen(false); }} />
         </div>
       </header>
@@ -137,7 +145,7 @@ export function GameShell({ store, roomId, room, lobbyHref, demo = false }: { st
           <div><dt>{t("剩余工人")}</dt><dd>{view.supply.workerCount}</dd></div>
           <div><dt><span aria-hidden="true">★ </span>{t("剩余分数")}</dt><dd>{view.supply.vpRemaining}</dd></div>
         </dl>
-          <SceneBoundary><Suspense fallback={<p role="status">{t("正在载入立体视图…")}</p>}><TableScene islandRequest={islandRequest} view={board.player ? { ...view, players: view.players.map(p => p.playerId === board.player!.playerId ? board.player! : p) } : view} names={names} /></Suspense></SceneBoundary>
+          <SceneBoundary><Suspense fallback={<p role="status">{t("正在载入立体视图…")}</p>}><TableScene initialMobileView={demo ? 'boats' : 'mine'} islandRequest={islandRequest} view={board.player ? { ...view, players: view.players.map(p => p.playerId === board.player!.playerId ? board.player! : p) } : view} names={names} /></Suspense></SceneBoundary>
         {rejection && <p className="stage-alert" role="alert">{rejectionText(rejection)}</p>}
         {phase.kind === 'game-over' && <div className="final-scores"><ScoreView scores={phase.scores} names={names} /></div>}
         {animating && <button className="skip" onClick={() => { queue.skip(); setPulse(null); setAnimating(false); }}>{t("跳过动画")}</button>}
@@ -158,6 +166,13 @@ export function GameShell({ store, roomId, room, lobbyHref, demo = false }: { st
       </aside>
 
       <footer className="hand" aria-label={t("手牌与行动")}>
+        <button className="mobile-sheet-toggle" aria-expanded={sheetOpen} aria-controls="hand-content" onClick={() => setSheetOpen(v => !v)}>
+          <span className="sheet-grip" aria-hidden="true" />
+          <span className="mobile-resource-summary"><span title={t('金币')}>🪙 {me.coins}</span><span title={t('运货分 ')}>★ {view.viewer.earnedVp}</span><span>{t('工人池')} {me.idleWorkerCount}</span>
+          <span className="mobile-goods-summary">{GOODS.filter(g => me.goods[g] > 0).map(g => <span key={g} title={GOOD[g]}><img src={`/art/dock/${encodeURIComponent(`${GOODS_MODEL[g]} Cutout`)}.webp`} alt={GOOD[g]} />{me.goods[g]}</span>)}</span></span>
+          <span className="mobile-sheet-caption">{demo ? t('演示 · 仅供浏览') : yourTurn ? t('轮到你了！') : t('手牌与行动')}<span aria-hidden="true">{sheetOpen ? '⌄' : '⌃'}</span></span>
+        </button>
+        <div id="hand-content" className="hand-content">
         <ResourceDock player={board.player ?? me} points={phase.kind === 'game-over' ? phase.scores.find(s => s.playerId === me.playerId)!.totalVp : view.viewer.earnedVp} />
         <div className="actions">
           {recruitment && <p className="recruitment-progress">{t('分配进度：{0}/{1} 已确认', [confirmations.length, view.players.length])}</p>}
@@ -165,9 +180,10 @@ export function GameShell({ store, roomId, room, lobbyHref, demo = false }: { st
             ? board.placement ? <><p>{t('同时分配你的工人；所有玩家确认后继续。')}</p><WorkerControls board={board} player={me} /></> : recruitment && confirmations.includes(me.playerId) ? <p role="status">{t('已确认分配，等待其他玩家。')}</p> : latest.legalActions[0]?.phase === 'role-selection' ? <RoleHand legal={latest.legalActions[0]} view={view} submit={action => store.getState().submit(roomId, action)} /> : <ActionForm boardFirst legalActions={latest.legalActions} view={view} submit={action => store.getState().submit(roomId, action)} />
             : <p>{pending ? t("正在提交行动…") : t("连接已断开，暂时不能行动")}</p>}
         </div>
+        </div>
       </footer>
 
-      <details className="text-view" open={!webglAvailable()}>
+      <details className="text-view" open={textOpen || !webglAvailable()} onToggle={e => setTextOpen(e.currentTarget.open)}>
         <summary>{t("文字界面（完整局面）")}</summary>
         <GameView view={view} names={names} />
       </details>

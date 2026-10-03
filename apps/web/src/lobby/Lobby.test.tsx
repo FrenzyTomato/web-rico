@@ -27,7 +27,7 @@ const seats = (started: boolean, n = 2): RoomState => ({ roomCode: 'ABC123', hos
 const view = (socket: FakeSocket, onSession = () => {}) => render(<Lobby socket={socket as unknown as LobbySocket} onSession={onSession} />);
 const flush = () => act(async () => {});
 
-beforeEach(() => { vi.stubEnv('VITE_ROOM_CREATION_PASSWORD', 'test-room-password'); localStorage.clear(); history.replaceState(null, '', '/'); });
+beforeEach(() => { vi.stubEnv('VITE_ROOM_CREATION_PASSWORD_ENABLED', 'true'); vi.stubEnv('VITE_ROOM_CREATION_PASSWORD', 'test-room-password'); localStorage.clear(); history.replaceState(null, '', '/'); });
 afterEach(() => { cleanup(); vi.unstubAllEnvs(); });
 
 describe('lobby', () => {
@@ -241,4 +241,15 @@ it('offers a demo without a password, nickname or connection', () => {
   view(socket);
   expect(screen.getByRole('link', { name: '查看演示' }).getAttribute('href')).toBe('?demo=1');
   expect(socket.sent).toHaveLength(0);
+});
+
+it.each(['', 'false'])('allows creation without a password when the flag is %s', async flag => {
+  vi.stubEnv('VITE_ROOM_CREATION_PASSWORD_ENABLED', flag);
+  const socket = new FakeSocket({ 'create-room': { ok: true, value: granted } });
+  view(socket);
+  expect(screen.queryByLabelText('创建房间密码')).toBeNull();
+  fireEvent.change(screen.getByLabelText('昵称'), { target: { value: 'Ana' } });
+  fireEvent.click(screen.getByText('创建房间'));
+  await flush();
+  expect(socket.sent[0]!.payload.action).toEqual({ kind: 'create-room', displayName: 'Ana' });
 });

@@ -119,7 +119,10 @@ it('updates an existing lobby error and preserves the typed player name', async 
 it('switches all scene terms, effects, and mat headings while preserving user names', () => {
   for (const locale of ['en', 'zh'] as const) {
     setLanguage(locale);
-    for (const type of Object.keys(BUILDING) as (keyof typeof BUILDING)[]) singleLanguage(Object.values(buildingHint(type)).join(' '), locale);
+    for (const type of Object.keys(BUILDING) as (keyof typeof BUILDING)[]) {
+      const { title, detail, meta } = buildingHint(type);
+      singleLanguage([title, detail, meta].join(' '), locale);
+    }
     for (const type of Object.keys(TILE) as (keyof typeof TILE)[]) singleLanguage(Object.values(estateHint(type)).join(' '), locale);
     singleLanguage(Object.values(PHASE).join(' '), locale);
     singleLanguage(t('田园') + t('城镇'), locale);

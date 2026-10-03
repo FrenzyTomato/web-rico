@@ -10,8 +10,8 @@ const FONT = '700 64px "Source Han Sans CN", "PingFang SC", "Microsoft YaHei", s
  * labels zoom with their models, without screen-size floors or zoom-dependent hiding.
  * Everything labelled here is also in the DOM client.
  */
-export function Label({ text, position, height = 0.8, ink = '#fff4de', maxWidth = Infinity }: {
-  text: string; position: [number, number, number]; height?: number; ink?: string; maxWidth?: number;
+export function Label({ text, position, height = 0.8, ink = '#fff4de', color = '#fff4de', maxWidth = Infinity }: {
+  text: string; position: [number, number, number]; height?: number; ink?: string; color?: string; maxWidth?: number;
 }) {
   const [loadedText, setLoadedText] = useState('');
   useEffect(() => {
@@ -29,7 +29,7 @@ export function Label({ text, position, height = 0.8, ink = '#fff4de', maxWidth 
     canvas.width = Math.ceil(measure.measureText(text).width) + 40;
     canvas.height = 104;
     const g = canvas.getContext('2d')!;
-    g.fillStyle = '#fff4de'; g.font = FONT; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillStyle = color; g.font = FONT; g.textAlign = 'center'; g.textBaseline = 'middle';
     // A dark silhouette separates ivory glyphs from water, sand and forest without a backing panel.
     g.strokeStyle = '#102c30';
     g.lineWidth = 10; g.lineJoin = 'round'; g.miterLimit = 2;
@@ -40,7 +40,7 @@ export function Label({ text, position, height = 0.8, ink = '#fff4de', maxWidth 
     liveTextures.count++;
     const texture = new CanvasTexture(canvas); texture.colorSpace = SRGBColorSpace; texture.anisotropy = 8;
     return { texture, canvasWidth: canvas.width, canvasHeight: canvas.height };
-  }, [text, ink, loadedText]);
+  }, [text, ink, color, loadedText]);
   useEffect(() => () => { texture.dispose(); liveTextures.count--; }, [texture]);
   const [width, worldHeight] = labelWorldSize(height, canvasWidth, canvasHeight, maxWidth);
   // Buildings occlude labels naturally. Transparent glyph margins must not write depth,

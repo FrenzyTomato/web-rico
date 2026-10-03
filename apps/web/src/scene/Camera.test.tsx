@@ -24,6 +24,12 @@ describe('board camera', () => {
     expect(boardFrame('shared', 0.6).distance).toBeGreaterThan(boardFrame('shared', 1.6).distance);
     expect(boardFrame('mine', 1.6).z).toBe(27.5);
   });
+  it('brings mobile shortcuts closer while preserving the whole-table overview', () => {
+    for (const view of ['shared', 'buildings', 'boats', 'depot', 'estates', 'mine'] as const) {
+      expect(boardFrame(view, 0.46, true).distance).toBeCloseTo(boardFrame(view, 0.46).distance * 0.75);
+    }
+    expect(boardFrame('overview', 0.46, true)).toEqual(boardFrame('overview', 0.46));
+  });
   it('zooms, focuses the viewer seat, and preserves manual navigation on game rerenders', () => {
     const camera = new PerspectiveCamera(45, 1.6, 0.1, 200);
     const state = { camera, size: { width: 1280, height: 800 }, invalidate: vi.fn() };

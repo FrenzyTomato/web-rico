@@ -22,3 +22,36 @@ export const BUILDING_ORDER: readonly BuildingType[] = [
 export function buildingMarket(stock: Readonly<Record<BuildingType, number>>) {
   return [...BUILDING_ORDER].sort((a, b) => BUILDINGS[a].cost - BUILDINGS[b].cost).map(type => ({ type, count: stock[type], exhausted: stock[type] === 0 }));
 }
+
+/** Shared by the market meshes and mobile tier camera, so their positions cannot drift. */
+export function buildingTiers() {
+  let nextX = 0;
+  return [1, 2, 3, 4].map(cap => {
+    const start = nextX;
+    const types = BUILDING_ORDER.filter(type => BUILDINGS[type].quarryCap === cap);
+    const prices = [...new Set(types.map(type => BUILDINGS[type].cost))].sort((a, b) => a - b).map(price => {
+      const buildings = types.filter(type => BUILDINGS[type].cost === price);
+      const columns = Math.ceil(buildings.length / 3);
+      const x = nextX;
+      nextX += columns * 2.55 + 0.22;
+      return { price, buildings, columns, x };
+    });
+    const end = nextX - 2.77;
+    return { cap, start, end, prices };
+  });
+}
+
+export const BUILDING_MARKET_ORIGIN = { x: -1.5, z: 0.4 } as const;
+
+/** Two-column discount groups: prices belong to pieces, not columns. */
+export function compactBuildingTiers() {
+  return buildingTiers().map((tier, index) => {
+    const types = tier.prices.flatMap(group => group.buildings);
+    const start = index * 6.4;
+    return {
+      cap: tier.cap, start, end: start + 2.8,
+      depth: (Math.ceil(types.length / 2) - 1) * 2.9 + 4,
+      items: types.map((type, i) => ({ type, price: BUILDINGS[type].cost, x: start + i % 2 * 2.8, z: Math.floor(i / 2) * 2.9 })),
+    };
+  });
+}

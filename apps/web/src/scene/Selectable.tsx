@@ -1,3 +1,4 @@
+import { useTouchHint } from './useTouchHint.js';
 import { useContext, useEffect, useRef } from 'react';
 import type { ReactNode } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
@@ -16,6 +17,7 @@ const registry = new Map<string, { target: SceneTarget; group: Group }>();
 /** Wraps a scene object: click selects it; actionable objects get a gold outline and a pointer cursor. */
 export function Selectable({ target, size, children, hint, outline = false, circular = false, hitHeight = 0.6 }: { target: SceneTarget; size: [number, number]; children?: ReactNode; hint?: PieceHint; outline?: boolean; circular?: boolean; hitHeight?: number }) {
   const showHint = useContext(HoverHint);
+  const touch = useTouchHint(() => { if (hint) showHint(hint); });
   const { active, handlers } = useSelectable(target);
   const ref = useRef<Group>(null);
   const key = targetKey(target);
@@ -31,10 +33,11 @@ export function Selectable({ target, size, children, hint, outline = false, circ
   }, [key, target]);
   return (
     <group ref={ref} {...handlers}
-      onPointerOver={() => { handlers.onPointerOver(); if (hint) showHint(hint); }}
-      onPointerMove={() => { if (hint) showHint(hint); }}
-      onPointerDown={() => { if (hint) showHint(hint); }}
-      onPointerOut={() => { handlers.onPointerOut(); if (hint) showHint(null); }}>
+      onClick={e => { if (touch.suppressClick()) { e.stopPropagation(); return; } handlers.onClick(e); }}
+      onPointerOver={e => { if (!touch.isTouch(e)) { handlers.onPointerOver(); if (hint) showHint(hint); } }}
+      onPointerMove={e => { if (!touch.isTouch(e) && hint) showHint(hint); }}
+      onPointerDown={e => { if (touch.isTouch(e)) { e.stopPropagation(); touch.down(e); } else if (hint) showHint(hint); }}
+      onPointerOut={e => { if (touch.isTouch(e)) touch.cancel(); else { handlers.onPointerOut(); if (hint) showHint(null); } }}>
       {pulsing && <Pulse size={size} />}
       {(active || selected) && !modelStroke && (
         buildingBase ? <group>
