@@ -12,6 +12,12 @@ for (const mobile of [false, true]) test(`simulated tutorial plays every turn wi
   page.on('request', r => { if (r.url().includes('/socket.io')) requests.push(r.url()); });
   await page.goto('/?tutorial=1');
   const coach = page.locator('.tutorial-coach'), hand = page.locator('.hand .actions');
+  // Opening pages: the table, your island, where to look, the round flow. Nothing is playable yet.
+  for (const title of ['Welcome to the table', 'Your island', 'Places to check', 'How a round flows']) {
+    await expect(coach).toContainText(title);
+    await expect(page.locator('.role-hand .role-card:enabled')).toHaveCount(0);
+    await coach.getByRole('button', { name: title === 'How a round flows' ? 'Start' : 'Next', exact: true }).click();
+  }
   await expect(page.locator('.role-hand .role-card')).toHaveCount(6);
   await expect(page.locator('.role-hand .role-card:enabled')).toHaveCount(1);
   await expect(page.locator('.role-hand .role-card:enabled')).toContainText('Planter');
@@ -30,7 +36,12 @@ for (const mobile of [false, true]) test(`simulated tutorial plays every turn wi
   const cornPoint = { x: boardCanvas.x + corn.x, y: boardCanvas.y + corn.y - 40 };
   if (mobile) await page.touchscreen.tap(cornPoint.x, cornPoint.y);
   else await page.mouse.click(cornPoint.x, cornPoint.y);
+  // Object hints stay closed in the tutorial, so the guide is the only tooltip.
+  if (!mobile) { await page.mouse.move(cornPoint.x, cornPoint.y); await page.waitForTimeout(300); await expect(page.locator('.scene .model-tooltip')).toHaveCount(0); }
   await page.getByRole('group', { name: 'Actions for selected piece' }).getByRole('button', { name: /^Plant Corn/ }).click();
+  await expect(coach).toHaveAttribute('data-tutorial-stage', 'result');
+  await expect(coach).toContainText('Check your island');
+  await coach.getByRole('button', { name: 'Next', exact: true }).click();
   // A real automatic opponent transition, rather than installing a future snapshot.
   await expect(coach).toHaveAttribute('data-tutorial-actor', 'bruno');
   await expect(coach).toHaveAttribute('data-tutorial-stage', 'opponent-result', { timeout: 5000 });
@@ -50,7 +61,10 @@ for (const mobile of [false, true]) test(`simulated tutorial plays every turn wi
     expect(revision - previousRevision).toBeLessThanOrEqual(1);
     previousRevision = revision;
     if (stage === 'finished') break;
-    if (stage === 'opponent' || stage === 'opponent-result') {
+    if (stage === 'result') {
+      await expect(coach).toContainText('Check your island');
+      await coach.getByRole('button', { name: 'Next', exact: true }).click();
+    } else if (stage === 'opponent' || stage === 'opponent-result') {
       if (stage === 'opponent' && kind === 'load') botLoads.push(actor!);
       // Learners cannot act during an opponent's move.
       await expect(page.locator('.role-hand .role-card:enabled')).toHaveCount(0);
@@ -104,6 +118,7 @@ for (const mobile of [false, true]) test(`simulated tutorial plays every turn wi
   await expect(page).toHaveURL(/lobby=1/);
   await page.goBack();
   await expect(coach).toHaveAttribute('data-revision', '0');
+  await expect(coach).toContainText('Welcome to the table');
   await page.reload(); await expect(coach).toHaveAttribute('data-revision', '0');
   await page.evaluate(() => { window.dispatchEvent(new PageTransitionEvent('pagehide', { persisted: true })); window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true })); });
   await expect(coach).toHaveAttribute('data-revision', '0');

@@ -175,7 +175,7 @@ export function GameShell({ store, roomId, room, lobbyHref, demo = false, guide 
           <div><dt>{t("剩余工人")}</dt><dd>{view.supply.workerCount}</dd></div>
           <div><dt><span aria-hidden="true">★ </span>{t("剩余分数")}</dt><dd>{view.supply.vpRemaining}</dd></div>
         </dl>
-          <SceneBoundary><Suspense fallback={<p role="status">{t("正在载入立体视图…")}</p>}><TableScene initialMobileView={demo ? 'boats' : 'mine'} islandRequest={islandRequest} guidedView={guide?.guidedView} hintResetKey={guide?.hintResetKey} view={board.player ? { ...view, players: view.players.map(p => p.playerId === board.player!.playerId ? board.player! : p) } : view} names={names} /></Suspense></SceneBoundary>
+          <SceneBoundary><Suspense fallback={<p role="status">{t("正在载入立体视图…")}</p>}><TableScene initialMobileView={demo ? 'boats' : 'mine'} islandRequest={islandRequest} guidedView={guide?.guidedView} hintResetKey={guide?.hintResetKey} hints={!guide} view={board.player ? { ...view, players: view.players.map(p => p.playerId === board.player!.playerId ? board.player! : p) } : view} names={names} /></Suspense></SceneBoundary>
         {guide?.coach}
         {rejection && <p className="stage-alert" role="alert">{rejectionText(rejection)}</p>}
         {phase.kind === 'game-over' && <div className="final-scores"><ScoreView scores={phase.scores} names={names} /></div>}

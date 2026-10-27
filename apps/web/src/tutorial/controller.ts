@@ -57,17 +57,21 @@ export function allowsTarget(step: TutorialStep, draft: WorkerDraft | null, good
 /** A move that has been applied, kept so the guide can explain it and its follow-up. */
 export interface TutorialMove { step: TutorialStep; events: readonly PlayerEvent[] }
 export interface TutorialState {
-  /** action: learner's move; opponent: preview of a scripted move; opponent-result: that move has been applied. */
-  generation: number; index: number; stage: 'action' | 'opponent' | 'opponent-result' | 'finished' | 'disposed';
+  /**
+   * intro: opening pages before any move; action: learner's move; result: the learner checks what their move added to their island;
+   * opponent: preview of a scripted move; opponent-result: that move has been applied.
+   */
+  generation: number; index: number; stage: 'intro' | 'action' | 'result' | 'opponent' | 'opponent-result' | 'finished' | 'disposed';
   game: GameState | null; step: TutorialStep | null; previous: TutorialMove | null; snapshot: PlayerBroadcast | null; history: readonly PlayerEvent[];
   submit(generation: number, stepId: string, revision: number, action: Action): boolean;
   opponentMove(generation: number, index: number): boolean;
-  next(generation: number, index: number): void; reset(): void; dispose(): void;
+  next(generation: number, index: number): void; begin(generation: number): void; reset(): void; dispose(): void;
 }
+const ISLAND_CHANGES: readonly Action['kind'][] = ['plant', 'build'];
 const stageFor = (step: TutorialStep | null) => !step ? 'finished' as const : step.command.actorId === learner ? 'action' as const : 'opponent' as const;
 const fresh = () => {
   const game = initialTutorialGame(), step = nextStep(game);
-  return { index: 0, game, step, previous: null, snapshot: tutorialBroadcast(game), history: [] as readonly PlayerEvent[], stage: stageFor(step) };
+  return { index: 0, game, step, previous: null, snapshot: tutorialBroadcast(game), history: [] as readonly PlayerEvent[], stage: 'intro' as TutorialState['stage'] };
 };
 export function createTutorialController() {
   return createStore<TutorialState>()((set, get) => {
@@ -86,7 +90,8 @@ export function createTutorialController() {
         if (s.generation !== generation || s.stage !== 'action' || !s.step || s.step.command.actorId !== learner || s.step.id !== stepId || revision !== s.snapshot?.revision || !sameAction(action, s.step.action)) return false;
         const applied = execute();
         if (!applied) return false;
-        // The learner sees their own result on the board; the guide explains it alongside the next move.
+        // New estates and buildings land on the learner's island: pause there. Other results are explained with the next move.
+        if (ISLAND_CHANGES.includes(s.step.action.kind)) { set({ ...applied, index: s.index + 1, stage: 'result' }); return true; }
         const step = nextStep(applied.game);
         set({ ...applied, index: s.index + 1, step: step ?? s.step, stage: stageFor(step) });
         return true;
@@ -101,9 +106,13 @@ export function createTutorialController() {
       },
       next: (generation, index) => {
         const s = get();
-        if (s.generation !== generation || s.index !== index || !s.game || s.stage !== 'opponent-result') return;
+        if (s.generation !== generation || s.index !== index || !s.game || (s.stage !== 'opponent-result' && s.stage !== 'result')) return;
         const step = nextStep(s.game);
         set({ index: s.index + 1, step: step ?? s.step, stage: stageFor(step) });
+      },
+      begin: generation => {
+        const s = get();
+        if (s.generation === generation && s.stage === 'intro') set({ stage: stageFor(s.step) });
       },
       reset: () => set({ generation: get().generation + 1, ...fresh() }),
       dispose: () => set({ generation: get().generation + 1, index: 0, stage: 'disposed', game: null, step: null, previous: null, snapshot: null, history: [] }),

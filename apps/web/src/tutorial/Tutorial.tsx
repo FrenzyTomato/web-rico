@@ -5,7 +5,7 @@ import { GameShell } from '../layout/GameShell.js';
 import type { ShellGuide } from '../layout/GameShell.js';
 import { CHRONICLE_SIZE, createGameStore } from '../state/gameStore.js';
 import { allowedTargets, allowsTarget, createTutorialController, sameAction } from './controller.js';
-import { describeMove, playerName, tutorialCopy } from './copy.js';
+import { describeMove, introPages, islandCheck, playerName, tutorialCopy } from './copy.js';
 import { learner } from './scenario.js';
 
 type Controller = ReturnType<typeof createTutorialController>;
@@ -73,23 +73,44 @@ function useGuide(state: ReturnType<Controller['getState']>, controller: Control
   const text = (en: string, zh: string) => language === 'zh' ? zh : en;
   const copy = step && snapshot ? tutorialCopy(step, snapshot.view, language) : null;
   const actorId = step?.command.actorId;
-  // The camera follows the move being taught, including an opponent's own island.
-  const guidedView = useMemo(() => copy && ({ id: generation * 1000 + index, view: copy.camera, ...(copy.camera === 'mine' ? { playerId: actorId! } : {}) }),
-    [generation, index, copy?.camera, actorId]);
+  // Opening pages come before the first move of each fresh game.
+  const [introAt, setIntroAt] = useState({ generation, page: 0 });
+  const pages = introPages(language);
+  const introPage = introAt.generation === generation ? introAt.page : 0;
+  const page = stage === 'intro' ? pages[Math.min(introPage, pages.length - 1)]! : null;
+  // The camera follows the page or move being taught, including an opponent's own island.
+  const [camera, cameraPlayer] = page ? [page.camera, page.mine ? learner : undefined]
+    : stage === 'result' ? ['mine' as const, learner] : [copy?.camera, copy?.camera === 'mine' ? actorId : undefined];
+  const guidedView = useMemo(() => camera && ({ id: generation * 1000 + index * 10 + introPage, view: camera, ...(cameraPlayer ? { playerId: cameraPlayer } : {}) }),
+    [generation, index, introPage, camera, cameraPlayer]);
   if (!step || !snapshot || !copy || !guidedView || stage === 'disposed') return null;
+  if (page) return {
+    allowAction: () => false, allowTarget: () => false, guidedView, hintResetKey: `${generation}:intro:${introPage}`,
+    coach: <aside className="model-tooltip tutorial-coach" role="status" aria-live="polite" aria-atomic="true"
+      data-tutorial-stage="intro" data-tutorial-index={`intro-${introPage}`} data-revision={snapshot.revision}>
+      <small>{text('Tutorial', '教程')} · {introPage + 1}/{pages.length}</small>
+      <strong>{page.title}</strong>
+      <p>{page.body}</p>
+      <button onClick={() => introPage === pages.length - 1 ? controller.getState().begin(generation) : setIntroAt({ generation, page: introPage + 1 })}>{introPage === pages.length - 1 ? text('Start', '开始') : text('Next', '下一步')}</button>
+    </aside>,
+  };
   const learnerTurn = stage === 'action';
   const finished = stage === 'finished';
-  const lastMove = previous ? describeMove(previous, snapshot.view, language) : '';
+  // A plant or build was already explained on its own island-check page.
+  const checked = previous?.step.command.actorId === learner && (previous.step.action.kind === 'plant' || previous.step.action.kind === 'build');
+  const lastMove = previous && (stage === 'result' || !checked) ? describeMove(previous, snapshot.view, language) : '';
   const advance = () => {
     if (stage === 'opponent') controller.getState().opponentMove(generation, index);
     else controller.getState().next(generation, index);
   };
   const round = text(`Round ${snapshot.view.roundNumber}`, `第 ${snapshot.view.roundNumber} 轮`);
   const heading = finished ? text('Ready to play!', '可以开始游戏了！')
+    : stage === 'result' ? text('Check your island', '查看你的岛屿')
     : stage === 'opponent-result' ? text(`${playerName(previous!.step.command.actorId, text)} moved`, `${playerName(previous!.step.command.actorId, text)}已行动`)
     : learnerTurn ? `${text('Your turn', '轮到你')} · ${copy.title}` : `${text(`${copy.actor}’s turn`, `${copy.actor}的回合`)} · ${copy.title}`;
   const body = finished
     ? text('That covers every role: estates, buildings, workers, production, trading and shipping. Each round, players take turns choosing roles until everyone has one. The game ends when points, workers or island space run out.', '你已体验所有角色：田园、建筑、工人、生产、交易和运货。每轮玩家轮流选择角色，直到每人都选过。分数、工人或岛上空间耗尽时游戏结束。')
+    : stage === 'result' ? islandCheck(previous!, snapshot.view, language)
     : stage === 'opponent' ? copy.preview : stage === 'opponent-result' ? null : copy.todo;
   return {
     allowAction: action => learnerTurn && sameAction(action, step.action),
@@ -103,7 +124,7 @@ function useGuide(state: ReturnType<Controller['getState']>, controller: Control
       <strong>{heading}</strong>
       {lastMove && (stage !== 'opponent' || previous?.step.command.actorId === learner) && <p className="tutorial-coach-last">{lastMove}</p>}
       {body && <p>{body}</p>}
-      {(stage === 'opponent' || stage === 'opponent-result') && <button onClick={advance}>{text('Next', '下一步')}</button>}
+      {(stage === 'opponent' || stage === 'opponent-result' || stage === 'result') && <button onClick={advance}>{text('Next', '下一步')}</button>}
       {finished && <a className="back-to-lobby" href={LOBBY}>{text('Back to lobby', '返回大厅')}</a>}
     </aside>,
   };

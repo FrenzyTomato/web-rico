@@ -7,11 +7,13 @@ import { targetKey } from '../scene/Selection.js';
 
 function advance(c: ReturnType<typeof createTutorialController>) {
   const s = c.getState();
-  if (s.stage === 'opponent') {
+  if (s.stage === 'intro') s.begin(s.generation);
+  else if (s.stage === 'opponent') {
     expect(s.opponentMove(s.generation, s.index)).toBe(true);
     expect(c.getState().stage).toBe('opponent-result');
     c.getState().next(s.generation, s.index + 1);
-  } else expect(s.submit(s.generation, s.step!.id, s.snapshot!.revision, s.step!.action)).toBe(true);
+  } else if (s.stage === 'result') c.getState().next(s.generation, s.index);
+  else expect(s.submit(s.generation, s.step!.id, s.snapshot!.revision, s.step!.action)).toBe(true);
 }
 
 describe('continuous tutorial simulation', () => {
@@ -20,6 +22,12 @@ describe('continuous tutorial simulation', () => {
     const commands = [];
     for (let i = 0; i < 100 && c.getState().stage !== 'finished'; i++) {
       const before = c.getState();
+      if (before.stage === 'result' || before.stage === 'intro') {
+        // Opening pages and the island check after a plant or build only pause; they apply nothing.
+        advance(c);
+        expect(c.getState().game).toBe(before.game);
+        continue;
+      }
       commands.push(before.step!.command);
       const independentlyApplied = applyCommand(before.game!, before.step!.command);
       expect(independentlyApplied.ok).toBe(true);
@@ -35,14 +43,20 @@ describe('continuous tutorial simulation', () => {
     expect(c.getState().history.length).toBeGreaterThan(20);
   });
   it('rejects wrong, duplicate, stale and opponent submissions', () => {
-    const c = createTutorialController(), first = c.getState();
+    const c = createTutorialController();
+    expect(c.getState().stage).toBe('intro');
+    expect(c.getState().submit(0, c.getState().step!.id, 0, c.getState().step!.action)).toBe(false);
+    advance(c);
+    const first = c.getState();
     expect(first.submit(0, first.step!.id, 0, { kind: 'choose-role', roleCardId: first.snapshot!.view.roleCards[1]!.instanceId })).toBe(false);
     expect(first.submit(0, first.step!.id, 1, first.step!.action)).toBe(false);
     expect(first.submit(0, 'another-step', 0, first.step!.action)).toBe(false);
     expect(first.submit(0, first.step!.id, 0, first.step!.action)).toBe(true);
     expect(first.submit(0, first.step!.id, 0, first.step!.action)).toBe(false);
     expect(c.getState()).toMatchObject({ stage: 'action', index: 1, previous: { step: first.step } });
-    advance(c); // learner planting, then Bruno's follow-up
+    advance(c); // learner planting
+    expect(c.getState().stage).toBe('result'); // checking their island
+    advance(c);
     const bot = c.getState();
     expect(bot.stage).toBe('opponent');
     expect(bot.submit(0, bot.step!.id, bot.snapshot!.revision, bot.step!.action)).toBe(false);

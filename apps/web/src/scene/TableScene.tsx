@@ -47,8 +47,10 @@ function Redraw({ view }: { view: PlayerView }) {
 }
 
 /** A central harbour island and individual player islands surrounded by continuous ocean. */
-export function TableScene({ view, names, islandRequest, guidedView, hintResetKey, initialMobileView = 'boats', frameloop = 'demand' }: {
+export function TableScene({ view, names, islandRequest, guidedView, hintResetKey, hints = true, initialMobileView = 'boats', frameloop = 'demand' }: {
   hintResetKey?: string | undefined;
+  /** False keeps object hints closed, so a guide stays the only explanation on screen. */
+  hints?: boolean;
   guidedView?: { id: number; view: BoardView; playerId?: string } | undefined;
   initialMobileView?: BoardView; view: PlayerView; names: Readonly<Record<string, string>>; islandRequest?: { id: number; playerId: string } | undefined; frameloop?: 'demand' | 'always';
 }) {
@@ -59,10 +61,11 @@ export function TableScene({ view, names, islandRequest, guidedView, hintResetKe
   const clearHint = useCallback(() => { pinnedHint.current = false; setHint(null); }, []);
   useEffect(clearHint, [language, hintResetKey, view.phase.kind, clearHint]);
   const showHint = useCallback((next: PieceHint | null, pinned = false) => {
+    if (!hints && next) return;
     if (pinnedHint.current && !pinned) return;
     if (pinned && next) pinnedHint.current = true;
     setHint(current => current?.title === next?.title && current?.detail === next?.detail && current?.meta === next?.meta ? current : next);
-  }, []);
+  }, [hints]);
   const [touchRotate, setTouchRotate] = useState(false);
   const [lost, setLost] = useState(false);
   const [initialView] = useState<BoardView>(() => window.matchMedia?.('(max-width: 700px)').matches ? initialMobileView : 'shared');

@@ -539,11 +539,10 @@ html[lang="en"] .role-card span { font-size: 14px; }
   .shell .scene .model-tooltip .mobile-hint-close { margin: -6px -8px 0 4px; }
 }
 
-/* Tutorial guide: a hover hint that stays put. A real hover hint takes its corner while shown. */
+/* Tutorial guide: a hint that stays put in the hint corner; object hints are off in the tutorial. */
 /* Taps pass through to the board beneath, so the guide never blocks the target it describes. */
 .shell .tutorial-coach { z-index: 3; width: min(340px, calc(100% - 28px)); pointer-events: none; }
 .tutorial-coach :is(button, a) { pointer-events: auto; }
-.shell:has(.scene .model-tooltip) .tutorial-coach { visibility: hidden; }
 .tutorial-coach strong { display: block; margin-top: 2px; }
 .tutorial-coach small { font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; }
 .tutorial-coach .tutorial-coach-last { color: #c9dbd2; }
