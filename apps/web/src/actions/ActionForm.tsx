@@ -59,9 +59,11 @@ function RetentionForm({ legal, submit }: { legal: Extract<LegalAction, { phase:
 }
 
 /** Controls for this seat's legal actions only; the server validates every submission. */
-export function ActionForm({ legalActions, view, submit, boardFirst = false }: {
+export function ActionForm({ legalActions, view, submit, boardFirst = false, allow = () => true }: {
   legalActions: readonly LegalAction[]; view: Pick<PlayerView, 'roleCards' | 'estateMarket' | 'players'>; submit: (action: Action) => void;
   boardFirst?: boolean;
+  /** Hides options outside a guided move. */
+  allow?: ((action: Action) => boolean) | undefined;
 }) {
   useLanguage();
   const legal = legalActions[0];
@@ -69,7 +71,7 @@ export function ActionForm({ legalActions, view, submit, boardFirst = false }: {
   if (legal.phase === 'recruiter-placement') return <AllocationForm key={JSON.stringify(legal)} legal={legal} submit={submit} />;
   if (legal.phase === 'captain-retention') return <RetentionForm key={JSON.stringify(legal)} legal={legal} submit={submit} />;
   if (boardFirst && (legal.phase === 'builder-choice' || legal.phase === 'planter-choice')) {
-    const options = describeOptions(legal, view)!;
+    const options = describeOptions(legal, view)!.filter(o => allow(o.action));
     const declines = options.filter(o => o.action.kind === 'build' ? o.action.purchase === null : o.action.kind === 'plant' && o.action.choice.kind === 'decline');
     const choices = options.filter(o => !declines.includes(o));
     return <div className="board-choice-guide">
@@ -83,7 +85,7 @@ export function ActionForm({ legalActions, view, submit, boardFirst = false }: {
   }
   return (
     <div role="group" aria-label={t("可选行动")}>
-      {describeOptions(legal, view)!.map(o => <button key={JSON.stringify(o.action)} onClick={() => submit(o.action)}>{o.label}</button>)}
+      {describeOptions(legal, view)!.filter(o => allow(o.action)).map(o => <button key={JSON.stringify(o.action)} onClick={() => submit(o.action)}>{o.label}</button>)}
     </div>
   );
 }

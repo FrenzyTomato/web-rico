@@ -3,8 +3,10 @@ import { useTurnChime } from './useTurnChime.js';
 import { HudIcon } from './HudIcon.js';
 import { t, useLanguage, LanguageToggle } from '../i18n/language.js';
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
 import { useStore } from 'zustand';
 import { confirmedWorkers } from '@vibe-rico/game-engine';
+import type { Good, RoleCardId } from '@vibe-rico/game-engine';
 import type { RoomState } from '@vibe-rico/protocol';
 import { ActionForm } from '../actions/ActionForm.js';
 import { ActionPanel } from '../actions/ActionPanel.js';
@@ -13,6 +15,10 @@ import { SettingsPanel, useSettings } from '../settings/Settings.js';
 import { GOODS_MODEL } from '../scene/modelCatalog.js';
 import { GOODS, describeOptions } from '../actions/options.js';
 import { SceneInteractionProvider, targetKey } from '../scene/Selection.js';
+import type { SceneTarget } from '../scene/Selection.js';
+import type { BoardView } from '../scene/Camera.js';
+import type { Action } from '../actions/options.js';
+import type { WorkerDraft } from '../actions/workerDraft.js';
 import { useBoardActions } from '../actions/useBoardActions.js';
 import { ResourceDock, RoleHand } from './ResourceDock.js';
 import { WorkerControls } from '../actions/WorkerControls.js';
@@ -26,9 +32,20 @@ const TableScene = lazy(() => import('../scene/TableScene.js').then(m => ({ defa
 import { SEAT_COLORS } from '../scene/pieces.js';
 import type { GameStore } from '../state/gameStore.js';
 
+/** Narrows the normal controls to one guided move (tutorial); the rules engine still validates it. */
+export interface ShellGuide {
+  allowAction(action: Action): boolean;
+  allowTarget(target: SceneTarget, draft: WorkerDraft | null, good: Good | null): boolean;
+  /** Marks another player's move on the board while it is being shown. */
+  highlight?: SceneTarget | undefined;
+  guidedView?: { id: number; view: BoardView; playerId?: string };
+  hintResetKey?: string;
+  coach: ReactNode;
+}
+
 
 /** DESIGN.md layout: top bar, players, 3D harbour, turn and chronicle, the viewer's hand and actions. */
-export function GameShell({ store, roomId, room, lobbyHref, demo = false }: { store: GameStore; roomId: string; room: RoomState; lobbyHref?: string; demo?: boolean }) {
+export function GameShell({ store, roomId, room, lobbyHref, demo = false, guide }: { store: GameStore; roomId: string; room: RoomState; lobbyHref?: string; demo?: boolean; guide?: ShellGuide }) {
   const language = useLanguage();
   const [islandRequest, setIslandRequest] = useState<{ id: number; playerId: string }>();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -59,13 +76,21 @@ export function GameShell({ store, roomId, room, lobbyHref, demo = false }: { st
   const connected = useStore(store, s => s.connected);
   const chronicle = useStore(store, s => s.chronicle);
   // Discrete legal options for this seat; the scene only filters them by object (PR-052).
-  const options = useMemo(() => (latest?.legalActions[0] ? describeOptions(latest.legalActions[0], latest.view) ?? [] : []), [latest, language]);
+  const options = useMemo(() => (latest?.legalActions[0] ? (describeOptions(latest.legalActions[0], latest.view) ?? []).filter(o => !guide || guide.allowAction(o.action)) : []), [latest, language, guide]);
   const pending = useStore(store, s => Object.keys(s.pending).length > 0);
-  const board = useBoardActions(latest, connected && !pending, options, action => store.getState().submit(roomId, action));
+  const board = useBoardActions(latest, connected && !pending, options, action => store.getState().submit(roomId, action), guide?.allowTarget);
   const { selected } = board;
+  // Phones: a held worker's destination is on the board, often under the sheet. Step aside while holding, return to confirm.
+  const holding = Boolean(board.draft?.holding);
+  const collapsedForWorker = useRef(false);
+  useEffect(() => {
+    // Not when placing from the keyboard list, which lives in the sheet.
+    if (holding && window.matchMedia?.('(max-width: 700px)').matches && !shellRef.current?.querySelector('.hand .actions details[open]')) { collapsedForWorker.current = true; setSheetOpen(false); }
+    else if (!holding && collapsedForWorker.current) { collapsedForWorker.current = false; setSheetOpen(true); }
+  }, [holding]);
   // Event animation (PR-053): purely visual pulses; the scene always renders `latest`.
   const [settings, setSettings] = useSettings();
-  useAutoProduce(latest, roomId, settings.autoProduce ?? false, connected, pending, action => store.getState().submit(roomId, action));
+  useAutoProduce(latest, roomId, !guide && (settings.autoProduce ?? false), connected, pending, action => store.getState().submit(roomId, action));
   const yourTurn = Boolean(latest?.legalActions.length);
   useTurnChime(yourTurn, connected, settings.turnSound ?? true);
   useEffect(() => { setSheetOpen(yourTurn && !demo); }, [yourTurn, latest?.view.phase.kind, demo]);
@@ -81,7 +106,7 @@ export function GameShell({ store, roomId, room, lobbyHref, demo = false }: { st
     const timer = setInterval(tick, 100);
     return () => clearInterval(timer);
   }, [latest, queue]);
-  const interaction = { actionable: board.actionable, select: board.select, pulse, selectedKey: selected ? targetKey(selected) : null };
+  const interaction = { actionable: board.actionable, select: board.select, pulse, selectedKey: selected ? targetKey(selected) : guide?.highlight ? targetKey(guide.highlight) : null };
   if (!latest) return <p>{t("正在载入局面…")}</p>;
   const { view } = latest, phase = view.phase;
   const recruitment = phase.kind === 'recruiter-placement';
@@ -89,10 +114,15 @@ export function GameShell({ store, roomId, room, lobbyHref, demo = false }: { st
   const names = Object.fromEntries(room.seats.map(s => [s.playerId, s.displayName]));
   const name = (id: string) => names[id] ?? id;
   const me = view.players.find(p => p.playerId === view.viewer.playerId)!;
+  const guidedRoles = (ids: readonly RoleCardId[]) => {
+    if (!guide) return {};
+    const allowedRoleIds = ids.filter(id => guide.allowAction({ kind: 'choose-role', roleCardId: id }));
+    return { allowedRoleIds, highlightRoleId: allowedRoleIds[0] };
+  };
   const lines = chronicle.map(e => ({ key: `${e.revision}-${e.index}`, text: describeEvent(e, names) })).filter(l => l.text).slice(-20).reverse();
   return (
     <SceneInteractionProvider value={interaction}>
-    <div ref={shellRef} onKeyDown={event => { if (event.key === 'Escape') { setPlayersOpen(false); setChronicleOpen(false); setSettingsOpen(false); setMenuOpen(false); setTextOpen(false); } }} className={`shell${menuOpen ? ' mobile-menu-open' : ''}${sheetOpen ? ' mobile-sheet-open' : ''}${textOpen ? ' mobile-text-open' : ''}`} data-revision={latest.revision}>
+    <div ref={shellRef} onKeyDown={event => { if (event.key === 'Escape') { setPlayersOpen(false); setChronicleOpen(false); setSettingsOpen(false); setMenuOpen(false); setTextOpen(false); } }} className={`shell${guide ? ' tutorial-shell' : ''}${menuOpen ? ' mobile-menu-open' : ''}${sheetOpen ? ' mobile-sheet-open' : ''}${textOpen ? ' mobile-text-open' : ''}`} data-revision={latest.revision}>
       <header className="topbar">
         <div className="topbar-brand"><div className="topbar-brand-line"><h1>Web Rico</h1>
         {lobbyHref && <a className="back-to-lobby" href={lobbyHref}>{t('返回大厅')}</a>}</div><div className="topbar-meta">
@@ -145,7 +175,8 @@ export function GameShell({ store, roomId, room, lobbyHref, demo = false }: { st
           <div><dt>{t("剩余工人")}</dt><dd>{view.supply.workerCount}</dd></div>
           <div><dt><span aria-hidden="true">★ </span>{t("剩余分数")}</dt><dd>{view.supply.vpRemaining}</dd></div>
         </dl>
-          <SceneBoundary><Suspense fallback={<p role="status">{t("正在载入立体视图…")}</p>}><TableScene initialMobileView={demo ? 'boats' : 'mine'} islandRequest={islandRequest} view={board.player ? { ...view, players: view.players.map(p => p.playerId === board.player!.playerId ? board.player! : p) } : view} names={names} /></Suspense></SceneBoundary>
+          <SceneBoundary><Suspense fallback={<p role="status">{t("正在载入立体视图…")}</p>}><TableScene initialMobileView={demo ? 'boats' : 'mine'} islandRequest={islandRequest} guidedView={guide?.guidedView} hintResetKey={guide?.hintResetKey} view={board.player ? { ...view, players: view.players.map(p => p.playerId === board.player!.playerId ? board.player! : p) } : view} names={names} /></Suspense></SceneBoundary>
+        {guide?.coach}
         {rejection && <p className="stage-alert" role="alert">{rejectionText(rejection)}</p>}
         {phase.kind === 'game-over' && <div className="final-scores"><ScoreView scores={phase.scores} names={names} /></div>}
         {animating && <button className="skip" onClick={() => { queue.skip(); setPulse(null); setAnimating(false); }}>{t("跳过动画")}</button>}
@@ -177,7 +208,7 @@ export function GameShell({ store, roomId, room, lobbyHref, demo = false }: { st
         <div className="actions">
           {recruitment && <p className="recruitment-progress">{t('分配进度：{0}/{1} 已确认', [confirmations.length, view.players.length])}</p>}
           {demo ? <p role="status">{t('探索棋盘、岛屿和提示；演示中无法进行游戏操作。')}</p> : connected && !pending
-            ? board.placement ? <><p>{t('同时分配你的工人；所有玩家确认后继续。')}</p><WorkerControls board={board} player={me} /></> : recruitment && confirmations.includes(me.playerId) ? <p role="status">{t('已确认分配，等待其他玩家。')}</p> : latest.legalActions[0]?.phase === 'role-selection' ? <RoleHand legal={latest.legalActions[0]} view={view} submit={action => store.getState().submit(roomId, action)} /> : <ActionForm boardFirst legalActions={latest.legalActions} view={view} submit={action => store.getState().submit(roomId, action)} />
+            ? board.placement ? <><p>{t('同时分配你的工人；所有玩家确认后继续。')}</p><WorkerControls board={board} player={me} /></> : recruitment && confirmations.includes(me.playerId) ? <p role="status">{t('已确认分配，等待其他玩家。')}</p> : latest.legalActions[0]?.phase === 'role-selection' ? <RoleHand legal={latest.legalActions[0]} view={view} submit={action => store.getState().submit(roomId, action)} {...guidedRoles(latest.legalActions[0].roleCardIds)} /> : <ActionForm boardFirst legalActions={latest.legalActions} view={view} submit={action => store.getState().submit(roomId, action)} allow={guide?.allowAction} />
             : <p>{pending ? t("正在提交行动…") : t("连接已断开，暂时不能行动")}</p>}
         </div>
         </div>

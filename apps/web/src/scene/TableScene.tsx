@@ -47,15 +47,22 @@ function Redraw({ view }: { view: PlayerView }) {
 }
 
 /** A central harbour island and individual player islands surrounded by continuous ocean. */
-export function TableScene({ view, names, islandRequest, guidedView, initialMobileView = 'boats', frameloop = 'demand' }: {
-  guidedView?: { id: number; view: BoardView };
+export function TableScene({ view, names, islandRequest, guidedView, hintResetKey, initialMobileView = 'boats', frameloop = 'demand' }: {
+  hintResetKey?: string | undefined;
+  guidedView?: { id: number; view: BoardView; playerId?: string } | undefined;
   initialMobileView?: BoardView; view: PlayerView; names: Readonly<Record<string, string>>; islandRequest?: { id: number; playerId: string } | undefined; frameloop?: 'demand' | 'always';
 }) {
   const language = useLanguage();
   // WebGL context loss (PR-055): three.js restores its own state; show a notice while lost, redraw after.
   const [hint, setHint] = useState<PieceHint | null>(null);
-  useEffect(() => { setHint(null); }, [language]);
-  const showHint = useCallback((next: PieceHint | null) => setHint(current => current?.title === next?.title && current?.detail === next?.detail && current?.meta === next?.meta ? current : next), []);
+  const pinnedHint = useRef(false);
+  const clearHint = useCallback(() => { pinnedHint.current = false; setHint(null); }, []);
+  useEffect(clearHint, [language, hintResetKey, view.phase.kind, clearHint]);
+  const showHint = useCallback((next: PieceHint | null, pinned = false) => {
+    if (pinnedHint.current && !pinned) return;
+    if (pinned && next) pinnedHint.current = true;
+    setHint(current => current?.title === next?.title && current?.detail === next?.detail && current?.meta === next?.meta ? current : next);
+  }, []);
   const [touchRotate, setTouchRotate] = useState(false);
   const [lost, setLost] = useState(false);
   const [initialView] = useState<BoardView>(() => window.matchMedia?.('(max-width: 700px)').matches ? initialMobileView : 'shared');
@@ -65,8 +72,9 @@ export function TableScene({ view, names, islandRequest, guidedView, initialMobi
   const focusView = (view: BoardView) => { setFocusedPlayer(null); setFocus(view); setCameraCommand(c => ({ id: c.id + 1, view })); };
   useEffect(() => {
     if (!guidedView) return;
-    setHint(null); setFocusedPlayer(null); setFocus(guidedView.view);
-    setCameraCommand(c => ({ id: c.id + 1, view: guidedView.view }));
+    const seat = guidedView.playerId ? seatPositions(view.seatOrder, view.viewer.playerId).find(s => s.playerId === guidedView.playerId) : undefined;
+    clearHint(); setFocusedPlayer(guidedView.playerId ?? null); setFocus(guidedView.view);
+    setCameraCommand(c => ({ id: c.id + 1, view: guidedView.view, ...(seat ? { island: { x: seat.x, z: seat.z } } : {}) }));
   }, [guidedView]);
 
   const focusIsland = useCallback((playerId: string) => {
@@ -84,7 +92,7 @@ export function TableScene({ view, names, islandRequest, guidedView, initialMobi
   }, [islandRequest, focusIsland]);
 
   return (
-    <div className="scene" onPointerDownCapture={e => { if (e.pointerType === 'touch' && e.target instanceof HTMLCanvasElement) setHint(null); }} onContextMenu={e => { if (window.matchMedia('(max-width: 700px)').matches) e.preventDefault(); }} aria-label={t("桌面")}>
+    <div className="scene" onPointerDownCapture={e => { if (e.pointerType === 'touch' && e.target instanceof HTMLCanvasElement) clearHint(); }} onContextMenu={e => { if (window.matchMedia('(max-width: 700px)').matches) e.preventDefault(); }} aria-label={t("桌面")}>
       <div className="board-camera desktop-camera" role="group" aria-label={t("棋盘视角")}>
         {([['shared', t("公共区")], ['buildings', t("建筑市场")], ['boats', t("货船")], ['depot', t("交易所")], ['estates', t("可选田园")], ['overview', t("全桌")]] as const).map(([mode, label]) =>
           <button key={mode} aria-pressed={!focusedPlayer && focus === mode} onClick={() => focusView(mode)}>{label}</button>)}
@@ -114,7 +122,7 @@ export function TableScene({ view, names, islandRequest, guidedView, initialMobi
       </div>
       {lost && <p role="note">{t("立体视图暂时不可用，正在恢复…")}</p>}
       {/* Redraw only when props change: a board game is static between states (continuous 60 fps starved e2e tabs). */}
-      {hint && <div className={`model-tooltip${hint.kind === 'building' ? ' building-tooltip' : ''}`} role="tooltip"><button className="mobile-hint-close" aria-label={t('关闭提示')} onClick={() => setHint(null)}>×</button><strong>{hint.title}</strong><p>{hint.detail}</p><small>{hint.meta}</small></div>}
+      {hint && <div className={`model-tooltip${hint.kind === 'building' ? ' building-tooltip' : ''}`} role="tooltip"><button className="mobile-hint-close" aria-label={t('关闭提示')} onClick={clearHint}>×</button><strong>{hint.title}</strong><p>{hint.detail}</p><small>{hint.meta}</small></div>}
       <HoverHint.Provider value={showHint}>
       <Canvas gl={{ stencil: true }} camera={{ fov: 45, near: 0.1, far: 1000 }} dpr={[1, 2]} frameloop={frameloop} onCreated={({ gl, invalidate }) => {
         gl.domElement.addEventListener('webglcontextlost', () => setLost(true));

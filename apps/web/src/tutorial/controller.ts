@@ -2,12 +2,21 @@ import { createStore } from 'zustand/vanilla';
 import type { PlayerBroadcast } from '@vibe-rico/protocol';
 import type { Action } from '../actions/options.js';
 import type { WorkerDraft } from '../actions/workerDraft.js';
+import { targetKey } from '../scene/Selection.js';
 import type { SceneTarget } from '../scene/Selection.js';
-import type { Good } from '@vibe-rico/game-engine';
-import raw from './fixture.json?raw';
+import { applyCommand } from '@vibe-rico/game-engine';
+import type { Good, GameState, GameCommand } from '@vibe-rico/game-engine';
+import type { PlayerEvent } from '@vibe-rico/protocol';
+import { initialTutorialGame, nextTutorialCommand, learner } from './scenario.js';
+import { tutorialBroadcast } from './projection.js';
 
-export interface TutorialStep { id: string; before: PlayerBroadcast; action: Action; after: PlayerBroadcast }
-export const lesson = JSON.parse(raw) as readonly TutorialStep[];
+export interface TutorialStep { id: string; command: GameCommand; action: Action }
+function nextStep(game: GameState): TutorialStep | null {
+  const command = nextTutorialCommand(game);
+  if (!command) return null;
+  const { actorId: _, ...action } = command;
+  return { id: `${game.revision}:${command.kind}`, command, action: action as Action };
+}
 const canonical = (value: unknown): string => {
   if (Array.isArray(value)) return `[${value.map(canonical).join(',')}]`;
   if (value && typeof value === 'object') return `{${Object.entries(value).sort(([a], [b]) => a.localeCompare(b)).map(([k, v]) => `${JSON.stringify(k)}:${canonical(v)}`).join(',')}}`;
@@ -39,26 +48,65 @@ export function allowedTargets(step: TutorialStep, draft: WorkerDraft | null, go
   }
 }
 
-interface TutorialState {
-  generation: number; index: number; stage: 'action' | 'result' | 'finished' | 'disposed'; snapshot: PlayerBroadcast | null;
+/** Whether `target` may be used now. Holds and depot slots stand for the ship or depot they belong to. */
+export function allowsTarget(step: TutorialStep, draft: WorkerDraft | null, good: Good | null, target: SceneTarget): boolean {
+  const whole: SceneTarget = target.kind === 'ship-slot' ? { kind: 'ship', id: target.id } : target.kind === 'depot-slot' ? { kind: 'depot' } : target;
+  return allowedTargets(step, draft, good).some(t => targetKey(t) === targetKey(whole));
+}
+
+/** A move that has been applied, kept so the guide can explain it and its follow-up. */
+export interface TutorialMove { step: TutorialStep; events: readonly PlayerEvent[] }
+export interface TutorialState {
+  /** action: learner's move; opponent: preview of a scripted move; opponent-result: that move has been applied. */
+  generation: number; index: number; stage: 'action' | 'opponent' | 'opponent-result' | 'finished' | 'disposed';
+  game: GameState | null; step: TutorialStep | null; previous: TutorialMove | null; snapshot: PlayerBroadcast | null; history: readonly PlayerEvent[];
   submit(generation: number, stepId: string, revision: number, action: Action): boolean;
+  opponentMove(generation: number, index: number): boolean;
   next(generation: number, index: number): void; reset(): void; dispose(): void;
 }
+const stageFor = (step: TutorialStep | null) => !step ? 'finished' as const : step.command.actorId === learner ? 'action' as const : 'opponent' as const;
+const fresh = () => {
+  const game = initialTutorialGame(), step = nextStep(game);
+  return { index: 0, game, step, previous: null, snapshot: tutorialBroadcast(game), history: [] as readonly PlayerEvent[], stage: stageFor(step) };
+};
 export function createTutorialController() {
-  return createStore<TutorialState>()((set, get) => ({
-    generation: 0, index: 0, stage: 'action', snapshot: structuredClone(lesson[0]!.before),
-    submit: (generation, stepId, revision, action) => {
-      const s = get(), step = lesson[s.index];
-      if (s.generation !== generation || s.stage !== 'action' || !step || step.id !== stepId || revision !== s.snapshot?.revision || !sameAction(action, step.action)) return false;
-      set({ stage: 'result', snapshot: structuredClone(step.after) }); return true;
-    },
-    next: (generation, index) => {
+  return createStore<TutorialState>()((set, get) => {
+    const execute = () => {
       const s = get();
-      if (s.generation !== generation || s.index !== index || s.stage !== 'result') return;
-      if (s.index + 1 === lesson.length) { set({ stage: 'finished' }); return; }
-      set({ index: s.index + 1, stage: 'action', snapshot: structuredClone(lesson[s.index + 1]!.before) });
-    },
-    reset: () => set({ generation: get().generation + 1, index: 0, stage: 'action', snapshot: structuredClone(lesson[0]!.before) }),
-    dispose: () => set({ generation: get().generation + 1, index: 0, stage: 'disposed', snapshot: null }),
-  }));
+      if (!s.game || !s.step) return null;
+      const result = applyCommand(s.game, s.step.command);
+      if (!result.ok) return null;
+      const snapshot = tutorialBroadcast(result.state, result.events);
+      return { game: result.state, snapshot, history: [...s.history, ...snapshot.events], previous: { step: s.step, events: snapshot.events } };
+    };
+    return {
+      generation: 0, ...fresh(),
+      submit: (generation, stepId, revision, action) => {
+        const s = get();
+        if (s.generation !== generation || s.stage !== 'action' || !s.step || s.step.command.actorId !== learner || s.step.id !== stepId || revision !== s.snapshot?.revision || !sameAction(action, s.step.action)) return false;
+        const applied = execute();
+        if (!applied) return false;
+        // The learner sees their own result on the board; the guide explains it alongside the next move.
+        const step = nextStep(applied.game);
+        set({ ...applied, index: s.index + 1, step: step ?? s.step, stage: stageFor(step) });
+        return true;
+      },
+      opponentMove: (generation, index) => {
+        const s = get();
+        if (s.generation !== generation || s.index !== index || s.stage !== 'opponent') return false;
+        const applied = execute();
+        if (!applied) return false;
+        set({ ...applied, index: s.index + 1, stage: 'opponent-result' });
+        return true;
+      },
+      next: (generation, index) => {
+        const s = get();
+        if (s.generation !== generation || s.index !== index || !s.game || s.stage !== 'opponent-result') return;
+        const step = nextStep(s.game);
+        set({ index: s.index + 1, step: step ?? s.step, stage: stageFor(step) });
+      },
+      reset: () => set({ generation: get().generation + 1, ...fresh() }),
+      dispose: () => set({ generation: get().generation + 1, index: 0, stage: 'disposed', game: null, step: null, previous: null, snapshot: null, history: [] }),
+    };
+  });
 }

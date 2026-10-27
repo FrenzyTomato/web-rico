@@ -1,73 +1,112 @@
 import { expect, test } from '@playwright/test';
+import type { Page } from '@playwright/test';
 
-for (const mobile of [false, true]) test(`tutorial completes with only intended controls (${mobile ? 'mobile' : 'desktop'})`, async ({ browser }) => {
+type Target = { key: string; x: number; y: number; actionable: boolean };
+const sceneTargets = (page: Page) => page.evaluate(() => (window as unknown as { __sceneTargets: () => Target[] }).__sceneTargets());
+
+for (const mobile of [false, true]) test(`simulated tutorial plays every turn with the normal controls (${mobile ? 'mobile' : 'desktop'})`, async ({ browser }) => {
   const context = await browser.newContext({ viewport: mobile ? { width: 390, height: 844 } : { width: 1280, height: 900 }, isMobile: mobile, hasTouch: mobile });
   const page = await context.newPage();
   await page.addInitScript(() => localStorage.setItem('vibe-rico.settings', JSON.stringify({ autoProduce: true })));
-  // Geometry hit boxes remain testable without loading every high-resolution model.
-  await page.route('**/*.glb', route => route.abort());
-  const sockets: string[] = [];
-  page.on('websocket', socket => socket.url().includes('/socket.io') && sockets.push(socket.url()));
-  page.on('request', request => { if (request.url().includes('/socket.io')) sockets.push(request.url()); });
+  const requests: string[] = [];
+  page.on('request', r => { if (r.url().includes('/socket.io')) requests.push(r.url()); });
   await page.goto('/?tutorial=1');
-  const actions = page.getByRole('group', { name: 'Tutorial actions' });
-  const click = (name: string) => actions.getByRole('button', { name, exact: true }).click();
-  const advance = async () => { await expect(page.locator('.tutorial-shell')).toHaveAttribute('data-tutorial-stage', 'result'); await click('Continue'); };
-  await click('Planter'); await click('Confirm'); await advance();
-  await expect(page.locator('.tutorial-shell')).toHaveAttribute('data-tutorial-step', 'estate');
-  await expect(page.locator('canvas')).toBeVisible();
-  await page.waitForFunction(() => (window as unknown as { __sceneTargets?: () => { key: string }[] }).__sceneTargets?.().some(t => t.key === 'building:small-market'));
-  // A building is normally visible here but must not select or open an action panel.
-  const blocked = await page.evaluate(() => (window as unknown as { __sceneTargets: () => { key: string; x: number; y: number; actionable: boolean }[] }).__sceneTargets().find(t => t.key === 'building:small-market'));
-  expect(blocked?.actionable).toBe(false);
-  const unwantedEstate = await page.evaluate(() => (window as unknown as { __sceneTargets: () => { key: string; x: number; y: number; actionable: boolean }[] }).__sceneTargets().find(t => t.key.startsWith('estate:') && !t.actionable)!);
-  const canvas = (await page.locator('canvas').boundingBox())!;
-  await page.mouse.click(canvas.x + unwantedEstate.x, canvas.y + unwantedEstate.y);
-  await expect(actions.getByRole('button', { name: 'Confirm', exact: true })).toHaveCount(0);
-  await expect(page.getByRole('tooltip')).toHaveCount(0);
-  await click('Corn'); await click('Confirm'); await advance();
-  if (mobile) {
-    await page.waitForFunction(() => (window as unknown as { __sceneTargets: () => { key: string; actionable: boolean }[] }).__sceneTargets().some(t => t.key === 'building:small-market' && t.actionable));
-    const point = await page.evaluate(() => (window as unknown as { __sceneTargets: () => { key: string; x: number; y: number }[] }).__sceneTargets().find(t => t.key === 'building:small-market')!);
-    const client = await context.newCDPSession(page);
-    await client.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: canvas.x + point.x, y: canvas.y + point.y, id: 1 }] });
-    await expect(page.getByRole('tooltip')).toBeVisible();
-    await client.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
-    await expect(actions.getByRole('button', { name: 'Confirm', exact: true })).toHaveCount(0);
-    expect(await page.evaluate(() => window.getSelection()?.toString())).toBe('');
-    const hint = (await page.getByRole('tooltip').boundingBox())!, zoom = (await page.locator('.board-zoom').boundingBox())!;
-    expect(hint.height).toBe(zoom.height);
-    await page.getByRole('button', { name: 'Close tooltip' }).click();
-    await page.screenshot({ path: '/tmp/rico-tutorial-building-mobile.png' });
+  const coach = page.locator('.tutorial-coach'), hand = page.locator('.hand .actions');
+  await expect(page.locator('.role-hand .role-card')).toHaveCount(6);
+  await expect(page.locator('.role-hand .role-card:enabled')).toHaveCount(1);
+  await expect(page.locator('.role-hand .role-card:enabled')).toContainText('Planter');
+  await expect(coach).toContainText('Choose Planter');
+  await page.locator('.role-hand .role-card:enabled').click();
+  // The guide explains the role just chosen alongside the follow-up it unlocks.
+  await expect(coach).toContainText('You chose Planter');
+  await expect(coach).toContainText('Take Corn');
+  // Click the upper model on the board; the normal action panel confirms it.
+  await page.waitForFunction(() => (window as unknown as { __sceneTargets?: () => Target[] }).__sceneTargets?.().some(t => t.key.startsWith('estate:estate-corn-') && t.actionable));
+  await page.waitForTimeout(1000); // Let the guided camera settle before projecting the target.
+  const targets = await sceneTargets(page);
+  expect(targets.filter(t => t.key.startsWith('estate:') && t.actionable)).toHaveLength(1);
+  const corn = targets.find(t => t.key.startsWith('estate:estate-corn-') && t.actionable)!;
+  const boardCanvas = (await page.locator('canvas').boundingBox())!;
+  const cornPoint = { x: boardCanvas.x + corn.x, y: boardCanvas.y + corn.y - 40 };
+  if (mobile) await page.touchscreen.tap(cornPoint.x, cornPoint.y);
+  else await page.mouse.click(cornPoint.x, cornPoint.y);
+  await page.getByRole('group', { name: 'Actions for selected piece' }).getByRole('button', { name: /^Plant Corn/ }).click();
+  // A real automatic opponent transition, rather than installing a future snapshot.
+  await expect(coach).toHaveAttribute('data-tutorial-actor', 'bruno');
+  await expect(coach).toHaveAttribute('data-tutorial-stage', 'opponent-result', { timeout: 5000 });
+  await expect(coach).toContainText('Bruno took');
+
+  const roleChoices = ['Planter'];
+  const botLoads: string[] = [];
+  let previousRevision = Number(await coach.getAttribute('data-revision'));
+  let checkedBuild = false;
+  for (let count = 0; count < 130; count++) {
+    const stage = await coach.getAttribute('data-tutorial-stage');
+    const kind = await coach.getAttribute('data-tutorial-step');
+    const actor = await coach.getAttribute('data-tutorial-actor');
+    const index = await coach.getAttribute('data-tutorial-index');
+    const revision = Number(await coach.getAttribute('data-revision'));
+    expect(revision - previousRevision).toBeGreaterThanOrEqual(0);
+    expect(revision - previousRevision).toBeLessThanOrEqual(1);
+    previousRevision = revision;
+    if (stage === 'finished') break;
+    if (stage === 'opponent' || stage === 'opponent-result') {
+      if (stage === 'opponent' && kind === 'load') botLoads.push(actor!);
+      // Learners cannot act during an opponent's move.
+      await expect(page.locator('.role-hand .role-card:enabled')).toHaveCount(0);
+      await coach.getByRole('button', { name: 'Next', exact: true }).click();
+    } else if (kind === 'choose-role') {
+      const card = page.locator('.role-hand .role-card:enabled');
+      await expect(card).toHaveCount(1);
+      roleChoices.push((await card.locator('span').textContent())!);
+      await card.click();
+    } else if (kind === 'allocate-workers' && mobile) {
+      // Phones: picking up a worker moves the sheet aside for the board target, then brings it back to confirm.
+      const sheet = page.locator('.mobile-sheet-toggle');
+      await expect(sheet).toHaveAttribute('aria-expanded', 'true');
+      await page.locator('.dock-worker:enabled').first().click();
+      await expect(sheet).toHaveAttribute('aria-expanded', 'false');
+      await page.waitForTimeout(1000); // Let the guided camera settle before projecting the target.
+      const spot = (await sceneTargets(page)).find(t => /^(tile|owned-building):/.test(t.key) && t.actionable)!;
+      const canvas = (await page.locator('canvas').boundingBox())!;
+      await page.touchscreen.tap(canvas.x + spot.x, canvas.y + spot.y);
+      await expect(sheet).toHaveAttribute('aria-expanded', 'true');
+      await hand.getByRole('button', { name: 'Confirm assignment' }).click();
+    } else if (kind === 'allocate-workers') {
+      const keyboard = hand.locator('details');
+      if (!await keyboard.evaluate(d => (d as HTMLDetailsElement).open)) await keyboard.locator('summary').click();
+      const confirm = hand.getByRole('button', { name: 'Confirm assignment' });
+      for (let i = 0; i < 6 && await confirm.isDisabled(); i++) await keyboard.locator('button:enabled').first().click();
+      await confirm.click();
+    } else {
+      if (kind === 'build' && !checkedBuild) {
+        await page.waitForFunction(() => (window as unknown as { __sceneTargets?: () => Target[] }).__sceneTargets?.().some(t => t.key === 'building:small-market' && t.actionable));
+        const buildings = await sceneTargets(page);
+        expect(buildings.find(t => t.key === 'building:small-sugar-mill')!.actionable).toBe(false);
+        checkedBuild = true;
+      }
+      // Only the guided option is offered by the normal hand controls.
+      const choices = hand.locator('details');
+      if (await choices.count()) await choices.locator('summary').click();
+      const options = hand.getByRole('group', { name: 'Available actions' }).getByRole('button');
+      await expect(options).toHaveCount(1);
+      await options.click();
+    }
+    await expect(coach).not.toHaveAttribute('data-tutorial-index', index!);
   }
-  await click('Small Market'); await click('Confirm'); await advance();
-  await click('Pick up fruit-estate worker'); await click('Place on Corn');
-  await click('Select pool worker'); await click('Place in Small Market');
-  await click('Confirm'); await advance();
-  await actions.getByRole('button', { name: /^Produce / }).click(); await advance();
-  await click('Corn'); await click('Confirm'); await advance();
-  await click('Select Corn'); await click('Trading depot'); await advance();
-  await click('Select Corn'); await click('Ship corn'); await advance();
-  await expect(page.getByRole('heading', { name: 'Ready to play!' })).toBeVisible();
-  await page.screenshot({ path: `/tmp/rico-tutorial-${mobile ? 'mobile' : 'desktop'}.png` });
-  expect(sockets).toEqual([]);
+  await expect(coach).toContainText('Ready to play!');
+  expect(roleChoices).toEqual(['Planter', 'Craftsman', 'Captain']);
+  expect(botLoads).toEqual(['bruno', 'chen']);
+  expect(requests).toEqual([]);
   expect(await page.evaluate(() => Object.keys(localStorage).filter(k => /tutorial/i.test(k)))).toEqual([]);
-  await click('Back to lobby');
-  await expect(page).toHaveURL(/lobby=1/);
-  await page.getByRole('link', { name: 'Learn to play' }).click();
-  await expect(page.locator('.tutorial-shell')).toHaveAttribute('data-tutorial-step', 'role');
-  await click('Planter'); await click('Confirm'); await advance();
-  await page.reload();
-  await expect(page.locator('.tutorial-shell')).toHaveAttribute('data-tutorial-step', 'role');
-  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('vibe-rico.settings')!).autoProduce)).toBe(true);
-  await click('Planter'); await click('Confirm'); await advance();
-  await page.getByRole('button', { name: 'Exit tutorial', exact: true }).click();
+  await page.screenshot({ path: `/tmp/rico-simulated-tutorial-${mobile ? 'mobile' : 'desktop'}.png` });
+  await coach.getByRole('link', { name: 'Back to lobby' }).click();
   await expect(page).toHaveURL(/lobby=1/);
   await page.goBack();
-  await expect(page.locator('.tutorial-shell')).toHaveAttribute('data-tutorial-step', 'role');
-  // Exercise restored-page handling explicitly as well as normal navigation.
-  await click('Planter'); await click('Confirm'); await advance();
+  await expect(coach).toHaveAttribute('data-revision', '0');
+  await page.reload(); await expect(coach).toHaveAttribute('data-revision', '0');
   await page.evaluate(() => { window.dispatchEvent(new PageTransitionEvent('pagehide', { persisted: true })); window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true })); });
-  await expect(page.locator('.tutorial-shell')).toHaveAttribute('data-tutorial-step', 'role');
+  await expect(coach).toHaveAttribute('data-revision', '0');
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('vibe-rico.settings')!).autoProduce)).toBe(true);
   await context.close();
 });

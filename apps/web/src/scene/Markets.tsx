@@ -15,14 +15,14 @@ export function EstateMarket({ market, discard, quarries }: { market: readonly E
   useLanguage();
   return <group>
     {market.map((tile, i) => <group key={tile.instanceId} position={[i % 3 * 2.5, 0, Math.floor(i / 3) * 2.5]}>
-      <Selectable hint={estateHint(tile.kind)} target={{ kind: 'estate', id: tile.instanceId }} size={[2.1, 1.8]}>
+      <Selectable hint={estateHint(tile.kind)} target={{ kind: 'estate', id: tile.instanceId }} size={[2.1, 1.8]} hitHeight={2.2}>
           <Model name={ESTATE_MODEL[tile.kind]} width={2.1} depth={1.8} height={2.2} />
           <Label position={[0, 0.1, 0.98]} height={0.62} maxWidth={2.3} text={TILE[tile.kind]} />
 
       </Selectable>
     </group>)}
     <group position={[market.length % 3 * 2.5, 0, Math.floor(market.length / 3) * 2.5]}>
-      <Selectable hint={estateHint('quarry')} target={{ kind: 'quarry' }} size={[2.1, 1.8]}>
+      <Selectable hint={estateHint('quarry')} target={{ kind: 'quarry' }} size={[2.1, 1.8]} hitHeight={2.2}>
           {quarries > 0 && <Model name="Quarry" width={2.1} depth={1.8} height={2.2} />}
           <Label position={[0, 0.1, 0.98]} height={0.62} maxWidth={2.3} text={t("采石场 ×{0}", [quarries])} />
 

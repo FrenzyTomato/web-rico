@@ -1,5 +1,5 @@
 import { t, useLanguage } from '../i18n/language.js';
-import { useContext, useId, useState } from 'react';
+import { useContext, useEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { ROLE_HELP } from '../i18n/roleHelp.js';
 import type { PublicPlayerView, PlayerView } from '@vibe-rico/protocol';
@@ -33,27 +33,35 @@ export function ResourceDock({ player, points }: { player: PublicPlayerView; poi
     </div></section>
   </div>;
 }
-export function RoleHand({ legal, view, submit }: { legal: Extract<LegalAction, { phase: 'role-selection' }>; view: PlayerView; submit: (a: Action) => void }) {
+export function RoleHand({ legal, view, submit, allowedRoleIds, highlightRoleId }: { legal: Extract<LegalAction, { phase: 'role-selection' }>; view: PlayerView; submit: (a: Action) => void; allowedRoleIds?: readonly string[] | undefined; highlightRoleId?: string | undefined }) {
   useLanguage();
+  const listRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!highlightRoleId) return;
+    const list = listRef.current, card = list?.querySelector<HTMLElement>('.tutorial-role-target');
+    if (list && card) list.scrollLeft += card.getBoundingClientRect().left - list.getBoundingClientRect().left - (list.clientWidth - card.clientWidth) / 2;
+  }, [highlightRoleId]);
   const tooltipId = useId();
   const [hint, setHint] = useState<{ id: string; left: number; bottom: number } | null>(null);
   const cardHint = view.roleCards.find(card => card.instanceId === hint?.id);
   const showHint = (id: string, element: HTMLElement) => {
+    if (allowedRoleIds && !allowedRoleIds.includes(id)) return;
     const rect = element.getBoundingClientRect();
     setHint({ id, left: Math.max(14, Math.min(rect.left, window.innerWidth - 344)), bottom: window.innerHeight - rect.top + 10 });
   };
-  return <><div className="role-hand" role="group" aria-label={t("可选行动")}>
+  return <><div ref={listRef} className="role-hand" role="group" aria-label={t("可选行动")}>
     {legal.roleCardIds.map((id, index) => { const card = view.roleCards.find(c => c.instanceId === id)!;
-      return <button key={id} className="role-card"
+      const allowed = !allowedRoleIds || allowedRoleIds.includes(id);
+      return <button key={id} className={`role-card${id === highlightRoleId ? ' tutorial-role-target' : ''}`} disabled={!allowed}
         onMouseEnter={event => showHint(id, event.currentTarget)} onMouseLeave={() => setHint(null)}
         onFocus={event => showHint(id, event.currentTarget)} onBlur={() => setHint(null)}
         onKeyDown={event => { if (event.key === 'Escape') setHint(null); }}
-        aria-describedby={hint?.id === id ? tooltipId : undefined} onClick={() => submit({ kind: 'choose-role', roleCardId: id })}
+        aria-describedby={hint?.id === id ? tooltipId : undefined} onClick={() => { if (allowed) submit({ kind: 'choose-role', roleCardId: id }); }}
         aria-label={t("选择角色 {0}（{1} 金币，序号 {2}）", [ROLE[card.kind], card.accumulatedCoins, index + 1])}>
         <img src={imageUrl(`${ROLE_MODEL[card.kind]} Illustration`)} alt="" draggable={false} /><span>{ROLE[card.kind]}</span><small>🪙 {card.accumulatedCoins}</small>
       </button>;
     })}
-  </div>{hint && cardHint && createPortal(<div id={tooltipId} className="model-tooltip" role="tooltip"
+  </div>{hint && cardHint && (!allowedRoleIds || allowedRoleIds.includes(hint.id)) && createPortal(<div id={tooltipId} className="model-tooltip" role="tooltip"
     style={{ position: 'fixed', top: 'auto', left: hint.left, right: 'auto', bottom: hint.bottom, zIndex: 100 }}>
     <strong>{ROLE[cardHint.kind]}</strong><p>{ROLE_HELP[cardHint.kind]}</p>
   </div>, document.body)}</>;

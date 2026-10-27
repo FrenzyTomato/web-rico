@@ -18,15 +18,15 @@ const registry = new Map<string, { target: SceneTarget; group: Group }>();
 export function Selectable({ target, size, children, hint, outline = false, circular = false, hitHeight = 0.6 }: { target: SceneTarget; size: [number, number]; children?: ReactNode; hint?: PieceHint; outline?: boolean; circular?: boolean; hitHeight?: number }) {
   const hintContext = useContext(HoverHint);
   const interaction = useContext(Interaction);
-  const showHint = (next: PieceHint | null) => { if (!next || !interaction.inspect || interaction.inspect(target)) hintContext(next); };
-  const touch = useTouchHint(() => { if (hint) showHint(hint); });
+  const showHint = (next: PieceHint | null, pinned = false) => { if (!next || !interaction.inspect || interaction.inspect(target)) hintContext(next, pinned); };
+  const touch = useTouchHint(() => { if (hint) showHint(hint, true); });
   const { active, handlers } = useSelectable(target);
   const ref = useRef<Group>(null);
   const key = targetKey(target);
   const pulsing = interaction.pulse === key;
   const selected = interaction.selectedKey === key;
-  const buildingBase = target.kind === 'building' || target.kind === 'owned-building';
-  const modelStroke = ['estate', 'quarry', 'tile', 'worker'].includes(target.kind);
+  const footprint = target.kind === 'building' || target.kind === 'owned-building' || target.kind === 'estate' || target.kind === 'quarry';
+  const modelStroke = ['tile', 'worker'].includes(target.kind);
   useEffect(() => {
     if (!import.meta.env.DEV || !ref.current) return;
     registry.set(key, { target, group: ref.current });
@@ -41,7 +41,7 @@ export function Selectable({ target, size, children, hint, outline = false, circ
       onPointerOut={e => { if (touch.isTouch(e)) touch.cancel(); else { handlers.onPointerOut(); if (hint) showHint(null); } }}>
       {pulsing && <Pulse size={size} />}
       {(active || selected) && !modelStroke && (
-        buildingBase ? <group>
+        footprint ? <group>
           {/* A slightly expanded footprint keeps the border outside the model's plinth. */}
           {[-1, 1].flatMap(side => [
             <mesh key={`base-x${side}`} position={[side * (size[0] / 2 + 0.06), 0.08, 0]}>
