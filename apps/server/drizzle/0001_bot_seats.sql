@@ -1,0 +1,1 @@
+ALTER TABLE "seats" ADD COLUMN "bot" boolean DEFAULT false NOT NULL;

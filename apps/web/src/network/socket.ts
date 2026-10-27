@@ -12,9 +12,12 @@ export type LobbySocket = Pick<Socket, 'emitWithAck' | 'on' | 'off' | 'connected
 type RoomAction =
   | { kind: 'create-room'; displayName: string }
   | { kind: 'join-room'; roomCode: string; displayName: string }
-  | { kind: 'start-game'; roomId: string };
+  | { kind: 'start-game'; roomId: string }
+  | { kind: 'add-bot'; roomId: string }
+  | { kind: 'fill-bots'; roomId: string; seats: number }
+  | { kind: 'remove-bot'; roomId: string; playerId: string };
 export function sendRoom(socket: LobbySocket, action: Extract<RoomAction, { kind: 'create-room' | 'join-room' }>): Promise<RoomReply<SeatGranted>>;
-export function sendRoom(socket: LobbySocket, action: Extract<RoomAction, { kind: 'start-game' }>): Promise<RoomReply<null>>;
+export function sendRoom(socket: LobbySocket, action: Exclude<RoomAction, { kind: 'create-room' | 'join-room' }>): Promise<RoomReply<null>>;
 export function sendRoom(socket: LobbySocket, action: RoomAction) {
   return socket.emitWithAck('room', { protocolVersion: PROTOCOL_VERSION, action });
 }

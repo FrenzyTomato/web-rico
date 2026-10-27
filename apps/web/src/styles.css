@@ -167,6 +167,11 @@ th { color: var(--gold); }
 .lobby-seats li { padding: 12px 8px; border-bottom: 1px solid var(--line); overflow-wrap: anywhere; }
 .lobby-seats li::marker { color: var(--gold); font-variant-numeric: tabular-nums; }
 .lobby-start { width: 100%; min-height: 46px; margin: 0; }
+/* Stays a list item so the seat number shows; the remove button floats to the row's end. */
+.lobby-seats li.lobby-bot-seat::after { content: ''; display: block; clear: both; }
+.lobby-seats li.lobby-bot-seat button { float: right; margin: -6px 0 -6px 10px; min-height: 34px; padding: 4px 12px; font-size: 13px; }
+.lobby-bots { display: flex; flex-wrap: wrap; gap: 8px; }
+.lobby-bots button { flex: 1 1 160px; margin: 0; min-height: 42px; }
 @media (max-width: 560px) {
   .lobby { width: calc(100% - 24px); margin: 12px auto; padding: 22px; border-radius: 18px; }
   .lobby-header { flex-wrap: wrap; gap: 16px; }

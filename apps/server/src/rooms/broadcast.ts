@@ -27,5 +27,5 @@ export async function broadcast(io: Server, roomId: string, state: GameState, ev
 /** Lobby seat list for the room channel; seats are copied field by field so token hashes stay server-side. */
 export function roomState(room: Room): RoomState {
   return { roomCode: room.roomCode, hostPlayerId: room.hostPlayerId,
-    seats: room.seats.map(s => ({ playerId: s.playerId, displayName: s.displayName })), started: room.game !== null };
+    seats: room.seats.map(s => ({ playerId: s.playerId, displayName: s.displayName, ...(s.bot ? { bot: true as const } : {}) })), started: room.game !== null };
 }

@@ -4,8 +4,10 @@ import type { PlayerAction } from '@vibe-rico/protocol';
 export interface Seat {
   readonly playerId: PlayerId;
   readonly displayName: string;
-  /** SHA-256 of the seat's reconnect token; the token itself is never stored. */
+  /** SHA-256 of the seat's reconnect token; the token itself is never stored. Bot seats get one that is never issued. */
   readonly tokenHash: string;
+  /** Played by the server's bot runner (docs/BOT_STRATEGY.md). */
+  readonly bot?: true;
 }
 export interface Room {
   readonly roomId: string;

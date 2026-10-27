@@ -1,4 +1,4 @@
-import { bigint, foreignKey, integer, jsonb, pgTable, primaryKey, text, unique } from 'drizzle-orm/pg-core';
+import { bigint, boolean, foreignKey, integer, jsonb, pgTable, primaryKey, text, unique } from 'drizzle-orm/pg-core';
 import type { GameEvent, GameState } from '@vibe-rico/game-engine';
 
 /**
@@ -25,6 +25,7 @@ export const seats = pgTable('seats', {
   playerId: text('player_id').notNull(),
   displayName: text('display_name').notNull(),
   tokenHash: text('token_hash').notNull().unique(),
+  bot: boolean('bot').notNull().default(false),
 }, t => [
   primaryKey({ columns: [t.roomId, t.playerId] }),
   unique('seats_room_seat_index').on(t.roomId, t.seatIndex),

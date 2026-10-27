@@ -106,6 +106,27 @@ describe('lobby', () => {
     expect(screen.queryByText('开始游戏')).toBeNull();
   });
 
+  it('lets the host fill seats with bots and remove them; guests see no bot controls', async () => {
+    const socket = new FakeSocket({ 'create-room': { ok: true, value: granted }, 'fill-bots': { ok: true, value: null }, 'remove-bot': { ok: true, value: null } });
+    view(socket);
+    fireEvent.change(screen.getByLabelText('昵称'), { target: { value: 'Ana' } });
+    fireEvent.change(screen.getByLabelText('创建房间密码'), { target: { value: 'test-room-password' } });
+    fireEvent.click(screen.getByText('创建房间'));
+    await flush();
+    socket.push('room-state', seats(false, 1));
+    fireEvent.click(screen.getByText('用机器人补足 3 人'));
+    await flush();
+    expect(socket.sent.at(-1)!.payload.action).toEqual({ kind: 'fill-bots', roomId: 'r1', seats: 3 });
+    socket.push('room-state', { ...seats(false, 1), seats: [{ playerId: 'p1', displayName: 'Ana' }, { playerId: 'b1', displayName: 'Bot Ana', bot: true }, { playerId: 'b2', displayName: 'Bot Bea', bot: true }] });
+    expect(screen.getAllByRole('listitem').map(li => li.querySelector('span')!.textContent)).toEqual(['Ana（房主）（你）', 'Bot Ana（机器人）', 'Bot Bea（机器人）']);
+    expect(screen.queryByText('用机器人补足 3 人')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: '移除 Bot Bea' }));
+    await flush();
+    expect(socket.sent.at(-1)!.payload.action).toEqual({ kind: 'remove-bot', roomId: 'r1', playerId: 'b2' });
+    socket.push('room-state', { ...seats(false, 1), hostPlayerId: 'p2' });
+    expect(screen.queryByText('添加机器人')).toBeNull();
+  });
+
   it('shows a disconnection message, disables actions, and resumes the saved seat on reconnect', async () => {
     localStorage.setItem('vibe-rico.seat', JSON.stringify(granted));
     const socket = new FakeSocket({ resume: { ok: true, value: { playerId: 'p1', revision: null } } });

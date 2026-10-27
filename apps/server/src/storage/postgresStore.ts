@@ -54,7 +54,7 @@ export class PostgresRoomStore implements RoomStore {
     for (const e of events) byRevision.set(e.revision, [...byRevision.get(e.revision) ?? [], e.event]);
     const room: Room = {
       roomId: row.roomId, roomCode: row.roomCode, hostPlayerId: row.hostPlayerId as PlayerId,
-      seats: seats.map(s => ({ playerId: s.playerId as PlayerId, displayName: s.displayName, tokenHash: s.tokenHash })),
+      seats: seats.map(s => ({ playerId: s.playerId as PlayerId, displayName: s.displayName, tokenHash: s.tokenHash, ...(s.bot ? { bot: true as const } : {}) })),
       game: row.state === null || row.initialState === null || row.seed === null ? null : {
         // Version guard (PR-059): known upgrades in memory, then strict validation; incompatible saves throw.
         seed: row.seed, initialState: guardSnapshot(row.roomId, row.initialState, this.upgrades), state: guardSnapshot(row.roomId, row.state, this.upgrades),
@@ -106,7 +106,7 @@ function roomColumns(room: Room) {
 }
 async function writeSeats(tx: Tx, room: Room) {
   if (room.seats.length === 0) return;
-  await tx.insert(schema.seats).values(room.seats.map((s, seatIndex) => ({ roomId: room.roomId, seatIndex, ...s })));
+  await tx.insert(schema.seats).values(room.seats.map((s, seatIndex) => ({ roomId: room.roomId, seatIndex, playerId: s.playerId, displayName: s.displayName, tokenHash: s.tokenHash, bot: s.bot === true })));
 }
 /**
  * Appends commands/events not yet stored. History normally only grows; if the stored rows are not a prefix

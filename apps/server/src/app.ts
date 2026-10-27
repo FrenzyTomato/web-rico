@@ -2,7 +2,7 @@ import Fastify from 'fastify';
 import fastifyStatic from '@fastify/static';
 import { Server } from 'socket.io';
 import type { Socket } from 'socket.io';
-import type { PlayerId } from '@vibe-rico/game-engine';
+import type { GameEvent, GameState, PlayerId } from '@vibe-rico/game-engine';
 import { parseGameplayRequest, parseResumeRequest, parseRoomRequest } from '@vibe-rico/protocol';
 import type { CommandRejected, Resumed, RoomReply, SeatGranted } from '@vibe-rico/protocol';
 import { RoomQueues } from './commands/queue.js';
@@ -17,6 +17,8 @@ import { exportRoom, importRoom } from './debug/scenarios.js';
 import { Sessions } from './sessions/reconnect.js';
 import { recoverRooms } from './storage/recoverRoom.js';
 import { broadcast, broadcastFor, roomState } from './rooms/broadcast.js';
+import { BotRunner } from './bots/runner.js';
+import type { BotRunnerOptions } from './bots/runner.js';
 
 /** Largest accepted Socket.IO message; bigger messages close the connection (PROTOCOL.md step 1, size). */
 export const MAX_MESSAGE_BYTES = 16 * 1024;
@@ -31,9 +33,10 @@ type Ack<T> = (reply: T) => void;
  * `random` replaces crypto randomness for deterministic browser tests (apps/web/e2e/server.mjs).
  * `store` defaults to the in-memory store; PostgreSQL is wired in main.ts (PR-058).
  * `webRoot` serves the built web client from the same origin as Socket.IO (production, PR-061).
+ * `bots` plays bot seats; without a decision client they play on the code value alone (docs/BOT_STRATEGY.md).
  */
-export function createApp({ devTools = false, random, store = new InMemoryRoomStore(), webRoot, allowedOrigins = [] }: {
-  devTools?: boolean; random?: LobbyRandom; store?: RoomStore; webRoot?: string; allowedOrigins?: string[];
+export function createApp({ devTools = false, random, store = new InMemoryRoomStore(), webRoot, allowedOrigins = [], bots: botOptions = { client: null } }: {
+  devTools?: boolean; random?: LobbyRandom; store?: RoomStore; webRoot?: string; allowedOrigins?: string[]; bots?: BotRunnerOptions;
 } = {}) {
   const app = Fastify();
   app.get('/health', async () => ({ status: 'ok' }));
@@ -43,7 +46,13 @@ export function createApp({ devTools = false, random, store = new InMemoryRoomSt
   const lobby = new Lobby(store, random), lifecycle = new RoomLifecycle(store, queues), sessions = new Sessions(store);
   const sweeper = setInterval(() => void lifecycle.sweep(), LIMITS.sweepIntervalMs);
   sweeper.unref();
-  app.addHook('preClose', async () => { clearInterval(sweeper); io.disconnectSockets(true); });
+  /** Every commit is broadcast, then bots that now have a decision are scheduled. */
+  const committed = async (roomId: string, state: GameState, events: readonly GameEvent[]) => {
+    await broadcast(io, roomId, state, events);
+    bots.kick(roomId);
+  };
+  const bots = new BotRunner(store, queues, committed, botOptions);
+  app.addHook('preClose', async () => { clearInterval(sweeper); bots.stop(); io.disconnectSockets(true); });
   const limiter = new RateLimiter(LIMITS.eventsPerWindow, LIMITS.windowMs);
 
   const sessionOf = (socket: Socket) => socket.data.session as Session | undefined;
@@ -122,8 +131,16 @@ export function createApp({ devTools = false, random, store = new InMemoryRoomSt
         reply(await queues.run(s.roomId, async () => {
           const started = await lobby.startGame(s.roomId, s.playerId);
           const game = started.ok ? (await store.get(s.roomId))?.room.game : undefined;
-          if (game) { await announce(s.roomId); await broadcast(io, s.roomId, game.state, []); }
+          if (game) { await announce(s.roomId); await committed(s.roomId, game.state, []); }
           return started;
+        }));
+      } else if (action.kind === 'add-bot' || action.kind === 'fill-bots' || action.kind === 'remove-bot') {
+        reply(await queues.run(s.roomId, async () => {
+          const edited = action.kind === 'add-bot' ? await lobby.addBot(s.roomId, s.playerId)
+            : action.kind === 'fill-bots' ? await lobby.fillBots(s.roomId, s.playerId, action.seats)
+            : await lobby.removeBot(s.roomId, s.playerId, action.playerId);
+          if (edited.ok) await announce(s.roomId);
+          return edited;
         }));
       } else if (action.kind === 'close-room') {
         reply(await lifecycle.close(s.roomId, s.playerId));
@@ -153,7 +170,7 @@ export function createApp({ devTools = false, random, store = new InMemoryRoomSt
         ack(await queues.run(s.roomId, async () => {
           const result = await importRoom(store, s.roomId, (payload as { replay?: unknown }).replay);
           const game = result.ok ? (await store.get(s.roomId))?.room.game : undefined;
-          if (game) await broadcast(io, s.roomId, game.state, []);
+          if (game) await committed(s.roomId, game.state, []);
           return result;
         }));
       }));
@@ -172,10 +189,14 @@ export function createApp({ devTools = false, random, store = new InMemoryRoomSt
       const s = sessionOf(socket);
       if (!s || s.roomId !== parsed.value.roomId) return reply({ commandId: parsed.value.commandId, code: 'UNAUTHORIZED' });
       reply(await submitCommand(store, queues, s.roomId, s.playerId, parsed.value, () => sessions.isCurrent(s.roomId, s.playerId, s.generation),
-        (state, events) => broadcast(io, s.roomId, state, events)));
+        (state, events) => committed(s.roomId, state, events)));
     });
   });
   // Await before listening: rebuilds presence for stored rooms after a restart.
-  const ready = recoverRooms(store, lifecycle);
+  // Bots resume any turn that was pending when the server stopped.
+  const ready = recoverRooms(store, lifecycle).then(async count => {
+    for (const roomId of await store.listRoomIds()) bots.kick(roomId);
+    return count;
+  });
   return { app, io, ready };
 }

@@ -8,11 +8,14 @@ export interface PlayerBroadcast {
   readonly legalActions: PlayerLegalActions;
   readonly events: readonly PlayerEvent[];
 }
-/** Server → room channel `room-state`: who is seated. Display names are public; tokens never appear. */
+/**
+ * Server → room channel `room-state`: who is seated. Display names are public; tokens never appear.
+ * `bot` marks a computer-controlled seat; its strategy stays server-side.
+ */
 export interface RoomState {
   readonly roomCode: string;
   readonly hostPlayerId: string;
-  readonly seats: readonly { readonly playerId: string; readonly displayName: string }[];
+  readonly seats: readonly { readonly playerId: string; readonly displayName: string; readonly bot?: true }[];
   readonly started: boolean;
 }
 /** Acknowledgement for room and resume requests. */

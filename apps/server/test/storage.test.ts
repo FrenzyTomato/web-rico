@@ -21,11 +21,21 @@ describe.skipIf(!url)('PostgreSQL room store', () => {
   });
   afterAll(async () => { await close(); await sql.end(); });
 
-  it('the initial migration creates the four tables on an empty database', async () => {
+  it('the migrations create the four tables on an empty database', async () => {
     const tables = await sql`select table_name from information_schema.tables where table_schema = 'public' order by table_name`;
     expect(tables.map(t => t.table_name)).toEqual(['commands', 'events', 'rooms', 'seats']);
     const applied = await sql`select count(*)::int as n from drizzle.__drizzle_migrations`;
-    expect(applied[0]!.n).toBe(1);
+    expect(applied[0]!.n).toBe(2);
+  });
+
+  it('keeps the bot flag on bot seats only', async () => {
+    let n = 0;
+    const lobby = new Lobby(store, { id: () => `bot-${++n}`, roomCode: () => `BOTC${n}`, seed: () => 1, pick: () => 0 });
+    const created = await lobby.createRoom('Ana');
+    if (!created.ok) throw Error(created.code);
+    expect(await lobby.fillBots(created.value.roomId, created.value.playerId, 3)).toEqual({ ok: true, value: null });
+    const seats = (await store.get(created.value.roomId))!.room.seats;
+    expect(seats.map(s => s.bot ?? false)).toEqual([false, true, true]);
   });
 
   /** Plays the same lobby + command sequence against a store; returns the final stored room. */

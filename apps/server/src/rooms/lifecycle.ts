@@ -15,7 +15,7 @@ export class RoomLifecycle {
   constructor(private readonly store: RoomStore, private readonly queues: RoomQueues,
     private readonly now: () => number = Date.now, private readonly emptyRoomTtlMs: number = LIMITS.emptyRoomTtlMs) {}
 
-  /** Before start only; seats are fixed afterwards. A departing host passes to the next seat; the last leaver removes the room. */
+  /** Before start only; seats are fixed afterwards. A departing host passes to the next human seat; the last human removes the room. */
   leave(roomId: string, playerId: PlayerId): Promise<LobbyResult<null>> {
     return this.queues.run(roomId, async () => {
       const stored = await this.store.get(roomId);
@@ -23,10 +23,12 @@ export class RoomLifecycle {
       const { room, revision } = stored;
       if (room.game !== null || !room.seats.some(s => s.playerId === playerId)) return { ok: false, code: 'ILLEGAL_COMMAND' };
       const seats = room.seats.filter(s => s.playerId !== playerId);
-      const written = seats.length === 0 ? await this.store.delete(roomId, revision)
-        : await this.store.update({ ...room, seats, hostPlayerId: room.hostPlayerId === playerId ? seats[0]!.playerId : room.hostPlayerId }, revision);
+      // Bots cannot host, so the room goes with its last human.
+      const humans = seats.filter(s => !s.bot);
+      const written = humans.length === 0 ? await this.store.delete(roomId, revision)
+        : await this.store.update({ ...room, seats, hostPlayerId: room.hostPlayerId === playerId ? humans[0]!.playerId : room.hostPlayerId }, revision);
       if (written === 'stale') return { ok: false, code: 'STALE_REVISION' };
-      if (seats.length === 0) this.#presence.delete(roomId); else this.disconnected(roomId, playerId);
+      if (humans.length === 0) this.#presence.delete(roomId); else this.disconnected(roomId, playerId);
       return { ok: true, value: null };
     });
   }

@@ -18,6 +18,8 @@ One machine runs two containers: the game service (web client + Socket.IO + API 
 | `APP_PORT` | `.env` | Host port for the game service; default 3000. It is bound to `127.0.0.1`, so expose it only through TLS. |
 | `DATABASE_URL` | set by compose | Selects the PostgreSQL store; without it the server keeps rooms in memory. |
 | `HOST`, `PORT`, `WEB_ROOT` | baked into the image | Listener `0.0.0.0:3000` inside the container, and the static client root. |
+| `JEV_API_KEY` | `.env` | Optional. TypeSafe Jev key for bot seats; without it bots play on the code value alone ([BOT_STRATEGY.md](BOT_STRATEGY.md)). |
+| `JEV_MODEL` | `.env` | Optional. Overrides the pinned Jev model (`jev-1.14.0`). |
 | `VIBE_RICO_DEV_TOOLS` | **never in production** | Enables full-state developer tools (local development only). |
 
 ## First start

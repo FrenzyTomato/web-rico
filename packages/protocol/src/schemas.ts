@@ -66,7 +66,7 @@ export const gameplayRequest = z.strictObject({
   protocolVersion: z.literal(PROTOCOL_VERSION), roomId: z.string(), commandId: z.string(),
   expectedRevision: z.number(), action,
 });
-/** ARCHITECTURE.md RoomCommands (create/join/leave/start) plus host close (PROTOCOL.md; user ruling 2026-10-01). */
+/** ARCHITECTURE.md RoomCommands (create/join/leave/start) plus host close and bot seats (PROTOCOL.md). */
 export const roomRequest = z.strictObject({
   protocolVersion: z.literal(PROTOCOL_VERSION),
   action: z.discriminatedUnion('kind', [
@@ -75,6 +75,10 @@ export const roomRequest = z.strictObject({
     z.strictObject({ kind: z.literal('leave-room'), roomId: z.string() }),
     z.strictObject({ kind: z.literal('start-game'), roomId: z.string() }),
     z.strictObject({ kind: z.literal('close-room'), roomId: z.string() }),
+    // Host only, before start: computer-controlled seats (docs/BOT_STRATEGY.md).
+    z.strictObject({ kind: z.literal('add-bot'), roomId: z.string() }),
+    z.strictObject({ kind: z.literal('fill-bots'), roomId: z.string(), seats: z.number().int().min(3).max(5) }),
+    z.strictObject({ kind: z.literal('remove-bot'), roomId: z.string(), playerId: z.string() }),
   ]),
 });
 /** Reclaims a seat with its reconnect token (PROTOCOL.md "Rooms and recovery"). */

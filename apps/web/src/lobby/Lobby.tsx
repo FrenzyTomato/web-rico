@@ -18,6 +18,11 @@ const START_ERRORS: Partial<Record<ProtocolErrorCode, string>> = {
   get ILLEGAL_COMMAND() { return t("需要 3–5 名玩家才能开始"); },
   get STALE_REVISION() { return t("房间刚刚有变化，请重试"); },
 };
+const BOT_ERRORS: Partial<Record<ProtocolErrorCode, string>> = {
+  get ROOM_FULL() { return t("房间已满（最多 5 人）"); },
+  get GAME_STARTED() { return t("游戏已经开始，无法加入"); },
+  get STALE_REVISION() { return t("房间刚刚有变化，请重试"); },
+};
 const failure = (messages: Partial<Record<ProtocolErrorCode, string>>, code: ProtocolErrorCode) => messages[code] ?? t('操作失败，请重试');
 export const inviteLink = (roomCode: string) => `${location.origin}${location.pathname}?room=${roomCode}`;
 
@@ -47,7 +52,7 @@ export function Lobby({ socket, onSession = () => {}, game }: {
   const [seat, setSeat] = useState<SavedSeat | null>(null);
   const [room, setRoom] = useState<RoomState | null>(null);
   const [connected, setConnected] = useState(socket.connected);
-  const [error, setError] = useState<{ source: 'join' | 'start'; code: ProtocolErrorCode } | null>(null);
+  const [error, setError] = useState<{ source: 'join' | 'start' | 'bots'; code: ProtocolErrorCode } | null>(null);
   const [replaced, setReplaced] = useState(false);
   // Latest callback without re-running the socket effect when the parent passes a new function.
   const sessionRef = useRef(onSession);
@@ -101,13 +106,20 @@ export function Lobby({ socket, onSession = () => {}, game }: {
     if (!reply.ok) setError({ source: 'start', code: reply.code });
   };
 
+  const editBots = async (action: { kind: 'add-bot' } | { kind: 'fill-bots'; seats: number } | { kind: 'remove-bot'; playerId: string }) => {
+    setError(null);
+    const reply = await sendRoom(socket, { ...action, roomId: seat!.roomId });
+    if (!reply.ok) setError({ source: 'bots', code: reply.code });
+  };
+
   const notices = (
     <>
       {!connected && <p role="status">{t("连接已断开，正在重新连接…")}</p>}
       {replaced && <p role="status">{t("此座位已在其他窗口中打开")}</p>}
-      {error && <p role="alert">{failure(error.source === 'join' ? JOIN_ERRORS : START_ERRORS, error.code)}</p>}
+      {error && <p role="alert">{failure(error.source === 'join' ? JOIN_ERRORS : error.source === 'bots' ? BOT_ERRORS : START_ERRORS, error.code)}</p>}
     </>
   );
+  const isHost = room?.hostPlayerId === seat?.playerId;
   // A started game takes the whole screen, keeping the connection and seat notices above it.
   if (seat && room?.started && game) return <>{notices}{game(seat, room)}</>;
   return (
@@ -164,13 +176,18 @@ export function Lobby({ socket, onSession = () => {}, game }: {
           <div className="lobby-invite-link"><span>{t("邀请链接：")}</span><div className="lobby-invite-url"><a href={inviteLink(seat.roomCode)}>{inviteLink(seat.roomCode)}</a><CopyInviteLink key={seat.roomCode} url={inviteLink(seat.roomCode)} /></div></div>
           <ol className="lobby-seats" aria-label={t("座位")}>
             {room?.seats.map(s => (
-              <li key={s.playerId}>
-                {s.displayName}{s.playerId === room.hostPlayerId && t("（房主）")}{s.playerId === seat.playerId && t("（你）")}
+              <li key={s.playerId} className={s.bot ? 'lobby-bot-seat' : undefined}>
+                <span>{s.displayName}{s.bot && t("（机器人）")}{s.playerId === room.hostPlayerId && t("（房主）")}{s.playerId === seat.playerId && t("（你）")}</span>
+                {s.bot && isHost && !room.started && <button type="button" disabled={!connected || replaced} aria-label={t("移除 {0}", [s.displayName])} onClick={() => void editBots({ kind: 'remove-bot', playerId: s.playerId })}>{t("移除")}</button>}
               </li>
             ))}
           </ol>
+          {room && isHost && !room.started && <div className="lobby-bots">
+            <button type="button" disabled={!connected || replaced || room.seats.length >= 5} onClick={() => void editBots({ kind: 'add-bot' })}>{t("添加机器人")}</button>
+            {room.seats.length < 3 && <button type="button" disabled={!connected || replaced} onClick={() => void editBots({ kind: 'fill-bots', seats: 3 })}>{t("用机器人补足 3 人")}</button>}
+          </div>}
           {room?.started ? (game ? game(seat, room) : <p>{t("游戏已开始")}</p>)
-            : room?.hostPlayerId === seat.playerId && <button className="lobby-primary lobby-start" disabled={!connected || replaced} onClick={() => void start()}>{t("开始游戏")}</button>}
+            : isHost && <button className="lobby-primary lobby-start" disabled={!connected || replaced} onClick={() => void start()}>{t("开始游戏")}</button>}
         </section>
       )}
     </main>

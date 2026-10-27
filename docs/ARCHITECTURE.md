@@ -23,7 +23,7 @@ assertGameState(state: GameState): void
 projectForPlayer(state: GameState, playerId: PlayerId): PlayerView
 ```
 
-The first five functions belong to the engine; projection belongs to the server. A successful GameResult returns new state and ordered events; failure returns a RuleError with ruleId. Inputs remain unchanged. CreateGameInput contains the frozen rulesetId, gameId, clockwise seatOrder, an explicitly seated governorPlayerId, and seed. Create/join/leave/start are RoomCommands; the engine receives only the player list fixed at startup and gameplay commands.
+The first five functions belong to the engine; projection belongs to the server. A successful GameResult returns new state and ordered events; failure returns a RuleError with ruleId. Inputs remain unchanged. CreateGameInput contains the frozen rulesetId, gameId, clockwise seatOrder, an explicitly seated governorPlayerId, and seed. Create/join/leave/start are RoomCommands; the engine receives only the player list fixed at startup and gameplay commands. Bot seats (add/fill/remove, host only) are also RoomCommands; the server plays them through the same command path as any seat ([BOT_STRATEGY.md](BOT_STRATEGY.md)), so the engine never knows a seat is a bot.
 
 `LegalAction` is a discriminated union describing discrete choices and constrained forms, avoiding enumeration of every worker allocation. The client provides form-format feedback only; applyCommand revalidates submissions. Legal-action descriptions and execution validation share rule functions, with consistency tests.
 

@@ -103,7 +103,7 @@ PR-035 compile-time checks in [views.test.ts](../packages/protocol/test/views.te
 
 [lifecycle.ts](../apps/server/src/rooms/lifecycle.ts) and [limits.ts](../apps/server/src/rooms/limits.ts). Store changes run in the room's serial queue, under the expectedRevision contract.
 
-- **Leaving:** only before start, and only by a seated player. The seat is removed. A departing host passes host to the next seat in join order. When the last seat leaves, the room is removed and its code freed. After start, seats are fixed and leaving is `ILLEGAL_COMMAND`.
+- **Leaving:** only before start, and only by a seated player. The seat is removed. A departing host passes host to the next human seat in join order. When the last human leaves, the room is removed (with any bot seats) and its code freed. After start, seats are fixed and leaving is `ILLEGAL_COMMAND`.
 - **Closing:** host only (`UNAUTHORIZED` otherwise), before or during a game. It removes the room. Later joins, starts and commands see it as closed (`ROOM_CLOSED`; an unknown code on join stays `ILLEGAL_COMMAND`).
 - **Start/close races:** a concurrent start and close always end in the state of some serial order. Either both succeed and the room is gone, or the start sees `ROOM_CLOSED`, or the overlapping write returns `STALE_REVISION`.
 - **Disconnection:** changes in-memory presence only. Seats, order and game state are untouched, and the game waits (see "Rooms and recovery" above).
@@ -118,6 +118,7 @@ PR-035 compile-time checks in [views.test.ts](../packages/protocol/test/views.te
   - `create-room` / `join-room` reply `{ ok: true, value: { roomId, roomCode, playerId, token } }`. The token (32 random bytes, base64url) is sent only in this reply. Each seat stores only its SHA-256 `tokenHash`, and the server logs nothing.
   - `start-game` / `leave-room` need the connection's current session for that `roomId`. Otherwise the reply is `UNAUTHORIZED`, or `STALE_SESSION` for a replaced connection.
   - `close-room {roomId}` (host only, user ruling 2026-10-01) removes the room; later commands see `ROOM_CLOSED`.
+  - `add-bot {roomId}`, `fill-bots {roomId, seats}` (3–5) and `remove-bot {roomId, playerId}` are host-only and lobby-only. Bot seats are played by the server ([BOT_STRATEGY.md](BOT_STRATEGY.md)).
 - **`resume`** `{ protocolVersion, roomId, token }` reclaims a seat. The token must match a seat of that room; anything else is `UNAUTHORIZED`. The reply is `{ ok: true, value: { playerId, revision } }`, with `revision` null before start.
   - **Takeover:** every resume increments the seat's sessionGeneration and makes this connection the only controller. The previous connection receives `session-replaced`, and its later commands and room actions get `STALE_SESSION`. For commands, this is checked inside the room queue (processing step 2).
   - **No gap:** the resume runs as one task in the room queue. It checks the token, takes control, joins the room channel `roomId` (the subscription PR-042 broadcasts on) and reads the revision. So any commit either lands before that read or happens after the connection has joined.
@@ -138,7 +139,7 @@ PR-035 compile-time checks in [views.test.ts](../packages/protocol/test/views.te
 
 ## Lobby seat list and web lobby — PR-043
 
-- **Server → room channel `room-state`:** `RoomState` `{ roomCode, hostPlayerId, seats: [{ playerId, displayName }], started }`. It is sent after create, join, resume, start and a successful leave. Seats are copied field by field, so `tokenHash` never leaves the server. Display names are public within the room, and PlayerView carries only player IDs, so this is how clients learn names.
+- **Server → room channel `room-state`:** `RoomState` `{ roomCode, hostPlayerId, seats: [{ playerId, displayName, bot? }], started }`. `bot: true` marks a server-played seat; its strategy stays on the server. It is sent after create, join, resume, start and a successful leave. Seats are copied field by field, so `tokenHash` never leaves the server. Display names are public within the room, and PlayerView carries only player IDs, so this is how clients learn names.
 - **Web lobby** ([Lobby.tsx](../apps/web/src/lobby/Lobby.tsx)):
   - Connects with `io()`, same origin; in development Vite proxies `/socket.io` to the server on port 3000.
   - `?room=CODE` invite links prefill the code.

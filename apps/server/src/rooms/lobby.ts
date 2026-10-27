@@ -3,9 +3,10 @@ import { createGame, createId, RULESET } from '@vibe-rico/game-engine';
 import type { PlayerId } from '@vibe-rico/game-engine';
 import type { ProtocolErrorCode } from '@vibe-rico/protocol';
 import { issueToken } from '../sessions/tokens.js';
-import type { Room, RoomStore } from './store.js';
+import type { Room, RoomStore, Seat } from './store.js';
 
 const MAX_SEATS = 5;
+const BOT_NAMES = ['Ana', 'Bea', 'Caio', 'Duda', 'Enzo'];
 const CODE_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 const CODE_LENGTH = 6;
 
@@ -52,6 +53,48 @@ export class Lobby {
     const next: Room = { ...room, seats: [...room.seats, { playerId, displayName, tokenHash }] };
     if (await this.store.update(next, revision) === 'stale') return fail('STALE_REVISION');
     return { ok: true, value: { roomId: room.roomId, playerId, token } };
+  }
+
+  /** Host only, before start: adds one bot seat. */
+  addBot(roomId: string, requesterId: PlayerId): Promise<LobbyResult<null>> {
+    return this.#editSeats(roomId, requesterId, room => {
+      if (room.seats.length >= MAX_SEATS) return fail('ROOM_FULL');
+      return { ok: true, value: [...room.seats, this.#botSeat(room)] };
+    });
+  }
+
+  /** Host only, before start: adds bots until the room has `seats` seats. */
+  fillBots(roomId: string, requesterId: PlayerId, seats: number): Promise<LobbyResult<null>> {
+    return this.#editSeats(roomId, requesterId, room => {
+      const next = [...room.seats];
+      while (next.length < Math.min(seats, MAX_SEATS)) next.push(this.#botSeat({ ...room, seats: next }));
+      return { ok: true, value: next };
+    });
+  }
+
+  /** Host only, before start. Human seats leave on their own (RoomLifecycle.leave). */
+  removeBot(roomId: string, requesterId: PlayerId, botId: string): Promise<LobbyResult<null>> {
+    return this.#editSeats(roomId, requesterId, room => room.seats.some(s => s.playerId === botId && s.bot)
+      ? { ok: true, value: room.seats.filter(s => s.playerId !== botId) } : fail('ILLEGAL_COMMAND'));
+  }
+
+  #botSeat(room: Room): Seat {
+    const taken = new Set(room.seats.map(s => s.displayName));
+    const name = BOT_NAMES.map(n => `Bot ${n}`).find(n => !taken.has(n)) ?? `Bot ${room.seats.length + 1}`;
+    // Bots never resume, so the token is discarded and only its hash fills the seat's unique column.
+    return { playerId: createId('player', this.random.id()), displayName: name, tokenHash: issueToken().tokenHash, bot: true };
+  }
+
+  async #editSeats(roomId: string, requesterId: PlayerId, edit: (room: Room) => LobbyResult<readonly Seat[]>): Promise<LobbyResult<null>> {
+    const stored = await this.store.get(roomId);
+    if (!stored) return fail('ROOM_CLOSED');
+    const { room, revision } = stored;
+    if (room.hostPlayerId !== requesterId) return fail('UNAUTHORIZED');
+    if (room.game !== null) return fail('GAME_STARTED');
+    const seats = edit(room);
+    if (!seats.ok) return seats;
+    if (await this.store.update({ ...room, seats: seats.value }, revision) === 'stale') return fail('STALE_REVISION');
+    return { ok: true, value: null };
   }
 
   /**
