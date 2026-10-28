@@ -24,10 +24,12 @@ import { ResourceDock, RoleHand } from './ResourceDock.js';
 import { WorkerControls } from '../actions/WorkerControls.js';
 import { GameView, rejectionText } from '../debug/GameView.js';
 import { ScoreView } from '../debug/ScoreView.js';
+import { FinalScores } from './FinalScores.js';
 import { describeEvent } from '../i18n/chronicle.js';
 import { moveNotice } from './moveNotice.js';
 import type { MoveNotice } from './moveNotice.js';
 import { actionView } from './actionView.js';
+import { poolKey, poolLooks } from '../scene/workerLooks.js';
 import { GOOD, PHASE, ROLE } from '../i18n/terms.js';
 import { SceneBoundary, webglAvailable } from '../scene/SceneBoundary.js';
 // Lazy: Three.js loads only when the 3D stage is shown (PR-055 code-splitting).
@@ -62,6 +64,8 @@ export function GameShell({ store, roomId, room, lobbyHref, demo = false, guide,
   const [playersOpen, setPlayersOpen] = useState(false);
   const [chronicleOpen, setChronicleOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  // Game over: the results card can be put aside to look around the final map.
+  const [showResults, setShowResults] = useState(true);
   const latest = useStore(store, s => s.latest);
   const shellRef = useRef<HTMLDivElement>(null);
   const hasSnapshot = Boolean(latest);
@@ -235,18 +239,21 @@ export function GameShell({ store, roomId, room, lobbyHref, demo = false, guide,
           })}
         </ul>
         {/* Desktop: whose turn it is, large on the board itself rather than inside the top bar. */}
-        <p className={freshTurn ? 'turn-banner fresh' : 'turn-banner'} aria-live="polite" aria-atomic="true">
+        {phase.kind !== 'game-over' && <p className={freshTurn ? 'turn-banner fresh' : 'turn-banner'} aria-live="polite" aria-atomic="true">
           {yourTurn && connected && <strong>{t("轮到你了！")}</strong>}
           <span>{recruitment ? t('所有玩家 · 同时分配工人') : 'actorId' in phase ? `${name(phase.actorId)} · ${PHASE[phase.kind]}` : PHASE[phase.kind]}</span>
-        </p>
+        </p>}
           <SceneBoundary><Suspense fallback={<p role="status">{t("正在载入立体视图…")}</p>}><TableScene initialMobileView={demo ? 'boats' : 'mine'} islandRequest={islandRequest} guidedView={guide?.guidedView ?? actionCamera} hintResetKey={guide?.hintResetKey} hints={!guide} view={board.player ? { ...view, players: view.players.map(p => p.playerId === board.player!.playerId ? board.player! : p) } : view} names={names} /></Suspense></SceneBoundary>
         {guide?.coach}
         {rejection ? <p className="stage-alert" role="alert">{rejectionText(rejection)}</p>
-          : notice && <div key={notice.key} className="stage-alert move-notice" role="status">
+          : notice && phase.kind !== 'game-over' && <div key={notice.key} className="stage-alert move-notice" role="status">
             <strong>{notice.text.title}</strong>
             {notice.text.groups.map(g => <p key={g.label || 'main'}>{g.label && <span className="move-notice-label">{g.label}</span>}{g.items.map((item, i) => <span key={i} className="move-notice-chip">{item}</span>)}</p>)}
           </div>}
-        {phase.kind === 'game-over' && <div className="final-scores"><ScoreView scores={phase.scores} names={names} /></div>}
+        {phase.kind === 'game-over' && (showResults
+          ? <FinalScores scores={phase.scores} names={names} viewerId={view.viewer.playerId} lobbyHref={lobbyHref} onShowMap={() => setShowResults(false)}
+            colors={Object.fromEntries(view.players.map((p, i) => [p.playerId, SEAT_COLORS[i]!]))} />
+          : <button className="show-results" onClick={() => setShowResults(true)}>{t('查看最终计分')}</button>)}
         {animating && <button className="skip" onClick={() => { queue.skip(); setPulse(null); setAnimating(false); }}>{t("跳过动画")}</button>}
         {selected?.kind === 'crate' && <div className="action-panel" role="status">{t("已选择 ")}{GOOD[selected.good]}{t("：点击船或交易所。")}<button onClick={board.clear}>{t("取消选择")}</button></div>}
         <ActionPanel key={selected ? `${targetKey(selected)}@${latest.revision}` : 'none'} target={selected?.kind === 'crate' || selected?.kind === 'worker' ? null : selected}
@@ -272,7 +279,7 @@ export function GameShell({ store, roomId, room, lobbyHref, demo = false, guide,
           <span className="mobile-sheet-caption">{demo ? t('演示 · 仅供浏览') : yourTurn ? t('轮到你了！') : t('手牌与行动')}<span aria-hidden="true">{sheetOpen ? '⌄' : '⌃'}</span></span>
         </button>
         <div id="hand-content" className="hand-content">
-        <ResourceDock player={board.player ?? me} looks={board.poolLooks} points={phase.kind === 'game-over' ? phase.scores.find(s => s.playerId === me.playerId)!.totalVp : view.viewer.earnedVp} />
+        <ResourceDock player={board.player ?? me} shipping={phase.kind === 'captain-loading'} looks={board.poolLooks ?? poolLooks(poolKey(me.playerId, view.roundNumber), (board.player ?? me).idleWorkerCount)} points={phase.kind === 'game-over' ? phase.scores.find(s => s.playerId === me.playerId)!.totalVp : view.viewer.earnedVp} />
         <div className="actions">
           {recruitment && <p className="recruitment-progress">{t('分配进度：{0}/{1} 已确认', [confirmations.length, view.players.length])}</p>}
           {demo ? <p role="status">{t('探索棋盘、岛屿和提示；演示中无法进行游戏操作。')}</p> : connected && !pending

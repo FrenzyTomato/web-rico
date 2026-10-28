@@ -137,7 +137,7 @@ export function TableScene({ view, names, islandRequest, guidedView, hintResetKe
       </div>
       {lost && <p role="note">{t("立体视图暂时不可用，正在恢复…")}</p>}
       {/* Redraw only when props change: a board game is static between states (continuous 60 fps starved e2e tabs). */}
-      {hint && <div className={`model-tooltip${hint.kind === 'building' ? ' building-tooltip' : ''}`} role="tooltip"><button className="mobile-hint-close" aria-label={t('关闭提示')} onClick={clearHint}>×</button><strong>{hint.title}</strong><p>{hint.detail}</p><small>{hint.meta}</small></div>}
+      {hint && <div className={`model-tooltip${hint.kind === 'building' ? ' building-tooltip' : ''}`} role="tooltip"><button className="mobile-hint-close" aria-label={t('关闭提示')} onClick={clearHint}>×</button><strong>{hint.title}{hint.tag && <span className={`hint-tag ${hint.tag.family}`}>{hint.tag.label}</span>}</strong><p>{hint.detail}</p><small>{hint.meta}</small></div>}
       <HoverHint.Provider value={showHint}>
       <Canvas gl={{ stencil: true }} camera={{ fov: 45, near: 0.1, far: 1000 }} dpr={[1, 2]} frameloop={frameloop} onCreated={({ gl, invalidate }) => {
         gl.domElement.addEventListener('webglcontextlost', () => setLost(true));

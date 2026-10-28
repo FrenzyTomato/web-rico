@@ -8,7 +8,12 @@ describe('worker looks', () => {
     expect(slotLook('tile-1', 0)).toBe(looks[0]);
     expect(workerModel(slotLook('tile-1', 0))).toMatch(/^Worker 0[1-5]$/);
   });
-  it('gives a pool different consecutive portraits', () => {
-    expect(new Set(poolLooks('p1', 3)).size).toBe(3);
+  it('picks pool portraits at random, kept for that pool and extended when workers arrive', () => {
+    const first = poolLooks('p1:1', 2);
+    expect(first.every(l => l >= 0 && l < 5)).toBe(true);
+    expect(poolLooks('p1:1', 2)).toEqual(first);
+    expect(poolLooks('p1:1', 4).slice(0, 2)).toEqual(first);
+    // Across many rounds every model turns up.
+    expect(new Set(Array.from({ length: 40 }, (_, r) => poolLooks(`p1:${r + 2}`, 1)[0])).size).toBe(5);
   });
 });

@@ -13,6 +13,9 @@ describe('move notice', () => {
   it("states another player's move as its title", () => {
     expect(moveNotice([chose, built], 'me', names)).toEqual({ title: 'Bot Bea chose Builder · Bot Bea built Small Market', groups: [] });
   });
+  it('sums each player\'s hand-outs into one item', () => {
+    expect(moveNotice([workers('bot'), workers('bot'), workers('me')], 'me', names)!.groups[0]!.items).toEqual(['Bot Bea +2', 'You +1']);
+  });
   it('turns repeated hand-outs into one chip per player, calling the viewer "You"', () => {
     expect(moveNotice([workers('bot'), workers('me'), workers('other')], 'me', names))
       .toEqual({ title: 'Workers received', groups: [{ label: '', items: ['Bot Bea +1', 'You +1', 'Bot Caio +1'] }] });

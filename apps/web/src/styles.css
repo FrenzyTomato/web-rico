@@ -697,3 +697,66 @@ html[lang="en"] .role-card span { font-size: 14px; }
   .shell .role-card small { font-size: 10.5px; }
   .shell .hand .actions:has(.role-hand) { overflow: visible; }
 }
+
+/* Building family beside the name in hints: sea-green for production, violet for commercial (the board game's colours). */
+.model-tooltip .hint-tag { display: inline-block; margin-left: 8px; padding: 1px 7px; border-radius: 999px; font-size: 10.5px; font-weight: 600; letter-spacing: .02em; vertical-align: 2px; }
+.model-tooltip .hint-tag.production { color: #c4f2df; background: #9cd5c224; border: 1px solid #9cd5c24d; }
+.model-tooltip .hint-tag.commercial { color: #e2cdf5; background: #b48fd626; border: 1px solid #b48fd659; }
+
+/* Final result: a centred card over a dimmed board. Desktop shows the players side by side, phones stack them. */
+.shell .stage:has(.final-result)::after { content: ''; position: absolute; inset: 0; z-index: 4; background: #061b2199; pointer-events: none; }
+.final-result {
+  position: absolute; z-index: 5; top: var(--board-top); left: 50%; transform: translateX(-50%); width: min(calc(var(--players, 3) * 236px + 44px), calc(100% - 24px));
+  max-height: calc(100% - var(--board-top) - var(--hud-bottom) - 8px); overflow-y: auto; padding: 20px 22px 18px;
+  color: #edf3e9; border: 1px solid #e2fff040; border-radius: 18px;
+  background: linear-gradient(135deg, #d5eee51f, #c8e4db08), #16393fe6; -webkit-backdrop-filter: blur(22px); backdrop-filter: blur(22px);
+  box-shadow: inset 0 1px 0 #ffffff18, 0 18px 48px #061b2166; animation: banner-in 450ms ease-out;
+}
+.final-result header { text-align: center; margin-bottom: 16px; }
+.final-result header small { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.final-result h2 { margin: 2px 0 0; font-family: var(--serif, serif); font-size: 30px; color: #f1d9a5; text-shadow: 0 0 22px #e8cf9e40; }
+.final-cards { display: grid; grid-template-columns: repeat(var(--players, 3), minmax(0, 1fr)); gap: 10px; margin: 0; padding: 0; list-style: none; }
+.final-card {
+  display: grid; grid-template-columns: auto 1fr auto; grid-template-areas: 'rank medal total' 'name name name' 'bar bar bar' 'parts parts parts' 'bonus bonus bonus' 'tie tie tie';
+  align-items: center; gap: 6px 8px; padding: 12px 14px; border-radius: 14px; background: #d6eee312; border: 1px solid #e2fff024;
+}
+.final-card.winner { background: linear-gradient(160deg, #e8cf9e26, #d6eee30d); border-color: #e8cf9e80; box-shadow: 0 0 0 1px #e8cf9e33, 0 8px 22px #061b2140; }
+.final-card.mine .final-name { color: #c4f2df; }
+.final-rank { grid-area: rank; display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; font-size: 13px; font-weight: 750; color: #17312d; background: #c8ded6; }
+.final-card.winner .final-rank { background: #f1d9a5; }
+.final-card .medallion { grid-area: medal; width: 28px; height: 28px; font-size: 13px; }
+.final-total { grid-area: total; font-size: 30px; font-weight: 750; line-height: 1; color: #f4edda; font-variant-numeric: tabular-nums; }
+.final-total small { font-size: 12px; font-weight: 600; color: var(--muted); margin-left: 2px; }
+.final-name { grid-area: name; font-size: 16px; font-weight: 650; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.final-bar { grid-area: bar; display: flex; height: 7px; border-radius: 99px; overflow: hidden; background: #ffffff14; }
+.final-bar i { display: block; height: 100%; }
+.final-bar .ship, .final-parts .ship dt::before { background: #7fc6e0; }
+.final-bar .build, .final-parts .build dt::before { background: #9cd5c2; }
+.final-bar .bonus, .final-parts .bonus dt::before { background: #e8cf9e; }
+.final-parts { grid-area: parts; display: grid; gap: 2px; margin: 2px 0 0; font-size: 12.5px; }
+.final-parts div { display: flex; justify-content: space-between; gap: 8px; }
+.final-parts dt { color: #c9dbd3; display: flex; align-items: center; gap: 6px; }
+.final-parts dt::before { content: ''; width: 8px; height: 8px; border-radius: 2px; }
+.final-parts dd { margin: 0; font-variant-numeric: tabular-nums; font-weight: 600; }
+.final-bonuses { grid-area: bonus; margin: 0; font-size: 11.5px; color: #f1d9a5; }
+.final-tiebreak { grid-area: tie; margin: 0; font-size: 11.5px; color: var(--muted); }
+.final-actions { display: flex; justify-content: center; gap: 10px; margin-top: 16px; }
+.final-actions > * { margin: 0; display: inline-flex; align-items: center; min-height: 40px; padding: 8px 16px; font-size: 14px; border-radius: 10px; }
+.final-actions button { font-weight: 650; color: #17312d; background: #f1d9a5; border-color: transparent; }
+/* While the final map is being viewed: one button brings the results back. */
+.shell .show-results { position: absolute; z-index: 5; top: var(--board-top); left: 50%; transform: translateX(-50%); margin: 0; padding: 8px 16px;
+  font-weight: 650; color: #17312d; background: #f1d9a5; border-color: transparent; box-shadow: 0 6px 20px #061b2166; }
+@media (max-width: 700px) { .shell .show-results { top: calc(var(--hud-top) + 48px); } }
+@media (max-width: 700px) {
+  /* Phones: a full-height results sheet, one compact row per player; details under each row. */
+  .final-result { top: calc(var(--hud-top) + 8px); bottom: 10px; left: 10px; right: 10px; width: auto; transform: none; max-height: none; padding: 16px 14px; z-index: 8; border-radius: 16px; }
+  .final-result h2 { font-size: 24px; }
+  .final-cards { grid-template-columns: 1fr; gap: 8px; }
+  .final-card { grid-template-columns: auto auto 1fr auto; grid-template-areas: 'rank medal name total' 'bar bar bar bar' 'parts parts parts parts' 'bonus bonus bonus bonus' 'tie tie tie tie'; padding: 10px 12px; }
+  .final-total { font-size: 24px; }
+  .final-parts { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .final-parts div { flex-direction: column; gap: 0; }
+  .final-parts dt { font-size: 10.5px; }
+  .final-parts dd { font-size: 15px; padding-left: 14px; }
+  .shell:has(.final-result) > .hand { display: none; }
+}

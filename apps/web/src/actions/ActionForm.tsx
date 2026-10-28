@@ -60,14 +60,14 @@ function RetentionForm({ legal, submit }: { legal: Extract<LegalAction, { phase:
 
 /** Controls for this seat's legal actions only; the server validates every submission. */
 export function ActionForm({ legalActions, view, submit, boardFirst = false, allow = () => true }: {
-  legalActions: readonly LegalAction[]; view: Pick<PlayerView, 'roleCards' | 'estateMarket' | 'players'>; submit: (action: Action) => void;
+  legalActions: readonly LegalAction[]; view: Pick<PlayerView, 'roleCards' | 'estateMarket' | 'players'> & { phase?: PlayerView['phase'] }; submit: (action: Action) => void;
   boardFirst?: boolean;
   /** Hides options outside a guided move. */
   allow?: ((action: Action) => boolean) | undefined;
 }) {
   useLanguage();
   const legal = legalActions[0];
-  if (!legal) return <p>{t("等待其他玩家行动…")}</p>;
+  if (!legal) return <p>{view.phase?.kind === 'game-over' ? t("游戏结束") : t("等待其他玩家行动…")}</p>;
   if (legal.phase === 'recruiter-placement') return <AllocationForm key={JSON.stringify(legal)} legal={legal} submit={submit} />;
   if (legal.phase === 'captain-retention') return <RetentionForm key={JSON.stringify(legal)} legal={legal} submit={submit} />;
   if (boardFirst && (legal.phase === 'builder-choice' || legal.phase === 'planter-choice')) {

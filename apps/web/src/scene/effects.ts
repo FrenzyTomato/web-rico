@@ -37,10 +37,15 @@ export const ESTATE_EFFECT: Record<CountrysideTile['kind'], string> = {
   get coffee() { return t("每块有工人的咖啡田园可支持生产一箱咖啡，还需咖啡烘焙厂的工人位已启用且供应充足。"); },
   get quarry() { return t("有工人的采石场可使建造费用减少一枚金币，最多使用该建筑允许的采石场数量。费用不能低于零。"); },
 };
-export interface PieceHint { kind?: 'building'; title: string; detail: string; meta: string }
+/** `tag`: a building's family, shown as a small label beside its name. */
+export interface PieceHint { kind?: 'building'; title: string; tag?: { label: string; family: 'production' | 'commercial' }; detail: string; meta: string }
+const PRODUCTION: readonly BuildingType[] = ['small-fruit-depot', 'large-fruit-depot', 'small-sugar-mill', 'large-sugar-mill', 'large-tobacco-storage', 'large-coffee-roaster'];
+const LARGE: readonly BuildingType[] = ['fire-station', 'residence', 'fortress', 'customs-house', 'city-hall'];
 export function buildingHint(type: BuildingType): PieceHint {
   const b = BUILDINGS[type];
-  return { kind: 'building', title: BUILDING[type], detail: BUILDING_EFFECT[type], meta: t('费用 {0} 金币 · 基础分 {1} · 工人位 {2} · 占地 {3} 格。能力需要工人才能启用。', [b.cost, b.baseVp, b.workerSlots, b.footprint]) };
+  const tag = PRODUCTION.includes(type) ? { label: t('生产建筑'), family: 'production' as const }
+    : { label: LARGE.includes(type) ? t('大型商业建筑') : t('商业建筑'), family: 'commercial' as const };
+  return { kind: 'building', title: BUILDING[type], tag, detail: BUILDING_EFFECT[type], meta: t('费用 {0} 金币 · 基础分 {1} · 工人位 {2} · 占地 {3} 格。能力需要工人才能启用。', [b.cost, b.baseVp, b.workerSlots, b.footprint]) };
 }
 export function estateHint(type: CountrysideTile['kind']): PieceHint {
   return { title: TILE[type], detail: ESTATE_EFFECT[type], meta: t('占用一格田园 · 一个工人位') };

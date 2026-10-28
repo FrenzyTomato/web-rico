@@ -14,12 +14,16 @@ import type { Action } from '../actions/options.js';
 
 const imageUrl = (name: string) => `/art/dock/${encodeURIComponent(name)}.webp`;
 /** Small cached portraits of the source pieces keep the persistent dock sharp without a second WebGL context. */
-/** `looks` keeps idle workers' portraits in place while some are moved this turn. */
-export function ResourceDock({ player, points, looks }: { player: PublicPlayerView; points: number; looks?: readonly number[] | undefined }) {
+/**
+ * `looks` keeps idle workers' portraits in place while some are moved this turn. `shipping`: a load takes every
+ * crate of a kind, so picking one crate lifts all crates of that good together.
+ */
+export function ResourceDock({ player, points, looks, shipping = false }: { player: PublicPlayerView; points: number; looks?: readonly number[] | undefined; shipping?: boolean }) {
   useLanguage();
   const interaction = useContext(Interaction);
   const piece = (target: SceneTarget, model: string, label: string) => <button key={targetKey(target)} className={`dock-piece${target.kind === 'worker' ? ' dock-worker' : ''}`}
-    aria-label={label} aria-pressed={interaction.selectedKey === targetKey(target)} disabled={!interaction.actionable(target)}
+    aria-label={label} aria-pressed={interaction.selectedKey === targetKey(target)
+      || (shipping && target.kind === 'crate' && !!interaction.selectedKey?.startsWith(`crate:${target.good}:`))} disabled={!interaction.actionable(target)}
     onClick={() => interaction.select(target)} title={!interaction.inspect || interaction.inspect(target) ? label : undefined}>
     <img src={imageUrl(`${model} Cutout`)} alt="" draggable={false} />
   </button>;

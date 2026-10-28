@@ -5,7 +5,7 @@ import { optionsForTarget, targetKey } from '../scene/Selection.js';
 import type { SceneTarget } from '../scene/Selection.js';
 import type { Action, Option } from './options.js';
 import { allocationAction, draftPlayer, idleWorkers, initialWorkers, moveWorker } from './workerDraft.js';
-import { placeLooks, poolLooks, slotLooks } from '../scene/workerLooks.js';
+import { placeLooks, poolKey, poolLooks, slotLooks } from '../scene/workerLooks.js';
 import type { WorkerDraft } from './workerDraft.js';
 
 /** Local, revision-scoped previews. Only explicit completed actions go to the authoritative server. */
@@ -56,7 +56,7 @@ export function useBoardActions(latest: PlayerBroadcast | null, enabled: boolean
       const picked = next.holding && target.kind === 'worker'
         ? target.id === 'pool' ? target : { kind: 'worker' as const, id: 'pool', index: idleWorkers(placement, next) - 1 }
         : null;
-      const looks = [...(current.looks ?? poolLooks(me!.playerId, idleWorkers(placement, draft)))];
+      const looks = [...(current.looks ?? poolLooks(poolKey(me!.playerId, latest!.view.roundNumber), idleWorkers(placement, draft)))];
       // A worker keeps its portrait: lifted off a slot it joins the pool's end, placed it takes its pool look into the slot.
       if (target.kind === 'worker' && target.id !== 'pool' && next.holding) {
         const inSlot = slotLooks(target.id, draft.counts[target.id] ?? 0);
