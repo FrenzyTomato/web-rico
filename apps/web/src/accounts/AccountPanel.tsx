@@ -12,7 +12,7 @@ import { accountStore, sendEmailCode, signInWithGoogle, signOut, supabase, verif
  */
 export function AccountPanel({ socket, connected, onRejoin }: { socket: LobbySocket; connected: boolean; onRejoin: (seat: SavedSeat) => void }) {
   useLanguage();
-  const { session, linked } = useStore(accountStore);
+  const { session, linked, failed } = useStore(accountStore);
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
   const [step, setStep] = useState<'closed' | 'email' | 'code'>('closed');
@@ -68,7 +68,8 @@ export function AccountPanel({ socket, connected, onRejoin }: { socket: LobbySoc
       <button type="button" className="lobby-account-link" onClick={() => void signOut()}>{t('退出登录')}</button>
     </div>
     <h2>{t('我的游戏')}</h2>
-    {games === null ? <p className="lobby-account-note">{t('正在载入…')}</p>
+    {failed ? <p className="lobby-account-note" role="alert">{t('游戏服务器暂时无法确认你的登录，请稍后再试。')}</p>
+      : games === null ? <p className="lobby-account-note">{t('正在载入…')}</p>
       : games.length === 0 ? <p className="lobby-account-note">{t('还没有游戏。创建或加入房间后会出现在这里。')}</p>
       : <ul className="lobby-games">{games.map(g => <li key={g.roomId}>
         <div><strong>{t('房间 {0}', [g.roomCode])}</strong><span>{status(g)} · {g.players.join(t('、'))}</span></div>

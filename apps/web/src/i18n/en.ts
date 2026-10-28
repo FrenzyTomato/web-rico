@@ -267,6 +267,7 @@ export const EN = {
   "退出登录": "Sign out",
   "我的游戏": "My games",
   "正在载入…": "Loading…",
+  "游戏服务器暂时无法确认你的登录，请稍后再试。": "The game server couldn't confirm your sign-in. Please try again later.",
   "还没有游戏。创建或加入房间后会出现在这里。": "No games yet. Rooms you create or join appear here.",
   "查看": "View",
   "继续": "Continue",

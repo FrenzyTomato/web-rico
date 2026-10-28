@@ -17,8 +17,10 @@ export interface AccountState {
   readonly session: Session | null;
   /** True once the game server has verified the current session's token on this connection. */
   readonly linked: boolean;
+  /** True when a session exists but the game server refused it or did not answer (e.g. a server without sign-in). */
+  readonly failed: boolean;
 }
-export const accountStore = createStore<AccountState>(() => ({ session: null, linked: false }));
+export const accountStore = createStore<AccountState>(() => ({ session: null, linked: false, failed: false }));
 
 /** A display name to pre-fill: the Google name, else the start of the email address. */
 export function suggestedName(session: Session | null): string {
@@ -30,10 +32,13 @@ export function suggestedName(session: Session | null): string {
 export function bindAccount(socket: LobbySocket): () => void {
   if (!supabase) return () => {};
   const send = async (session: Session | null) => {
-    accountStore.setState({ session, linked: false });
+    accountStore.setState({ session, linked: false, failed: false });
     if (!socket.connected) return;
-    const reply = await socket.emitWithAck('auth', { protocolVersion: PROTOCOL_VERSION, accessToken: session?.access_token ?? null }) as RoomReply<{ signedIn: boolean }>;
-    if (accountStore.getState().session === session) accountStore.setState({ linked: reply.ok && reply.value.signedIn });
+    const reply = await (socket.timeout(8000).emitWithAck('auth', { protocolVersion: PROTOCOL_VERSION, accessToken: session?.access_token ?? null }) as Promise<RoomReply<{ signedIn: boolean }>>)
+      .catch(() => null);
+    if (accountStore.getState().session !== session) return;
+    const linked = Boolean(reply?.ok && reply.value.signedIn);
+    accountStore.setState({ linked, failed: session !== null && !linked });
   };
   void supabase.auth.getSession().then(({ data }) => send(data.session));
   const { data } = supabase.auth.onAuthStateChange((_event, session) => { void send(session); });

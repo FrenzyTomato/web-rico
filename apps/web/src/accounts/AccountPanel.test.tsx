@@ -7,7 +7,7 @@ const auth = vi.hoisted(() => ({ sendEmailCode: vi.fn(async () => ({ error: null
   signInWithGoogle: vi.fn(async () => ({ error: null })), signOut: vi.fn(async () => ({ error: null })) }));
 vi.mock('./account.js', async () => {
   const { createStore } = await import('zustand/vanilla');
-  return { ...auth, supabase: {}, accountStore: createStore(() => ({ session: null, linked: false })) };
+  return { ...auth, supabase: {}, accountStore: createStore(() => ({ session: null, linked: false, failed: false })) };
 });
 const { accountStore } = await import('./account.js');
 const { AccountPanel } = await import('./AccountPanel.js');
@@ -18,7 +18,7 @@ const socket = (replies: Record<string, unknown>) => ({
   emitWithAck: vi.fn(async (_event: string, payload: { action: { kind: string } }) => replies[payload.action.kind]),
 }) as unknown as LobbySocket & { emitWithAck: ReturnType<typeof vi.fn> };
 
-beforeEach(() => { setLanguage('en'); accountStore.setState({ session: null, linked: false }); });
+beforeEach(() => { setLanguage('en'); accountStore.setState({ session: null, linked: false, failed: false }); });
 afterEach(cleanup);
 
 describe('account panel', () => {
@@ -48,5 +48,12 @@ describe('account panel', () => {
     await act(async () => { fireEvent.click(screen.getByRole('button', { name: 'Continue' })); });
     expect(s.emitWithAck).toHaveBeenLastCalledWith('room', expect.objectContaining({ action: { kind: 'resume-account', roomId: 'r1' } }));
     expect(onRejoin).toHaveBeenCalledWith({ roomId: 'r1', roomCode: 'ABC123', playerId: 'p1', token: 't2' });
+  });
+
+  it('says so instead of loading forever when the game server cannot confirm the sign-in', async () => {
+    accountStore.setState({ session: { user: { email: 'ana@example.com' } } as never, linked: false, failed: true });
+    await act(async () => { render(<AccountPanel socket={socket({})} connected onRejoin={vi.fn()} />); });
+    expect(screen.getByRole('alert').textContent).toBe("The game server couldn't confirm your sign-in. Please try again later.");
+    expect(screen.queryByText('Loading…')).toBeNull();
   });
 });
