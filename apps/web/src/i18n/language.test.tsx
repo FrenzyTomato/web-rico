@@ -48,8 +48,8 @@ function allText(element: HTMLElement) {
   return [element.textContent, ...Array.from(element.querySelectorAll('[aria-label], [title]')).flatMap(e => [e.getAttribute('aria-label'), e.getAttribute('title')])].join(' ');
 }
 function singleLanguage(text: string, locale: 'en' | 'zh') {
-  // The Web Rico brand is intentionally identical in both languages.
-  expect(text.replaceAll('Web Rico', '')).not.toMatch(locale === 'en' ? /\p{Script=Han}/u : /[A-Za-z]/);
+  // The Isles of Merchants brand is intentionally identical in both languages.
+  expect(text.replaceAll('Isles of Merchants', '')).not.toMatch(locale === 'en' ? /\p{Script=Han}/u : /[A-Za-z]/);
 }
 
 it('has English-only translations with matching interpolation placeholders', () => {
@@ -82,7 +82,7 @@ it.each(['role-selection', 'recruiter-placement', 'builder-choice', 'trader-choi
     fireEvent.click(screen.getByRole('button', { name: '切换为英文' }));
     singleLanguage(allText(container), 'en');
     expect(document.documentElement.lang).toBe('en');
-    expect(document.title).toBe('Web Rico');
+    expect(document.title).toBe('Isles of Merchants');
     expect(localStorage.getItem('vibe-rico.language')).toBe('en');
     fireEvent.click(screen.getByRole('button', { name: 'Switch to Chinese' }));
     singleLanguage(allText(container), 'zh');

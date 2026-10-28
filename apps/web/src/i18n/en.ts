@@ -182,7 +182,6 @@ export const EN = {
   "城市建满": "City full",
   "分数用尽": "Points exhausted",
   "正在载入局面…": "Loading game…",
-  "波多黎各": "Puerto Rico",
   "自动生产（仅自己）": "Auto-produce (only me)",
   "自动接受生产及工厂收益；额外货物仍由你选择。此设置保存在当前浏览器。": "Automatically accept production and Factory income; you still choose bonus goods. Saved in this browser.",
   "时间线": "Chronicle",

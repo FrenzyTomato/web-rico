@@ -127,7 +127,7 @@ export function Lobby({ socket, onSession = () => {}, game }: {
     <main className="lobby">
       <header className="lobby-header">
         <div className="lobby-brand">
-          <h1>Web Rico</h1>
+          <h1>Isles of Merchants</h1>
           <p>{t('私人桌游，与好友共赴海岛。')}</p>
         </div>
         <LanguageToggle />

@@ -4,7 +4,7 @@ User direction (2026-10-01): follow the look of a reference Three.js Catan clien
 
 ## Screen layout
 
-| Region | Reference | Puerto Rico content (PlayerView only) |
+| Region | Reference | Game content (PlayerView only) |
 | --- | --- | --- |
 | Top bar | Title, board name, rules/settings | 波多黎各 · room code · round N · Governor · revision |
 | Left panel | Settlers with house colour and VP | Each seat in clockwise order: initials medallion in seat colour, name, coins, goods total, chosen role; own earned VP only (VISIBILITY-002); Governor badge |

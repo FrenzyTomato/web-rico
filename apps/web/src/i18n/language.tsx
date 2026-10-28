@@ -15,7 +15,7 @@ const subscribe = (listener: () => void) => { listeners.add(listener); return ()
 function updateDocument() {
   if (typeof document === 'undefined') return;
   document.documentElement.lang = language === 'zh' ? 'zh-CN' : 'en';
-  document.title = 'Web Rico';
+  document.title = 'Isles of Merchants';
 }
 updateDocument();
 export function setLanguage(next: Language) {

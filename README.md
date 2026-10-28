@@ -1,6 +1,6 @@
-# Web Rico
+# Isles of Merchants
 
-A private online Puerto Rico (1897 Special Edition) game for 3–5 friends. A pure TypeScript engine enforces the rules, a single server adjudicates every action, and browsers render each player's filtered view.
+A private online island trading game for 3–5 friends: plant estates, raise buildings, and ship or sell goods. A pure TypeScript engine enforces the rules, a single server adjudicates every action, and browsers render each player's filtered view.
 
 A multiplayer browser game with a 3D island board, Chinese and English UI, PostgreSQL persistence, and Docker deployment. Validation commands include `pnpm check`, `pnpm test:db`, and `pnpm test:e2e`.
 

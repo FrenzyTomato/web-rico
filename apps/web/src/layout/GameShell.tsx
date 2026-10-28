@@ -162,7 +162,7 @@ export function GameShell({ store, roomId, room, lobbyHref, demo = false, guide,
     <SceneInteractionProvider value={interaction}>
     <div ref={shellRef} onKeyDown={event => { if (event.key === 'Escape') { setPlayersOpen(false); setChronicleOpen(false); setSettingsOpen(false); setMenuOpen(false); setTextOpen(false); } }} className={`shell${guide ? ' tutorial-shell' : ''}${menuOpen ? ' mobile-menu-open' : ''}${sheetOpen ? ' mobile-sheet-open' : ''}${textOpen ? ' mobile-text-open' : ''}`} data-revision={latest.revision}>
       <header className="topbar">
-        <div className="topbar-brand"><div className="topbar-brand-line"><h1>Web Rico</h1>
+        <div className="topbar-brand"><div className="topbar-brand-line"><h1>Isles of Merchants</h1>
         {lobbyHref && <a className="back-to-lobby" href={lobbyHref}>{t('返回大厅')}</a>}</div><div className="topbar-meta">
         <span>{t('第 {0} 轮 · 总督 {1}', [view.roundNumber, name(view.governorPlayerId)])}</span>
         <span>{demo ? t('演示 · 仅供浏览') : t('房间 {0} · 版本 {1}', [room.roomCode, latest.revision])}</span></div></div>
