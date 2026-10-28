@@ -760,3 +760,6 @@ html[lang="en"] .role-card span { font-size: 14px; }
   .final-parts dd { font-size: 15px; padding-left: 14px; }
   .shell:has(.final-result) > .hand { display: none; }
 }
+
+/* Live state under a role's rules: workers on the ship, goods in the trading depot. */
+.model-tooltip .role-hint-now { margin: 8px 0 0; padding-top: 8px; border-top: 1px solid #e2fff024; color: #f1d9a5; font-weight: 600; }

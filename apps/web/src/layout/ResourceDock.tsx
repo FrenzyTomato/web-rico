@@ -70,5 +70,7 @@ export function RoleHand({ legal, view, submit, allowedRoleIds, highlightRoleId 
   </div>{hint && cardHint && (!allowedRoleIds || allowedRoleIds.includes(hint.id)) && createPortal(<div id={tooltipId} className="model-tooltip" role="tooltip"
     style={{ position: 'fixed', top: 'auto', left: hint.left, right: 'auto', bottom: hint.bottom, zIndex: 100 }}>
     <strong>{ROLE[cardHint.kind]}</strong><p>{ROLE_HELP[cardHint.kind]}</p>
+    {cardHint.kind === 'recruiter' && <p className="role-hint-now">{t("可招募工人：{0}", [view.supply.workRegisterCount])}</p>}
+    {cardHint.kind === 'trader' && <p className="role-hint-now">{t("交易所 {0}/4", [view.tradingHouse.length])}{t("：")}{view.tradingHouse.length ? view.tradingHouse.map(g => GOOD[g]).join(t("、")) : t("空")}</p>}
   </div>, document.body)}</>;
 }

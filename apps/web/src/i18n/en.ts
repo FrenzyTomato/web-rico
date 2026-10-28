@@ -86,6 +86,8 @@ export const EN = {
   "（超出 ": " (overflow: ",
   "种植园市场：": "Estate market: ",
   "空": "Empty",
+  "：": ": ",
+  "、": ", ",
   " · 弃牌 ": " · Discarded: ",
   "建筑市场：": "Building market: ",
   "货船：": "Cargo ships: ",
