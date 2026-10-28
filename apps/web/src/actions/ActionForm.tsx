@@ -44,9 +44,13 @@ function RetentionForm({ legal, submit }: { legal: Extract<LegalAction, { phase:
       <p>{t('仓库可保护 {0} 种货物，另可保留 {1} 个其他货物', [legal.maxWarehouseTypes, legal.extraSingleCrates])}</p>
       {owned.map(g => (
         <fieldset key={g}>
-          <label>{t('{0} 保留（共 {1}）', [GOOD[g], legal.available[g]])}
-            <input type="number" min={0} max={legal.available[g]} value={kept[g]} onChange={e => setKept(k => ({ ...k, [g]: Number(e.target.value) }))} />
-          </label>
+          {/* − / + steppers instead of a number field: phones' keyboards made "1" type as "01". */}
+          <div className="keep-stepper" role="group" aria-label={t('{0} 保留（共 {1}）', [GOOD[g], legal.available[g]])}>
+            <span>{t('{0} 保留（共 {1}）', [GOOD[g], legal.available[g]])}</span>
+            <button type="button" aria-label={t('少保留一个{0}', [GOOD[g]])} disabled={kept[g] <= 0} onClick={() => setKept(k => ({ ...k, [g]: k[g] - 1 }))}>−</button>
+            <output aria-live="polite">{kept[g]}</output>
+            <button type="button" aria-label={t('多保留一个{0}', [GOOD[g]])} disabled={kept[g] >= legal.available[g]} onClick={() => setKept(k => ({ ...k, [g]: k[g] + 1 }))}>+</button>
+          </div>
           {legal.maxWarehouseTypes > 0 && (
             <label><input type="checkbox" checked={warehouse.includes(g)}
               onChange={e => setWarehouse(w => e.target.checked ? [...w, g] : w.filter(x => x !== g))} />{t("仓库保护 ")}{GOOD[g]}</label>

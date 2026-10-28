@@ -335,6 +335,8 @@ export const EN = {
   "共 {0} 名工人；空闲 {1}（所有位置填满前不能空闲）": "{0} workers; {1} idle (fill all spaces before leaving workers idle)",
   "仓库可保护 {0} 种货物，另可保留 {1} 个其他货物": "Warehouses protect {0} goods types; also keep {1} other crates",
   "{0} 保留（共 {1}）": "{0} — keep (available: {1})",
+  "少保留一个{0}": "Keep one less {0}",
+  "多保留一个{0}": "Keep one more {0}",
   "{0}（最多 {1}）": "{0} (maximum {1})",
   "第 {0} 轮 · 总督 {1}": "Round {0} · Governor {1}",
   "房间 {0} · 版本 {1}": "Room {0} · Revision {1}",

@@ -69,7 +69,7 @@ describe('every action descriptor constructs a request', () => {
       }
       if (legal.phase === 'captain-retention' && command.kind === 'retain') {
         for (const g of GOODS.filter(g => legal.available[g] > 0)) {
-          fireEvent.change(screen.getByLabelText(new RegExp(`^${GOOD[g]} 保留`)), { target: { value: String(command.retained[g]) } });
+          for (let i = 0; i < command.retained[g]; i++) fireEvent.click(screen.getByRole('button', { name: `多保留一个${GOOD[g]}` }));
           if (command.warehouseTypes.includes(g)) fireEvent.click(screen.getByLabelText(`仓库保护 ${GOOD[g]}`));
         }
         fireEvent.click(screen.getByText('确认保留'));
