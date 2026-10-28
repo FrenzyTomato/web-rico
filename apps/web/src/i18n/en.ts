@@ -253,6 +253,8 @@ export const EN = {
   "↩ 换一个角色": "↩ Change role",
   "用机器人补位…": "Fill seats with bots…",
   "补到 {0} 人": "Up to {0} players",
+  "用机器人补到": "Fill with bots to",
+  "{0} 人": "{0}",
   "本地交互预览": "Local interaction preview",
   " · 池中工人 ": " · Pool workers: ",
   "已选工人": "Worker selected",

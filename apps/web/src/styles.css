@@ -171,7 +171,16 @@ th { color: var(--gold); }
 .lobby-seats li.lobby-bot-seat::after { content: ''; display: block; clear: both; }
 .lobby-seats li.lobby-bot-seat button { float: right; margin: -6px 0 -6px 10px; min-height: 34px; padding: 4px 12px; font-size: 13px; }
 /* A quiet control under the seats, not a second call to action next to Start. */
-.lobby-bots { display: flex; align-items: center; justify-content: flex-end; gap: 8px; font-size: 13px; color: var(--muted); }
+.lobby-bots { display: flex; justify-content: flex-end; font-size: 13px; color: var(--muted); }
+.lobby-bots-menu { display: flex; align-items: center; gap: 8px; }
+.lobby-bots-chips { display: none; }
+@media (max-width: 700px) {
+  .lobby-bots { justify-content: stretch; }
+  .lobby-bots-menu { display: none; }
+  .lobby-bots-chips { display: flex; align-items: center; gap: 8px; width: 100%; }
+  .lobby-bots-chips > span { flex: none; font-size: 13px; }
+  .lobby-bots-chips button { flex: 1; margin: 0; min-height: 44px; font-size: 14px; }
+}
 .lobby-bots select { min-height: 34px; padding: 4px 8px; border: 1px solid var(--line); border-radius: 8px; background: transparent; color: var(--parchment); font: inherit; }
 .lobby-bots select option { color: #17312d; }
 /* Quiet secondary action under the current choice: only while the role choice can still be taken back. */
