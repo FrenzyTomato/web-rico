@@ -25,8 +25,9 @@ export function Selectable({ target, size, children, hint, outline = false, circ
   const key = targetKey(target);
   const pulsing = interaction.pulse === key;
   const selected = interaction.selectedKey === key;
-  const footprint = target.kind === 'building' || target.kind === 'owned-building' || target.kind === 'estate' || target.kind === 'quarry';
-  const modelStroke = ['tile', 'worker'].includes(target.kind);
+  // Plantations and buildings, on islands or in the markets, share one footprint border; only workers get a model stroke.
+  const footprint = target.kind === 'building' || target.kind === 'owned-building' || target.kind === 'estate' || target.kind === 'quarry' || target.kind === 'tile';
+  const modelStroke = target.kind === 'worker';
   useEffect(() => {
     if (!import.meta.env.DEV || !ref.current) return;
     registry.set(key, { target, group: ref.current });

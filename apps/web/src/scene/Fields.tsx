@@ -21,7 +21,7 @@ export function Fields({ countryside, mine = false }: { countryside: readonly Co
       {tile && <Model name={ESTATE_MODEL[tile.kind]} width={CELL - 0.03} depth={1.4} height={1.65} />}
       {tile && <>
         <Label position={[0, 0.04, 1.16]} height={0.34} maxWidth={CELL - 0.04} text={TILE[tile.kind]} />
-        <group position={[0, 0.025, 0.96]}><Workers slotRow spacing={0.38} count={Number(tile.occupied)} capacity={ESTATE_WORKER_SLOTS[tile.kind]} y={0} {...(mine ? { owner: tile.instanceId } : {})} /></group>
+        <group position={[0, 0.025, 0.96]}><Workers slotRow spacing={0.38} count={Number(tile.occupied)} capacity={ESTATE_WORKER_SLOTS[tile.kind]} y={0} lookId={tile.instanceId} {...(mine ? { owner: tile.instanceId } : {})} /></group>
       </>}
     </>;
     return (

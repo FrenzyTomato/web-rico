@@ -128,7 +128,7 @@ it('switches all scene terms, effects, and mat headings while preserving user na
     singleLanguage(t('田园') + t('城镇'), locale);
   }
   setLanguage('en'); expect(TILE.corn).toBe('Corn');
-  expect(t('{0} 的回合', ['小明'])).toBe('小明’s turn');
+  expect(t('{0} 的回合', ['小明'])).toBe("小明's turn");
   expect(describeEvent({ kind: 'vp-earned', quantity: 3 } as never, {})).toBe('You earned 3 points');
 });
 it('still switches when saving preferences is unavailable', () => {

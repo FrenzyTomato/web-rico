@@ -82,6 +82,17 @@ describe('TS-NET: credentials and reconnect', () => {
     expect(await resume(observer, roomId, seats[(index + 1) % 3]!.token)).toMatchObject({ value: { revision: 1 } });
   });
 
+  it('resume sends the seat its full timeline, so a reloaded page keeps every record', async () => {
+    const { client, sockets, seats, roomId } = await startedGame();
+    const { index } = await governorIndex(sockets, roomId);
+    const fresh = await client();
+    const history = new Promise<{ revision: number; events: { kind: string; revision: number }[] }>(resolve => fresh.once('history', resolve));
+    expect(await resume(fresh, roomId, seats[(index + 1) % 3]!.token)).toMatchObject({ ok: true, value: { revision: 1 } });
+    const received = await history;
+    expect(received.revision).toBe(1);
+    expect(received.events.some(e => e.kind === 'role-selected' && e.revision === 1)).toBe(true);
+  });
+
   it('rejects invalid, cross-room and malformed tokens', async () => {
     const { client, seats, roomId } = await startedGame();
     const other = await client();

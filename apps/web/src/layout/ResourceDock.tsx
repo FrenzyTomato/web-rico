@@ -8,12 +8,14 @@ import { Interaction, targetKey } from '../scene/Selection.js';
 import type { SceneTarget } from '../scene/Selection.js';
 import { GOOD, ROLE } from '../i18n/terms.js';
 import { GOODS_MODEL, ROLE_MODEL } from '../scene/modelCatalog.js';
+import { poolLooks, workerModel } from '../scene/workerLooks.js';
 import { GOODS } from '../actions/options.js';
 import type { Action } from '../actions/options.js';
 
 const imageUrl = (name: string) => `/art/dock/${encodeURIComponent(name)}.webp`;
 /** Small cached portraits of the source pieces keep the persistent dock sharp without a second WebGL context. */
-export function ResourceDock({ player, points }: { player: PublicPlayerView; points: number }) {
+/** `looks` keeps idle workers' portraits in place while some are moved this turn. */
+export function ResourceDock({ player, points, looks }: { player: PublicPlayerView; points: number; looks?: readonly number[] | undefined }) {
   useLanguage();
   const interaction = useContext(Interaction);
   const piece = (target: SceneTarget, model: string, label: string) => <button key={targetKey(target)} className={`dock-piece${target.kind === 'worker' ? ' dock-worker' : ''}`}
@@ -24,7 +26,7 @@ export function ResourceDock({ player, points }: { player: PublicPlayerView; poi
   return <div className="dock-resources">
     <div className="dock-counters"><span>🪙 <strong>{player.coins}</strong></span><span>★ <strong>{points}</strong></span></div>
     <section className="dock-workers" aria-label={t("工人池")}><h3>{t("工人池 ")}<small>{player.idleWorkerCount}</small></h3>
-      <div className="dock-pieces">{Array.from({ length: player.idleWorkerCount }, (_, index) => piece({ kind: 'worker', id: 'pool', index }, `Worker ${String(index % 5 + 1).padStart(2, '0')}`, t("选择工人 {0}", [index + 1])))}
+      <div className="dock-pieces">{Array.from({ length: player.idleWorkerCount }, (_, index) => piece({ kind: 'worker', id: 'pool', index }, workerModel((looks ?? poolLooks(player.playerId, player.idleWorkerCount))[index] ?? index), t("选择工人 {0}", [index + 1])))}
       {player.idleWorkerCount === 0 && <span className="dock-empty">{t("无空闲工人")}</span>}</div>
     </section>
     <section className="dock-goods" aria-label={t("货物区")}><h3>{t("货物")}</h3><div className="dock-pieces">

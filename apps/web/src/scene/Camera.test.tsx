@@ -22,7 +22,7 @@ describe('board camera', () => {
     expect(boardFrame('mine', 1.6).distance).toBeLessThan(boardFrame('shared', 1.6).distance);
     expect(boardFrame('buildings', 1.6).distance).toBeLessThan(boardFrame('shared', 1.6).distance);
     expect(boardFrame('shared', 0.6).distance).toBeGreaterThan(boardFrame('shared', 1.6).distance);
-    expect(boardFrame('mine', 1.6).z).toBe(27.5);
+    expect(boardFrame('mine', 1.6).z).toBe(27.1);
   });
   it('brings mobile shortcuts closer while preserving the whole-table overview', () => {
     for (const view of ['shared', 'buildings', 'boats', 'depot', 'estates', 'mine'] as const) {

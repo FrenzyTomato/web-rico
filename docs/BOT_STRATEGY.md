@@ -91,7 +91,7 @@ These are drawn from the sources below. Classic names are mapped to this engine:
 
 ## Seats and runner
 
-- **Room requests** (host only, before start):
+- **Room requests** (host only, before start). The lobby shows a quiet "Fill seats with bots…" menu (up to 3, 4 or 5 players) and a Remove button per bot seat; `add-bot` stays in the protocol but the lobby doesn't use it.
   - `add-bot {roomId}`
   - `fill-bots {roomId, seats}` (3–5)
   - `remove-bot {roomId, playerId}`
@@ -100,6 +100,6 @@ These are drawn from the sources below. Classic names are mapped to this engine:
 - **Leaving:** bots can't host, so the room closes when its last human leaves.
 - **Runner** ([runner.ts](../apps/server/src/bots/runner.ts)):
   - **When it runs:** after every commit, after start and import, and after a restart.
-  - **What it does:** waits about 1.2 s, then submits through `submitCommand` like any seat. Validation, deduplication and broadcast are unchanged.
+  - **What it does:** waits 1.8 s (`BOT_PAUSE_MS`), then submits through `submitCommand` like any seat. Validation, deduplication and broadcast are unchanged. Clients show each other player's move as a short notice on the board for 2.5 s ([moveNotice.ts](../apps/web/src/layout/moveNotice.ts)), so bot turns can be followed without the chronicle.
   - **Memory:** a bot's memory (plan, opponent beliefs, posture) is kept in server memory. After a restart, it is rebuilt by the next table read.
 - **Config:** `JEV_API_KEY` enables Jev. `JEV_MODEL` overrides the pinned `jev-1.14.0`. Each bot move is logged as one JSON line, with the move, calls, plan and any fallback.

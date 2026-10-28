@@ -15,7 +15,8 @@ type RoomAction =
   | { kind: 'start-game'; roomId: string }
   | { kind: 'add-bot'; roomId: string }
   | { kind: 'fill-bots'; roomId: string; seats: number }
-  | { kind: 'remove-bot'; roomId: string; playerId: string };
+  | { kind: 'remove-bot'; roomId: string; playerId: string }
+  | { kind: 'rewind-role'; roomId: string };
 export function sendRoom(socket: LobbySocket, action: Extract<RoomAction, { kind: 'create-room' | 'join-room' }>): Promise<RoomReply<SeatGranted>>;
 export function sendRoom(socket: LobbySocket, action: Exclude<RoomAction, { kind: 'create-room' | 'join-room' }>): Promise<RoomReply<null>>;
 export function sendRoom(socket: LobbySocket, action: RoomAction) {

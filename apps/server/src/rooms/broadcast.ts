@@ -8,19 +8,19 @@ import { eventsForPlayer } from '../projection/playerEvents.js';
 import { projectForPlayer } from '../projection/playerView.js';
 
 /** One seat's `state` message: its own view, legal actions (empty unless it decides) and filtered events. */
-export function broadcastFor(state: GameState, events: readonly GameEvent[], playerId: PlayerId): PlayerBroadcast {
+export function broadcastFor(state: GameState, events: readonly GameEvent[], playerId: PlayerId, rewound = false): PlayerBroadcast {
   return { protocolVersion: PROTOCOL_VERSION, revision: state.revision, view: projectForPlayer(state, playerId),
-    legalActions: getLegalCommands(state, playerId), events: eventsForPlayer(events, playerId) };
+    legalActions: getLegalCommands(state, playerId), events: eventsForPlayer(events, playerId), ...(rewound ? { rewound: true as const } : {}) };
 }
 
 /**
  * PROTOCOL.md step 7: every connection in the room channel is its seat's current controller (replaced
  * connections leave the channel), and each receives only its own projection. Never full GameState.
  */
-export async function broadcast(io: Server, roomId: string, state: GameState, events: readonly GameEvent[]): Promise<void> {
+export async function broadcast(io: Server, roomId: string, state: GameState, events: readonly GameEvent[], rewound = false): Promise<void> {
   for (const socket of await io.in(roomId).fetchSockets()) {
     const playerId = (socket.data as { session?: { playerId: PlayerId } }).session?.playerId;
-    if (playerId) socket.emit('state', broadcastFor(state, events, playerId));
+    if (playerId) socket.emit('state', broadcastFor(state, events, playerId, rewound));
   }
 }
 

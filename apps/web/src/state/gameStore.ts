@@ -1,5 +1,5 @@
 import { createStore } from 'zustand/vanilla';
-import type { CommandAccepted, CommandRejected, GameplayRequest, PlayerBroadcast, PlayerEvent } from '@vibe-rico/protocol';
+import type { CommandAccepted, CommandRejected, GameplayRequest, PlayerBroadcast, PlayerEvent, PlayerHistory } from '@vibe-rico/protocol';
 import { PROTOCOL_VERSION } from '@vibe-rico/protocol';
 
 export interface CommandTransport { send(request: GameplayRequest): Promise<CommandAccepted | CommandRejected> }
@@ -12,9 +12,11 @@ export interface ClientState {
   /** Sent but unacknowledged requests, kept verbatim so retries reuse the original commandId. */
   readonly pending: Readonly<Record<string, GameplayRequest>>;
   readonly rejection: CommandRejected | null;
-  /** Recent filtered events for the chronicle, newest last (at most CHRONICLE_SIZE). */
+  /** Every filtered event of the game for the timeline, oldest first. */
   readonly chronicle: readonly PlayerEvent[];
   receive(broadcast: PlayerBroadcast): void;
+  /** The full timeline from the server after a resume; later broadcasts append to it. */
+  restoreHistory(history: PlayerHistory): void;
   /** The server holds this connection's session again: allow sends and retry every pending command. */
   sessionReady(): void;
   disconnected(): void;
@@ -22,7 +24,6 @@ export interface ClientState {
   submit(roomId: string, action: GameplayRequest['action']): string | null;
 }
 
-export const CHRONICLE_SIZE = 50;
 export const createGameStore = (transport: CommandTransport, newId: () => string = () => crypto.randomUUID()) =>
   createStore<ClientState>()((set, get) => {
     const send = (request: GameplayRequest) => {
@@ -37,10 +38,15 @@ export const createGameStore = (transport: CommandTransport, newId: () => string
     return {
       latest: null, connected: false, pending: {}, rejection: null, chronicle: [],
       // Old or duplicate snapshots never overwrite a newer one.
+      // A rewound snapshot (a role choice taken back) replaces newer ones and drops their events.
       receive: broadcast => {
-        if (get().latest && broadcast.revision <= get().latest!.revision) return;
-        set(s => ({ latest: broadcast, chronicle: [...s.chronicle, ...broadcast.events].slice(-CHRONICLE_SIZE) }));
+        if (get().latest && broadcast.revision <= get().latest!.revision && !broadcast.rewound) return;
+        set(s => ({ latest: broadcast, chronicle: broadcast.rewound
+          ? s.chronicle.filter(e => e.revision <= broadcast.revision)
+          : [...s.chronicle, ...broadcast.events] }));
       },
+      // Events newer than the history (a broadcast that raced it) are kept after it.
+      restoreHistory: history => set(s => ({ chronicle: [...history.events, ...s.chronicle.filter(e => e.revision > history.revision)] })),
       sessionReady: () => { set({ connected: true }); for (const request of Object.values(get().pending)) send(request); },
       disconnected: () => set({ connected: false }),
       submit: (roomId, action) => {

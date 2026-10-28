@@ -10,6 +10,9 @@ import { decide, freshMemory } from './decide.js';
 import type { BotMemory } from './decide.js';
 import type { DecisionClient } from './jev.js';
 
+/** Pause before each bot move: long enough to read the move notice clients show, short enough not to drag. */
+export const BOT_PAUSE_MS = 1800;
+
 export interface BotRunnerOptions {
   /** Null plays on the code value alone (no JEV_API_KEY). */
   readonly client: DecisionClient | null;
@@ -58,7 +61,7 @@ export class BotRunner {
         this.#timers.delete(timer);
         void this.#play(roomId, seat.playerId).catch(e => this.#log({ roomId, bot: seat.playerId, error: String(e) }))
           .finally(() => { this.#pending.delete(key); this.kick(roomId); });
-      }, this.options.delayMs ?? 1200);
+      }, this.options.delayMs ?? BOT_PAUSE_MS);
       this.#timers.add(timer);
     }
   }

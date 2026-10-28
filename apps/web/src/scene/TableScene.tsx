@@ -8,6 +8,7 @@ import { Camera } from './Camera.js';
 import type { BoardView, CameraCommand } from './Camera.js';
 import { CommonBoard } from './CommonBoard.js';
 import { PlayerBoard } from './PlayerBoard.js';
+import { ROLE } from '../i18n/terms.js';
 import { HoverHint } from './ModelHint.js';
 import type { PieceHint } from './effects.js';
 import { TargetProbe } from './Selectable.js';
@@ -87,6 +88,17 @@ export function TableScene({ view, names, islandRequest, guidedView, hintResetKe
     setFocus('mine');
     setCameraCommand(c => ({ id: c.id + 1, view: 'mine', island: { x: seat.x, z: seat.z } }));
   }, [view.seatOrder, view.viewer.playerId]);
+  // The shortcut bar wraps with many islands; overlays below it (the desktop player row) follow its real height.
+  const cameraBar = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const bar = cameraBar.current, shell = bar?.closest<HTMLElement>('.shell');
+    if (!bar || !shell || typeof ResizeObserver === 'undefined') return;
+    const update = () => shell.style.setProperty('--camera-bar', `${bar.offsetHeight}px`);
+    const observer = new ResizeObserver(update);
+    observer.observe(bar);
+    update();
+    return () => { observer.disconnect(); shell.style.removeProperty('--camera-bar'); };
+  }, []);
   const lastIslandRequest = useRef<number | null>(null);
   useEffect(() => {
     if (!islandRequest || lastIslandRequest.current === islandRequest.id) return;
@@ -96,7 +108,7 @@ export function TableScene({ view, names, islandRequest, guidedView, hintResetKe
 
   return (
     <div className="scene" onPointerDownCapture={e => { if (e.pointerType === 'touch' && e.target instanceof HTMLCanvasElement) clearHint(); }} onContextMenu={e => { if (window.matchMedia('(max-width: 700px)').matches) e.preventDefault(); }} aria-label={t("桌面")}>
-      <div className="board-camera desktop-camera" role="group" aria-label={t("棋盘视角")}>
+      <div ref={cameraBar} className="board-camera desktop-camera" role="group" aria-label={t("棋盘视角")}>
         {([['shared', t("公共区")], ['buildings', t("建筑市场")], ['boats', t("货船")], ['depot', t("交易所")], ['estates', t("可选田园")], ['overview', t("全桌")]] as const).map(([mode, label]) =>
           <button key={mode} aria-pressed={!focusedPlayer && focus === mode} onClick={() => focusView(mode)}>{label}</button>)}
         {view.seatOrder.map(id => <button key={id} aria-pressed={focusedPlayer === id}
@@ -144,6 +156,7 @@ export function TableScene({ view, names, islandRequest, guidedView, hintResetKe
         {seatPositions(view.seatOrder, view.viewer.playerId).map((seat, i) => (
           <group key={seat.playerId} position={[seat.x, 0, seat.z]}>
             <PlayerBoard player={view.players[i]!} color={SEAT_COLORS[i]!} mine={seat.playerId === view.viewer.playerId}
+              role={(k => k && ROLE[k])(view.roleCards.find(c => c.selectedBy === seat.playerId)?.kind)}
               title={`${names[seat.playerId] ?? seat.playerId}${seat.playerId === view.governorPlayerId ? t("（总督）") : ''}${seat.playerId === view.viewer.playerId ? t("（你）") : ''}`} />
           </group>
         ))}

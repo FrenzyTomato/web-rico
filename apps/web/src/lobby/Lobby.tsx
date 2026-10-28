@@ -106,7 +106,7 @@ export function Lobby({ socket, onSession = () => {}, game }: {
     if (!reply.ok) setError({ source: 'start', code: reply.code });
   };
 
-  const editBots = async (action: { kind: 'add-bot' } | { kind: 'fill-bots'; seats: number } | { kind: 'remove-bot'; playerId: string }) => {
+  const editBots = async (action: { kind: 'fill-bots'; seats: number } | { kind: 'remove-bot'; playerId: string }) => {
     setError(null);
     const reply = await sendRoom(socket, { ...action, roomId: seat!.roomId });
     if (!reply.ok) setError({ source: 'bots', code: reply.code });
@@ -182,10 +182,14 @@ export function Lobby({ socket, onSession = () => {}, game }: {
               </li>
             ))}
           </ol>
-          {room && isHost && !room.started && <div className="lobby-bots">
-            <button type="button" disabled={!connected || replaced || room.seats.length >= 5} onClick={() => void editBots({ kind: 'add-bot' })}>{t("添加机器人")}</button>
-            {room.seats.length < 3 && <button type="button" disabled={!connected || replaced} onClick={() => void editBots({ kind: 'fill-bots', seats: 3 })}>{t("用机器人补足 3 人")}</button>}
-          </div>}
+          {room && isHost && !room.started && room.seats.length < 5 && <label className="lobby-bots">
+            <span>{t("机器人")}</span>
+            {/* Picking a size fills the empty seats with bots, then the menu returns to its prompt. */}
+            <select value="" disabled={!connected || replaced} onChange={e => { const seats = Number(e.target.value); if (seats) void editBots({ kind: 'fill-bots', seats }); }}>
+              <option value="">{t("用机器人补位…")}</option>
+              {[3, 4, 5].filter(n => n > room.seats.length).map(n => <option key={n} value={n}>{t("补到 {0} 人", [n])}</option>)}
+            </select>
+          </label>}
           {room?.started ? (game ? game(seat, room) : <p>{t("游戏已开始")}</p>)
             : isHost && <button className="lobby-primary lobby-start" disabled={!connected || replaced} onClick={() => void start()}>{t("开始游戏")}</button>}
         </section>

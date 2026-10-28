@@ -132,13 +132,13 @@ export function introPages(language: 'en' | 'zh'): { camera: BoardView; mine?: t
   const views = [t('可选田园'), t('建筑市场'), t('货船'), t('交易所')].map(v => `“${v}”`).join(text(', ', '、'));
   return [
     { camera: 'overview', title: text('Welcome to the table', '欢迎来到牌桌'),
-      body: text('The harbour island in the middle is shared by everyone. Each player has their own island around it: yours, Bruno’s and Chen’s. Drag to move, scroll or pinch to zoom, and use the view buttons (the “Viewing” menu on a phone) to jump between places.', `中间的港口岛由所有人共用，周围是每位玩家自己的岛屿：你的、Bruno 的和 Chen 的。拖动可移动视角，滚轮或双指可缩放，也可以用视角按钮（手机上为“查看区域”菜单）快速切换。`) },
+      body: text('The harbour island in the middle is shared by everyone. Each player has their own island around it: yours, Bruno\'s and Chen\'s. Drag to move, scroll or pinch to zoom, and use the view buttons (the “Viewing” menu on a phone) to jump between places.', `中间的港口岛由所有人共用，周围是每位玩家自己的岛屿：你的、Bruno 的和 Chen 的。拖动可移动视角，滚轮或双指可缩放，也可以用视角按钮（手机上为“查看区域”菜单）快速切换。`) },
     { camera: 'mine', mine: true, title: text('Your island', '你的岛屿'),
       body: text(`Estates you take go into the fields at the back; buildings you buy go into the town at the front. They only work once a worker is placed on them. Your coins, unplaced workers and goods are in your hand at the bottom. “${t('我的岛屿')}” brings you back here any time.`, `你领取的田园放在后方田地，购买的建筑放在前方城镇，放上工人后才会工作。金币、未分配的工人和货物在下方手牌区。随时可以用“${t('我的岛屿')}”回到这里。`) },
     { camera: 'shared', title: text('Places to check', '常看的地方'),
-      body: text(`On the harbour: ${views}. Estates and buildings are bought there, ships take goods for points, and the depot buys goods for coins. Other players’ islands show what they own.`, `港口岛上有：${views}。在那里领取田园、购买建筑，货船用货物换分数，交易所用货物换金币。其他玩家的岛屿显示他们拥有的东西。`) },
+      body: text(`On the harbour: ${views}. Estates and buildings are bought there, ships take goods for points, and the depot buys goods for coins. Other players' islands show what they own.`, `港口岛上有：${views}。在那里领取田园、购买建筑，货船用货物换分数，交易所用货物换金币。其他玩家的岛屿显示他们拥有的东西。`) },
     { camera: 'shared', title: text('How a round flows', '一轮如何进行'),
-      body: text('Players take turns picking a role card from their hand. The chooser gets a small privilege, then everyone, starting with the chooser, takes that role’s action in turn. This follow-up means you act on roles other players pick too. Once everyone has picked, the round ends and unpicked roles gain a coin. Score points by shipping goods and owning buildings.', '玩家轮流从手牌中选择一张角色。选择者获得小特权，然后从选择者开始，所有人依次执行该角色的行动。也就是说，别人选的角色你也会跟着行动。所有人都选过后本轮结束，未被选择的角色增加 1 金币。通过运货和拥有建筑获得分数。') },
+      body: text('Players take turns picking a role card from their hand. The chooser gets a small privilege, then everyone, starting with the chooser, takes that role\'s action in turn. This follow-up means you act on roles other players pick too. Once everyone has picked, the round ends and unpicked roles gain a coin. Score points by shipping goods and owning buildings.', '玩家轮流从手牌中选择一张角色。选择者获得小特权，然后从选择者开始，所有人依次执行该角色的行动。也就是说，别人选的角色你也会跟着行动。所有人都选过后本轮结束，未被选择的角色增加 1 金币。通过运货和拥有建筑获得分数。') },
   ];
 }
 

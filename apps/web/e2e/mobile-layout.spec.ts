@@ -29,7 +29,8 @@ test('mobile action sheet opens for an active turn and can be collapsed', async 
   await page.goto('/scene-preview.html?game=3p&at=185&shell=1');
   await expect(page.locator('.mobile-sheet-toggle')).toHaveAttribute('aria-expanded', 'true');
   await expect(page.locator('.hand-content')).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Viewing', exact: true })).toHaveAttribute('data-value', 'island:chen');
+  // Chen is loading cargo, so the camera starts where that decision is made, as the Boats shortcut would.
+  await expect(page.getByRole('button', { name: 'Viewing', exact: true })).toHaveAttribute('data-value', 'boats');
   await page.locator('.mobile-sheet-toggle').click();
   await expect(page.locator('.hand-content')).toBeHidden();
   await page.setViewportSize({ width: 844, height: 390 });

@@ -119,6 +119,7 @@ PR-035 compile-time checks in [views.test.ts](../packages/protocol/test/views.te
   - `start-game` / `leave-room` need the connection's current session for that `roomId`. Otherwise the reply is `UNAUTHORIZED`, or `STALE_SESSION` for a replaced connection.
   - `close-room {roomId}` (host only, user ruling 2026-10-01) removes the room; later commands see `ROOM_CLOSED`.
   - `add-bot {roomId}`, `fill-bots {roomId, seats}` (3–5) and `remove-bot {roomId, playerId}` are host-only and lobby-only. Bot seats are played by the server ([BOT_STRATEGY.md](BOT_STRATEGY.md)).
+  - `rewind-role {roomId}` takes back the sender's role choice while it is the last accepted command (nothing has followed it, not even the chooser's own follow-up). The server rebuilds the game from history without it, so the role, its bonus coins and the turn return, then broadcasts the rebuilt state with `rewound: true`. Clients accept that older revision and drop chronicle events after it. Otherwise the reply is `ILLEGAL_COMMAND`. Other seats briefly saw the choice. Implemented in [rewind.ts](../apps/server/src/rooms/rewind.ts).
 - **`resume`** `{ protocolVersion, roomId, token }` reclaims a seat. The token must match a seat of that room; anything else is `UNAUTHORIZED`. The reply is `{ ok: true, value: { playerId, revision } }`, with `revision` null before start.
   - **Takeover:** every resume increments the seat's sessionGeneration and makes this connection the only controller. The previous connection receives `session-replaced`, and its later commands and room actions get `STALE_SESSION`. For commands, this is checked inside the room queue (processing step 2).
   - **No gap:** the resume runs as one task in the room queue. It checks the token, takes control, joins the room channel `roomId` (the subscription PR-042 broadcasts on) and reads the revision. So any commit either lands before that read or happens after the connection has joined.
@@ -134,7 +135,7 @@ PR-035 compile-time checks in [views.test.ts](../packages/protocol/test/views.te
 - **When sent:**
   - After every accepted command, inside the room queue after the store write and before the acknowledgement (step 7), so broadcasts follow commit order.
   - After `start-game` (revision 0, no events), also in the queue.
-  - On `resume`, only to the resuming connection, with no events. This is the snapshot for recovery.
+  - On `resume`, only to the resuming connection, with no events. This is the snapshot for recovery. It is followed by a `history` event `{ revision, events }`: every event of the game this seat may see (filtered like broadcasts), oldest first, so the timeline keeps every record after a reload or reconnect.
 - **Who receives it:** a replaced connection leaves the room channel, so each seat's messages go only to its current controller. Rejections stay acknowledgement-only, so other connections never see them.
 
 ## Lobby seat list and web lobby — PR-043

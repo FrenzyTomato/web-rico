@@ -18,6 +18,8 @@ import { Sessions } from './sessions/reconnect.js';
 import { recoverRooms } from './storage/recoverRoom.js';
 import { broadcast, broadcastFor, roomState } from './rooms/broadcast.js';
 import { BotRunner } from './bots/runner.js';
+import { rewindRole } from './rooms/rewind.js';
+import { eventsForPlayer } from './projection/playerEvents.js';
 import type { BotRunnerOptions } from './bots/runner.js';
 
 /** Largest accepted Socket.IO message; bigger messages close the connection (PROTOCOL.md step 1, size). */
@@ -101,7 +103,11 @@ export function createApp({ devTools = false, random, store = new InMemoryRoomSt
         attach(socket, roomId, playerId);
         const game = (await store.get(roomId))?.room.game;
         // Snapshot recovery: the seat's current projection, sent before any later broadcast.
-        if (game) socket.emit('state', broadcastFor(game.state, [], playerId));
+        if (game) {
+          socket.emit('state', broadcastFor(game.state, [], playerId));
+          // The seat's full timeline, filtered like every broadcast (others' VP stays hidden).
+          socket.emit('history', { revision: game.state.revision, events: game.commands.flatMap(c => eventsForPlayer(c.events, playerId)) });
+        }
         reply({ ok: true, value: { playerId, revision: game?.state.revision ?? null } });
         await announce(roomId);
       });
@@ -141,6 +147,14 @@ export function createApp({ devTools = false, random, store = new InMemoryRoomSt
             : await lobby.removeBot(s.roomId, s.playerId, action.playerId);
           if (edited.ok) await announce(s.roomId);
           return edited;
+        }));
+      } else if (action.kind === 'rewind-role') {
+        reply(await queues.run(s.roomId, async () => {
+          const rewound = await rewindRole(store, s.roomId, s.playerId);
+          if (!rewound.ok) return rewound;
+          await broadcast(io, s.roomId, rewound.value, [], true);
+          bots.kick(s.roomId);
+          return { ok: true as const, value: null };
         }));
       } else if (action.kind === 'close-room') {
         reply(await lifecycle.close(s.roomId, s.playerId));

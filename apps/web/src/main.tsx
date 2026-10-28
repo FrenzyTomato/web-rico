@@ -7,7 +7,7 @@ import { GameShell } from './layout/GameShell.js';
 import { ScenarioTools } from './debug/ScenarioTools.js';
 import { Lobby } from './lobby/Lobby.js';
 import { bindStore, socketTransport } from './network/commands.js';
-import { createSocket, lobbyLink } from './network/socket.js';
+import { createSocket, lobbyLink, sendRoom } from './network/socket.js';
 import { createGameStore } from './state/gameStore.js';
 
 const Demo = lazy(() => import('./demo/Demo.js').then(m => ({ default: m.Demo })));
@@ -20,7 +20,7 @@ function liveApp() {
   const onSession = () => gameStore.getState().sessionReady();
   return <Lobby socket={socket} onSession={onSession} game={(seat, room) => (
     <>
-      <GameShell store={gameStore} roomId={seat.roomId} room={room} lobbyHref={lobbyLink()} />
+      <GameShell store={gameStore} roomId={seat.roomId} room={room} lobbyHref={lobbyLink()} onRewind={() => sendRoom(socket, { kind: 'rewind-role', roomId: seat.roomId })} />
       {import.meta.env.DEV && <ScenarioTools socket={socket} roomId={seat.roomId} />}
     </>
   )} />;

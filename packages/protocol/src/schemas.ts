@@ -79,6 +79,8 @@ export const roomRequest = z.strictObject({
     z.strictObject({ kind: z.literal('add-bot'), roomId: z.string() }),
     z.strictObject({ kind: z.literal('fill-bots'), roomId: z.string(), seats: z.number().int().min(3).max(5) }),
     z.strictObject({ kind: z.literal('remove-bot'), roomId: z.string(), playerId: z.string() }),
+    // Takes back the sender's role choice before anything follows it (apps/server/src/rooms/rewind.ts).
+    z.strictObject({ kind: z.literal('rewind-role'), roomId: z.string() }),
   ]),
 });
 /** Reclaims a seat with its reconnect token (PROTOCOL.md "Rooms and recovery"). */

@@ -5,6 +5,7 @@ import { optionsForTarget, targetKey } from '../scene/Selection.js';
 import type { SceneTarget } from '../scene/Selection.js';
 import type { Action, Option } from './options.js';
 import { allocationAction, draftPlayer, idleWorkers, initialWorkers, moveWorker } from './workerDraft.js';
+import { placeLooks, poolLooks, slotLooks } from '../scene/workerLooks.js';
 import type { WorkerDraft } from './workerDraft.js';
 
 /** Local, revision-scoped previews. Only explicit completed actions go to the authoritative server. */
@@ -16,7 +17,8 @@ export function useBoardActions(latest: PlayerBroadcast | null, enabled: boolean
   const epoch = legal?.phase === 'recruiter-placement'
     ? JSON.stringify([latest?.view.roundNumber, latest?.view.roleSelectionIndex, legal, me, enabled])
     : `${latest?.revision}:${enabled}`;
-  const [local, setLocal] = useState<{ epoch: string; draft?: WorkerDraft; selected: SceneTarget | null; good: Good | null }>({ epoch, selected: null, good: null });
+  // `looks`: idle workers' portraits this turn, so moving one doesn't reshuffle the rest.
+  const [local, setLocal] = useState<{ epoch: string; draft?: WorkerDraft; looks?: number[]; selected: SceneTarget | null; good: Good | null }>({ epoch, selected: null, good: null });
   // Reset synchronously when the turn/revision/connection changes, including reconnects at the same revision.
   if (local.epoch !== epoch) setLocal({ epoch, selected: null, good: null });
   const current = local.epoch === epoch ? local : { epoch, selected: null, good: null };
@@ -54,7 +56,17 @@ export function useBoardActions(latest: PlayerBroadcast | null, enabled: boolean
       const picked = next.holding && target.kind === 'worker'
         ? target.id === 'pool' ? target : { kind: 'worker' as const, id: 'pool', index: idleWorkers(placement, next) - 1 }
         : null;
-      setLocal({ ...current, draft: next, selected: picked }); return;
+      const looks = [...(current.looks ?? poolLooks(me!.playerId, idleWorkers(placement, draft)))];
+      // A worker keeps its portrait: lifted off a slot it joins the pool's end, placed it takes its pool look into the slot.
+      if (target.kind === 'worker' && target.id !== 'pool' && next.holding) {
+        const inSlot = slotLooks(target.id, draft.counts[target.id] ?? 0);
+        looks.push(inSlot.pop()!);
+        placeLooks(target.id, inSlot);
+      } else if (target.kind !== 'worker' && draft.holding && !next.holding && selected?.kind === 'worker') {
+        const id = (target as { id: string }).id;
+        placeLooks(id, [...slotLooks(id, draft.counts[id] ?? 0), ...looks.splice(selected.index, 1)]);
+      }
+      setLocal({ ...current, draft: next, looks, selected: picked }); return;
     }
     if (target.kind === 'crate') { setLocal({ ...current, good: target.good, selected: target }); return; }
     const choices = destinationOptions(target);
@@ -69,6 +81,7 @@ export function useBoardActions(latest: PlayerBroadcast | null, enabled: boolean
     actionable, select, selected, clear, good: current.good, placement, draft,
     panelOptions: enabled && selected && selected.kind !== 'crate' ? destinationOptions(selected) : [],
     player: placement && draft && me ? draftPlayer(me, placement, draft) : undefined,
+    poolLooks: placement ? current.looks : undefined,
     reset: () => setLocal({ epoch, selected: null, good: null }),
     canConfirm: !!action,
     confirm: () => { if (action && enabled) submit(action); },

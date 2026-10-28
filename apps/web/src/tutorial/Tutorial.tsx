@@ -3,7 +3,7 @@ import { useStore } from 'zustand';
 import { useLanguage } from '../i18n/language.js';
 import { GameShell } from '../layout/GameShell.js';
 import type { ShellGuide } from '../layout/GameShell.js';
-import { CHRONICLE_SIZE, createGameStore } from '../state/gameStore.js';
+import { createGameStore } from '../state/gameStore.js';
 import { allowedTargets, allowsTarget, createTutorialController, sameAction } from './controller.js';
 import { describeMove, introPages, islandCheck, playerName, tutorialCopy } from './copy.js';
 import { learner } from './scenario.js';
@@ -20,7 +20,7 @@ function createTutorialStore(controller: Controller) {
     const s = controller.getState();
     store.setState({
       latest: s.snapshot && { ...s.snapshot, legalActions: s.stage === 'action' ? s.snapshot.legalActions : [] },
-      chronicle: s.history.slice(-CHRONICLE_SIZE), pending: {}, rejection: null,
+      chronicle: s.history, pending: {}, rejection: null,
     });
   };
   sync();
@@ -107,7 +107,7 @@ function useGuide(state: ReturnType<Controller['getState']>, controller: Control
   const heading = finished ? text('Ready to play!', '可以开始游戏了！')
     : stage === 'result' ? text('Check your island', '查看你的岛屿')
     : stage === 'opponent-result' ? text(`${playerName(previous!.step.command.actorId, text)} moved`, `${playerName(previous!.step.command.actorId, text)}已行动`)
-    : learnerTurn ? `${text('Your turn', '轮到你')} · ${copy.title}` : `${text(`${copy.actor}’s turn`, `${copy.actor}的回合`)} · ${copy.title}`;
+    : learnerTurn ? `${text('Your turn', '轮到你')} · ${copy.title}` : `${text(`${copy.actor}'s turn`, `${copy.actor}的回合`)} · ${copy.title}`;
   const body = finished
     ? text('That covers every role: estates, buildings, workers, production, trading and shipping. Each round, players take turns choosing roles until everyone has one. The game ends when points, workers or island space run out.', '你已体验所有角色：田园、建筑、工人、生产、交易和运货。每轮玩家轮流选择角色，直到每人都选过。分数、工人或岛上空间耗尽时游戏结束。')
     : stage === 'result' ? islandCheck(previous!, snapshot.view, language)

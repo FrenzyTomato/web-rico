@@ -25,10 +25,17 @@ import { WorkerControls } from '../actions/WorkerControls.js';
 import { GameView, rejectionText } from '../debug/GameView.js';
 import { ScoreView } from '../debug/ScoreView.js';
 import { describeEvent } from '../i18n/chronicle.js';
+import { moveNotice } from './moveNotice.js';
+import type { MoveNotice } from './moveNotice.js';
+import { actionView } from './actionView.js';
 import { GOOD, PHASE, ROLE } from '../i18n/terms.js';
 import { SceneBoundary, webglAvailable } from '../scene/SceneBoundary.js';
 // Lazy: Three.js loads only when the 3D stage is shown (PR-055 code-splitting).
 const TableScene = lazy(() => import('../scene/TableScene.js').then(m => ({ default: m.TableScene })));
+/** How long another player's move stays on screen; bots wait a little less than this between moves. */
+const NOTICE_MS = 2500;
+/** How long a new turn is announced in large type before the banner settles to one line. */
+const TURN_BANNER_MS = 3000;
 import { SEAT_COLORS } from '../scene/pieces.js';
 import type { GameStore } from '../state/gameStore.js';
 
@@ -45,7 +52,8 @@ export interface ShellGuide {
 
 
 /** DESIGN.md layout: top bar, players, 3D harbour, turn and chronicle, the viewer's hand and actions. */
-export function GameShell({ store, roomId, room, lobbyHref, demo = false, guide }: { store: GameStore; roomId: string; room: RoomState; lobbyHref?: string; demo?: boolean; guide?: ShellGuide }) {
+/** `onRewind` asks the server to take back the viewer's role choice (live games only). */
+export function GameShell({ store, roomId, room, lobbyHref, demo = false, guide, onRewind }: { store: GameStore; roomId: string; room: RoomState; lobbyHref?: string; demo?: boolean; guide?: ShellGuide; onRewind?: (() => Promise<unknown>) | undefined }) {
   const language = useLanguage();
   const [islandRequest, setIslandRequest] = useState<{ id: number; playerId: string }>();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -93,6 +101,14 @@ export function GameShell({ store, roomId, room, lobbyHref, demo = false, guide 
   useAutoProduce(latest, roomId, !guide && (settings.autoProduce ?? false), connected, pending, action => store.getState().submit(roomId, action));
   const yourTurn = Boolean(latest?.legalActions.length);
   useTurnChime(yourTurn, connected, settings.turnSound ?? true);
+  // Each new decision of the viewer's moves the camera where it is made, as its shortcut would; later turns
+  // in the same step (another load, say) leave the camera where the player put it. The tutorial steers its own camera.
+  const decisionKey = latest && yourTurn ? `${latest.view.roundNumber}:${latest.view.roleSelectionIndex}:${latest.view.phase.kind}` : null;
+  const actionCamera = useMemo(() => {
+    const target = !guide && latest && decisionKey ? actionView(latest.view, true) : null;
+    return target ? { id: latest!.revision, ...target } : undefined;
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only a new decision should move the camera
+  }, [guide, decisionKey]);
   useEffect(() => { setSheetOpen(yourTurn && !demo); }, [yourTurn, latest?.view.phase.kind, demo]);
   // Reduced motion: a zero-length queue shows no pulses at all (PR-054).
   const queue = useMemo(() => createEventQueue(settings.reducedMotion ? 0 : PULSE_MS), [settings.reducedMotion]);
@@ -106,6 +122,25 @@ export function GameShell({ store, roomId, room, lobbyHref, demo = false, guide 
     const timer = setInterval(tick, 100);
     return () => clearInterval(timer);
   }, [latest, queue]);
+  // Other players' moves (bots pause between theirs) get a short line on the board, then it fades.
+  const [notice, setNotice] = useState<{ key: number; text: MoveNotice } | null>(null);
+  useEffect(() => {
+    if (!latest || guide) return;
+    const text = moveNotice(latest.events, latest.view.viewer.playerId, Object.fromEntries(room.seats.map(s => [s.playerId, s.displayName])));
+    if (!text) return;
+    setNotice({ key: latest.revision, text });
+    const timer = setTimeout(() => setNotice(n => n?.key === latest.revision ? null : n), NOTICE_MS);
+    return () => clearTimeout(timer);
+  }, [latest, guide, room.seats]);
+  // The turn banner is large for a moment whenever the turn or step changes, then settles to one compact line.
+  const turnKey = latest ? `${yourTurn}:${latest.view.roundNumber}:${latest.view.roleSelectionIndex}:${latest.view.phase.kind}:${'actorId' in latest.view.phase ? latest.view.phase.actorId : ''}` : '';
+  const [freshTurn, setFreshTurn] = useState(false);
+  useEffect(() => {
+    if (!turnKey) return;
+    setFreshTurn(true);
+    const timer = setTimeout(() => setFreshTurn(false), TURN_BANNER_MS);
+    return () => clearTimeout(timer);
+  }, [turnKey]);
   const interaction = { actionable: board.actionable, select: board.select, pulse, selectedKey: selected ? targetKey(selected) : guide?.highlight ? targetKey(guide.highlight) : null };
   if (!latest) return <p>{t("正在载入局面…")}</p>;
   const { view } = latest, phase = view.phase;
@@ -119,7 +154,10 @@ export function GameShell({ store, roomId, room, lobbyHref, demo = false, guide 
     const allowedRoleIds = ids.filter(id => guide.allowAction({ kind: 'choose-role', roleCardId: id }));
     return { allowedRoleIds, highlightRoleId: allowedRoleIds[0] };
   };
-  const lines = chronicle.map(e => ({ key: `${e.revision}-${e.index}`, text: describeEvent(e, names) })).filter(l => l.text).slice(-20).reverse();
+  // Right after the viewer's own role choice, before anything follows it, the choice can be taken back (server checks).
+  const canRewind = Boolean(onRewind) && !guide && !demo && yourTurn && connected && !pending
+    && latest.events.some(e => e.kind === 'role-selected' && e.playerId === view.viewer.playerId);
+  const lines = chronicle.map(e => ({ key: `${e.revision}-${e.index}`, text: describeEvent(e, names) })).filter(l => l.text).reverse();
   return (
     <SceneInteractionProvider value={interaction}>
     <div ref={shellRef} onKeyDown={event => { if (event.key === 'Escape') { setPlayersOpen(false); setChronicleOpen(false); setSettingsOpen(false); setMenuOpen(false); setTextOpen(false); } }} className={`shell${guide ? ' tutorial-shell' : ''}${menuOpen ? ' mobile-menu-open' : ''}${sheetOpen ? ' mobile-sheet-open' : ''}${textOpen ? ' mobile-text-open' : ''}`} data-revision={latest.revision}>
@@ -132,8 +170,8 @@ export function GameShell({ store, roomId, room, lobbyHref, demo = false, guide 
         <button className="mobile-menu-button hud-icon" aria-label={t('菜单')} aria-expanded={menuOpen} aria-controls="game-tools" onClick={() => setMenuOpen(v => !v)}><span aria-hidden="true">{menuOpen ? '×' : '☰'}</span></button>
         <div className="topbar-tools" id="game-tools">
         <div className="mobile-menu-info"><strong>{demo ? t('演示 · 仅供浏览') : t('房间 {0}', [room.roomCode])}</strong><span>{t('第 {0} 轮 · 总督 {1}', [view.roundNumber, name(view.governorPlayerId)])}</span><span>{t('剩余工人')} {view.supply.workerCount} · {t('剩余分数')} {view.supply.vpRemaining}</span></div>
-        <button className="hud-icon" aria-label={t("玩家")} title={t("玩家")} aria-expanded={playersOpen} aria-controls="player-sidebar" onClick={() => { setPlayersOpen(v => !v); setChronicleOpen(false); setSettingsOpen(false); }}><HudIcon kind="players" /></button>
-        <button className="hud-icon" aria-label={t("时间线")} title={t("时间线")} aria-expanded={chronicleOpen} aria-controls="chronicle-sidebar" onClick={() => { setChronicleOpen(v => !v); setPlayersOpen(false); setSettingsOpen(false); }}><HudIcon kind="history" /></button>
+        <button className="hud-icon players-toggle" aria-label={t("玩家")} title={t("玩家")} aria-expanded={playersOpen} aria-controls="player-sidebar" onClick={() => { setPlayersOpen(v => !v); setChronicleOpen(false); setSettingsOpen(false); }}><HudIcon kind="players" /></button>
+        <button className="hud-icon chronicle-toggle" aria-label={t("时间线")} title={t("时间线")} aria-expanded={chronicleOpen} aria-controls="chronicle-sidebar" onClick={() => { setChronicleOpen(v => !v); setPlayersOpen(false); setSettingsOpen(false); }}><HudIcon kind="history" /></button>
         <LanguageToggle iconOnly />
         <button className="mobile-text-button" onClick={() => { setTextOpen(v => !v); setMenuOpen(false); }}>{t('文字界面（完整局面）')}</button>
         {lobbyHref && <a className="mobile-lobby-link back-to-lobby" href={lobbyHref}>{t('返回大厅')}</a>}
@@ -175,9 +213,39 @@ export function GameShell({ store, roomId, room, lobbyHref, demo = false, guide 
           <div><dt>{t("剩余工人")}</dt><dd>{view.supply.workerCount}</dd></div>
           <div><dt><span aria-hidden="true">★ </span>{t("剩余分数")}</dt><dd>{view.supply.vpRemaining}</dd></div>
         </dl>
-          <SceneBoundary><Suspense fallback={<p role="status">{t("正在载入立体视图…")}</p>}><TableScene initialMobileView={demo ? 'boats' : 'mine'} islandRequest={islandRequest} guidedView={guide?.guidedView} hintResetKey={guide?.hintResetKey} hints={!guide} view={board.player ? { ...view, players: view.players.map(p => p.playerId === board.player!.playerId ? board.player! : p) } : view} names={names} /></Suspense></SceneBoundary>
+        {/* Desktop: every player's stats in a row under the view shortcuts (phones keep the Players panel). */}
+        <ul className="seat-strip" aria-label={t("玩家")}>
+          {view.players.map((p, i) => {
+            const role = view.roleCards.find(c => c.selectedBy === p.playerId);
+            const acting = recruitment ? !confirmations.includes(p.playerId) : 'actorId' in phase && phase.actorId === p.playerId;
+            const mine = p.playerId === view.viewer.playerId;
+            return <li key={p.playerId} className={acting ? 'seat-card acting' : 'seat-card'}>
+              <button title={mine ? t("查看我的岛屿") : t("查看他的岛屿")} onClick={() => setIslandRequest(previous => ({ id: (previous?.id ?? 0) + 1, playerId: p.playerId }))}>
+                <span className="medallion" style={{ background: SEAT_COLORS[i] }} aria-hidden>{name(p.playerId).slice(0, 1)}</span>
+                <span className="seat-card-text">
+                  <strong>{name(p.playerId)}{mine && t("（你）")}{p.playerId === view.governorPlayerId && <span className="badge">{t("总督")}</span>}</strong>
+                  {/* Goods show as crates on the right, so the line holds coins, role and (own) shipping points. */}
+                  <span>{p.coins}{t(" 金币")}{role && ` · ${ROLE[role.kind]}`}{mine && ` · ★\u00a0${view.viewer.earnedVp}`}</span>
+                </span>
+                {GOODS.some(good => p.goods[good] > 0) && <span className="seat-card-goods">{GOODS.filter(good => p.goods[good] > 0).map(good => <span key={good} title={`${GOOD[good]} ×${p.goods[good]}`}>
+                  <img src={`/art/dock/${encodeURIComponent(`${GOODS_MODEL[good]} Cutout`)}.webp`} alt={GOOD[good]} />{p.goods[good]}
+                </span>)}</span>}
+              </button>
+            </li>;
+          })}
+        </ul>
+        {/* Desktop: whose turn it is, large on the board itself rather than inside the top bar. */}
+        <p className={freshTurn ? 'turn-banner fresh' : 'turn-banner'} aria-live="polite" aria-atomic="true">
+          {yourTurn && connected && <strong>{t("轮到你了！")}</strong>}
+          <span>{recruitment ? t('所有玩家 · 同时分配工人') : 'actorId' in phase ? `${name(phase.actorId)} · ${PHASE[phase.kind]}` : PHASE[phase.kind]}</span>
+        </p>
+          <SceneBoundary><Suspense fallback={<p role="status">{t("正在载入立体视图…")}</p>}><TableScene initialMobileView={demo ? 'boats' : 'mine'} islandRequest={islandRequest} guidedView={guide?.guidedView ?? actionCamera} hintResetKey={guide?.hintResetKey} hints={!guide} view={board.player ? { ...view, players: view.players.map(p => p.playerId === board.player!.playerId ? board.player! : p) } : view} names={names} /></Suspense></SceneBoundary>
         {guide?.coach}
-        {rejection && <p className="stage-alert" role="alert">{rejectionText(rejection)}</p>}
+        {rejection ? <p className="stage-alert" role="alert">{rejectionText(rejection)}</p>
+          : notice && <div key={notice.key} className="stage-alert move-notice" role="status">
+            <strong>{notice.text.title}</strong>
+            {notice.text.groups.map(g => <p key={g.label || 'main'}>{g.label && <span className="move-notice-label">{g.label}</span>}{g.items.map((item, i) => <span key={i} className="move-notice-chip">{item}</span>)}</p>)}
+          </div>}
         {phase.kind === 'game-over' && <div className="final-scores"><ScoreView scores={phase.scores} names={names} /></div>}
         {animating && <button className="skip" onClick={() => { queue.skip(); setPulse(null); setAnimating(false); }}>{t("跳过动画")}</button>}
         {selected?.kind === 'crate' && <div className="action-panel" role="status">{t("已选择 ")}{GOOD[selected.good]}{t("：点击船或交易所。")}<button onClick={board.clear}>{t("取消选择")}</button></div>}
@@ -204,12 +272,13 @@ export function GameShell({ store, roomId, room, lobbyHref, demo = false, guide 
           <span className="mobile-sheet-caption">{demo ? t('演示 · 仅供浏览') : yourTurn ? t('轮到你了！') : t('手牌与行动')}<span aria-hidden="true">{sheetOpen ? '⌄' : '⌃'}</span></span>
         </button>
         <div id="hand-content" className="hand-content">
-        <ResourceDock player={board.player ?? me} points={phase.kind === 'game-over' ? phase.scores.find(s => s.playerId === me.playerId)!.totalVp : view.viewer.earnedVp} />
+        <ResourceDock player={board.player ?? me} looks={board.poolLooks} points={phase.kind === 'game-over' ? phase.scores.find(s => s.playerId === me.playerId)!.totalVp : view.viewer.earnedVp} />
         <div className="actions">
           {recruitment && <p className="recruitment-progress">{t('分配进度：{0}/{1} 已确认', [confirmations.length, view.players.length])}</p>}
           {demo ? <p role="status">{t('探索棋盘、岛屿和提示；演示中无法进行游戏操作。')}</p> : connected && !pending
             ? board.placement ? <><p>{t('同时分配你的工人；所有玩家确认后继续。')}</p><WorkerControls board={board} player={me} /></> : recruitment && confirmations.includes(me.playerId) ? <p role="status">{t('已确认分配，等待其他玩家。')}</p> : latest.legalActions[0]?.phase === 'role-selection' ? <RoleHand legal={latest.legalActions[0]} view={view} submit={action => store.getState().submit(roomId, action)} {...guidedRoles(latest.legalActions[0].roleCardIds)} /> : <ActionForm boardFirst legalActions={latest.legalActions} view={view} submit={action => store.getState().submit(roomId, action)} allow={guide?.allowAction} />
             : <p>{pending ? t("正在提交行动…") : t("连接已断开，暂时不能行动")}</p>}
+          {canRewind && <button className="rewind-role" onClick={() => void onRewind!()}>{t("↩ 换一个角色")}</button>}
         </div>
         </div>
       </footer>

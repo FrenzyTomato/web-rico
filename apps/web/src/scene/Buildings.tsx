@@ -17,7 +17,7 @@ export function Buildings({ buildings, mine = false }: { buildings: readonly Bui
   return <>{citySlots(buildings).map(({ building, col, row, span, workerSlots }) => {
     const body = <>
       <Model name={BUILDING_MODEL[building.buildingTypeId]} width={span * CELL - 0.03} depth={1.4} height={1.65} />
-      <group position={[0, 0.025, 0.96]}><Workers slotRow spacing={0.38} count={building.occupiedSlots} capacity={workerSlots} y={0} {...(mine ? { owner: building.instanceId } : {})} /></group>
+      <group position={[0, 0.025, 0.96]}><Workers slotRow spacing={0.38} count={building.occupiedSlots} capacity={workerSlots} y={0} lookId={building.instanceId} {...(mine ? { owner: building.instanceId } : {})} /></group>
       <Label position={[0, 0.04, 1.16]} height={0.34} maxWidth={span * CELL - 0.04} text={BUILDING[building.buildingTypeId]} />
     </>;
     return <group key={building.instanceId} position={[(col + (span - 1) / 2) * CELL, 0, row * ROW]}>

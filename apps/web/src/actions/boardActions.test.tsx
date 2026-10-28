@@ -13,6 +13,7 @@ import { describeOptions } from './options.js';
 import { useBoardActions } from './useBoardActions.js';
 import { ESTATE_WORKER_SLOTS, buildingWorkerSlots } from '../scene/workerSlots.js';
 import { ResourceDock } from '../layout/ResourceDock.js';
+import { lookAt, workerModel } from '../scene/workerLooks.js';
 import { SceneInteractionProvider, targetKey } from '../scene/Selection.js';
 
 afterEach(cleanup);
@@ -69,7 +70,7 @@ describe('worker sockets and click placement', () => {
     function Dock() {
       board = useBoardActions(snapshot, true, [], vi.fn());
       return <SceneInteractionProvider value={{ actionable: board.actionable, select: board.select, pulse: null, selectedKey: board.selected ? targetKey(board.selected) : null }}>
-        <ResourceDock player={board.player!} points={0} />
+        <ResourceDock player={board.player!} looks={board.poolLooks} points={0} />
       </SceneInteractionProvider>;
     }
     render(<Dock />);
@@ -84,11 +85,16 @@ describe('worker sockets and click placement', () => {
     fireEvent.click(left);
     expect(board!.draft!.holding).toBe(false);
     expect(left.getAttribute('aria-pressed')).toBe('false');
-    fireEvent.click(right);
+    const portraits = () => screen.getAllByRole('button', { name: /选择工人/ }).map(b => b.querySelector('img')!.getAttribute('src'));
+    const looks = portraits();
+    fireEvent.click(left);
     const slot = board!.placement!.slots.find(s => s.kind === 'countryside' && board!.draft!.counts[s.instanceId] === 0)!;
     const idle = board!.player!.idleWorkerCount;
     act(() => board.select({ kind: 'tile', id: slot.instanceId }));
     expect(board!.player!.idleWorkerCount).toBe(idle - 1);
+    // Placing the first worker leaves the others' portraits where they were, and it keeps its own on the board.
+    expect(portraits()).toEqual(looks.slice(1));
+    expect(looks[0]).toContain(encodeURIComponent(workerModel(lookAt(slot.instanceId, 0))));
     expect(board!.selected).toBeNull();
     expect(screen.queryAllByRole('button', { pressed: true })).toHaveLength(0);
     // A worker taken off a tile is added to the end of the pool and highlighted there.

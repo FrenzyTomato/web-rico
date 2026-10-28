@@ -104,7 +104,7 @@ summary:hover { color: var(--parchment); }
 .board-camera button { margin: 0; min-height: 34px; padding: 7px 10px; border-color: transparent; background: transparent; font-size: 14px; color: #d9e2d9; border-radius: 8px; }
 .board-camera button[aria-pressed='true'] { background: #c7dfce; color: #143331; border-color: #d9ead7; }
 .board-camera span { padding: 0 8px; font-size: 11px; color: #b1c4bd; }
-.model-tooltip { position: absolute; z-index: 4; top: 74px; right: 14px; width: min(330px, calc(100% - 28px)); padding: 17px 19px; background: linear-gradient(135deg, #d5eee51f, #c8e4db08), #16393fb8; color: #edf3e9; border: 1px solid #e2fff040; border-radius: 16px; box-shadow: inset 0 1px 0 #ffffff18, 0 12px 32px #061b2133; -webkit-backdrop-filter: blur(22px) saturate(120%); backdrop-filter: blur(22px) saturate(120%); pointer-events: none; line-height: 1.5; }
+.model-tooltip { position: absolute; z-index: 4; top: 74px; right: 14px; width: min(330px, calc(100% - 28px)); padding: 17px 19px; background: linear-gradient(135deg, #d5eee51f, #c8e4db08), #16393fd4; color: #edf3e9; border: 1px solid #e2fff040; border-radius: 16px; box-shadow: inset 0 1px 0 #ffffff18, 0 12px 32px #061b2133; -webkit-backdrop-filter: blur(22px) saturate(120%); backdrop-filter: blur(22px) saturate(120%); pointer-events: none; line-height: 1.5; }
 .model-tooltip strong { color: #f0d7a7; font-size: 18px; }
 .model-tooltip p { margin: 10px 0; font-size: 14px; }
 .model-tooltip small { color: #deebe2; font-size: 14px; }
@@ -170,8 +170,12 @@ th { color: var(--gold); }
 /* Stays a list item so the seat number shows; the remove button floats to the row's end. */
 .lobby-seats li.lobby-bot-seat::after { content: ''; display: block; clear: both; }
 .lobby-seats li.lobby-bot-seat button { float: right; margin: -6px 0 -6px 10px; min-height: 34px; padding: 4px 12px; font-size: 13px; }
-.lobby-bots { display: flex; flex-wrap: wrap; gap: 8px; }
-.lobby-bots button { flex: 1 1 160px; margin: 0; min-height: 42px; }
+/* A quiet control under the seats, not a second call to action next to Start. */
+.lobby-bots { display: flex; align-items: center; justify-content: flex-end; gap: 8px; font-size: 13px; color: var(--muted); }
+.lobby-bots select { min-height: 34px; padding: 4px 8px; border: 1px solid var(--line); border-radius: 8px; background: transparent; color: var(--parchment); font: inherit; }
+.lobby-bots select option { color: #17312d; }
+/* Quiet secondary action under the current choice: only while the role choice can still be taken back. */
+.actions .rewind-role { margin: 10px 0 0; padding: 5px 12px; font-size: 13px; }
 @media (max-width: 560px) {
   .lobby { width: calc(100% - 24px); margin: 12px auto; padding: 22px; border-radius: 18px; }
   .lobby-header { flex-wrap: wrap; gap: 16px; }
@@ -226,7 +230,7 @@ html[lang="en"] .role-card span { font-size: 14px; }
 @media (hover: hover) and (pointer: fine) {
   .scene:has(canvas:hover) .board-camera:not(:focus-within),
   .stage:has(.scene canvas:hover) .supply-hud,
-  .shell:has(.scene canvas:hover) > :is(.topbar, .hand, .text-view):not(:focus-within) { opacity: 0.5; }
+  .shell:has(.scene canvas:hover) > :is(.topbar, .hand, .text-view):not(:focus-within) { opacity: 0.7; }
 }
 @media (prefers-reduced-motion: reduce) {
   .board-camera, .supply-hud, .shell > .topbar, .shell > .hand, .shell > .text-view { transition: none; }
@@ -236,7 +240,10 @@ html[lang="en"] .role-card span { font-size: 14px; }
 .shell {
   --hud-top: 76px;
   --hud-bottom: 234px;
-  --glass: linear-gradient(125deg, #d5eee51f, #c8e4db08), #16393f80;
+  /* Base tint about 70% opaque so the board shows through without fighting the HUD text. */
+  --glass: linear-gradient(125deg, #d5eee51f, #c8e4db08), #16393fb3;
+  /* Where board overlays (hints, notices, panels) start: below the shortcut bar, and on desktop below the player row. */
+  --board-top: calc(var(--hud-top) + 54px);
   height: 100dvh; min-height: 0; overflow: hidden; isolation: isolate;
   background: transparent; grid-template-rows: auto minmax(0, 1fr) auto auto;
 }
@@ -266,6 +273,19 @@ html[lang="en"] .role-card span { font-size: 14px; }
 .shell .hand :is([role='status'], [role='note']),
 .shell .action-panel :is([role='status'], [role='note']) { background: #16393f40; }
 .shell .stage-alert { border-color: #e8cf9e; }
+.shell .stage-alert.move-notice { border-color: var(--line); pointer-events: none; animation: move-notice-in .2s ease-out; }
+/* Like the turn banner: text straight on the board, no panel. The move in bold, then each hand-out as "Bot Bea +1 · You +1". */
+.shell .stage-alert.move-notice {
+  display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 0; text-align: center;
+  background: none; border: 0; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none;
+  color: #f4edda; text-shadow: 0 2px 8px #061b21e6, 0 0 2px #061b21;
+}
+.shell .move-notice strong { font-size: 18px; font-weight: 700; color: #f4edda; }
+.shell .move-notice p { display: flex; flex-wrap: wrap; justify-content: center; align-items: baseline; margin: 0; font-size: 15px; font-weight: 600; }
+.move-notice-label { font-size: 12px; color: #c9dbd3; margin-right: 8px; }
+.move-notice-chip { color: #e6f1ea; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.move-notice-chip + .move-notice-chip::before { content: '·'; margin: 0 9px; color: #c9dbd3; }
+@keyframes move-notice-in { from { opacity: 0; transform: translateY(-4px); } }
 .shell .board-camera, .shell .supply-hud { top: var(--hud-top); }
 .shell .board-camera, .shell .supply-hud > div {
   background: var(--glass);
@@ -273,10 +293,14 @@ html[lang="en"] .role-card span { font-size: 14px; }
   backdrop-filter: blur(14px) saturate(120%);
   border-color: #e2fff033;
 }
-.shell .model-tooltip, .shell .stage-alert, .shell .skip { top: calc(var(--hud-top) + 54px); }
+.shell .model-tooltip, .shell .stage-alert, .shell .skip { top: var(--board-top); }
+/* The board (and its hints) sits under the side panels, so a hint moves beside an open players or timeline panel instead of behind it. */
+@media (min-width: 701px) {
+  .shell:has(> .panel:not([hidden])) .scene .model-tooltip { right: calc(12px + min(340px, calc(100vw - 24px)) + 12px); }
+}
 .shell .panel { top: calc(var(--hud-top) + 48px); bottom: var(--hud-bottom); z-index: 5; }
 .shell .action-panel { bottom: var(--hud-bottom); }
-.shell .final-scores { top: calc(var(--hud-top) + 54px); bottom: var(--hud-bottom); }
+.shell .final-scores { top: var(--board-top); bottom: var(--hud-bottom); }
 @media (max-width: 700px) {
   .shell .supply-hud { top: calc(var(--hud-top) + 48px); }
   .shell .model-tooltip, .shell .stage-alert, .shell .skip { top: calc(var(--hud-top) + 94px); }
@@ -325,7 +349,7 @@ html[lang="en"] .role-card span { font-size: 14px; }
 
 /* Compact floating inspectors share the toolbar's sea-glass material. */
 .shell .panel, .shell .settings-body {
-  background: linear-gradient(135deg, #d5eee51f, #c8e4db08), #16393fb8;
+  background: linear-gradient(135deg, #d5eee51f, #c8e4db08), #16393fd4;
   -webkit-backdrop-filter: blur(22px) saturate(120%);
   backdrop-filter: blur(22px) saturate(120%);
   border: 1px solid #e2fff040; border-radius: 16px;
@@ -334,7 +358,7 @@ html[lang="en"] .role-card span { font-size: 14px; }
   scrollbar-width: thin; scrollbar-color: #b9d9ca66 transparent;
 }
 .shell .panel {
-  top: var(--hud-top); bottom: auto; left: auto; right: 12px;
+  top: var(--board-top); bottom: auto; left: auto; right: 12px;
   width: min(340px, calc(100vw - 24px)); height: auto;
   max-height: max(120px, calc(100dvh - var(--hud-top) - var(--hud-bottom) - 12px));
 }
@@ -504,6 +528,9 @@ html[lang="en"] .role-card span { font-size: 14px; }
   .shell.mobile-text-open > .text-view { display: block; position: absolute; left: 10px; right: 10px; top: var(--hud-top); bottom: var(--hud-bottom); max-height: none; z-index: 6; }
   .shell .panel { left: 10px; right: 10px; width: auto; top: calc(var(--hud-top) + 42px); bottom: var(--hud-bottom); max-height: none; }
   .shell .model-tooltip, .shell .stage-alert { top: calc(var(--hud-top) + 44px); max-width: calc(100vw - 20px); max-height: 35dvh; overflow: auto; }
+  /* Move notices sit just above the hand, clear of the view tabs and zoom stack, and step aside for hints and action panels. */
+  .shell .stage-alert.move-notice { top: auto; bottom: calc(var(--hud-bottom) + 8px); left: 10px; right: 64px; max-width: none; font-size: 13px; }
+  .shell .stage:has(.scene .model-tooltip, .action-panel) .move-notice { display: none; }
   .shell .action-panel { left: 10px; right: 10px; max-width: none; }
   .shell button:active:not(:disabled) { opacity: .8; }
 }
@@ -564,4 +591,109 @@ html[lang="en"] .role-card span { font-size: 14px; }
   .tutorial-coach[data-tutorial-stage='action'] :is(small, .tutorial-coach-last) { display: none; }
   .tutorial-coach p { margin: 5px 0; font-size: 12px; line-height: 1.45; }
   .tutorial-coach small { font-size: 10px; }
+}
+
+/* Desktop: player stats in a column under the view shortcuts, and whose turn it is written large on the board. */
+.seat-strip, .turn-banner { display: none; }
+@media (min-width: 701px) {
+  /* Below the shortcut bar (its measured height, 44px on one line). Hints, notices and panels start there too. */
+  .shell { --strip-top: calc(var(--hud-top) + var(--camera-bar, 44px) + 8px); --board-top: var(--strip-top); }
+  .shell .topbar .turn-summary, .shell .players-toggle, .shell #player-sidebar { display: none; }
+  .shell > .topbar { grid-template-columns: minmax(0, 1fr) auto; }
+  .shell .seat-strip {
+    position: absolute; z-index: 2; top: var(--strip-top); left: 12px; width: 270px; display: flex; flex-direction: column; gap: 6px;
+    max-height: calc(100% - var(--strip-top) - var(--hud-bottom)); overflow-y: auto; margin: 0; padding: 0; list-style: none; pointer-events: none;
+  }
+  .shell .seat-card { pointer-events: auto; }
+  .shell .seat-card button {
+    display: flex; align-items: center; gap: 10px; width: 100%; min-height: 56px; margin: 0; padding: 7px 10px; text-align: left;
+    color: #e0ece5; font-size: 13px; font-weight: 400; border: 1px solid #e2fff033; border-radius: 12px;
+    background: var(--glass); -webkit-backdrop-filter: blur(14px) saturate(120%); backdrop-filter: blur(14px) saturate(120%);
+    box-shadow: inset 0 1px 0 #ffffff14, 0 6px 24px #061b2126;
+  }
+  .shell .seat-card button:hover { border-color: #e2fff066; }
+  .shell .seat-card.acting button { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent), 0 6px 24px #061b2126; }
+  .shell .seat-card .medallion { width: 30px; height: 30px; font-size: 14px; }
+  .seat-card-text { display: flex; flex-direction: column; min-width: 0; line-height: 1.4; }
+  .seat-card-text strong { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .seat-card-text strong { font-size: 14px; color: #f4edda; }
+  .seat-card-goods { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 2px 6px; margin-left: auto; font-size: 12px; font-variant-numeric: tabular-nums; }
+  .seat-card-goods > span { display: flex; align-items: center; gap: 1px; }
+  .seat-card-goods img { width: 22px; height: 22px; object-fit: contain; }
+  /* Settled: one large line over the board. Fresh (a new turn or step): two larger lines for a moment. */
+  .shell .turn-banner {
+    position: absolute; z-index: 1; top: calc(var(--strip-top) + 34px); left: 0; right: 0; margin: 0 auto; width: fit-content; max-width: 56%;
+    display: flex; flex-direction: row; align-items: baseline; justify-content: center; gap: 0 14px; flex-wrap: wrap; text-align: center; pointer-events: none;
+    color: #f4edda; font-size: 21px; font-weight: 650; line-height: 1.3; text-shadow: 0 2px 8px #061b21e6, 0 0 2px #061b21;
+    transition: font-size 250ms ease-out;
+  }
+  .shell .turn-banner strong { font-size: 28px; font-weight: 750; color: #c4f2df; transition: font-size 250ms ease-out; }
+  .shell .turn-banner.fresh { flex-direction: column; align-items: center; font-size: 23px; }
+  .shell .turn-banner.fresh strong { font-size: 38px; }
+  /* Move notices and rejections sit centred under the banner, clear of the player column. */
+  .shell .stage-alert { top: calc(var(--strip-top) + 130px); left: 0; right: 0; margin: 0 auto; width: fit-content; max-width: 56%; }
+}
+
+/* Banner and move notices stand out without a panel: a soft dark halo behind the text, a fading hairline, and a
+   gentle rise when they appear. Your turn reads in sea-glass, other players' moves in warm brass. */
+@media (min-width: 701px) {
+  .shell .turn-banner::before, .shell .stage-alert.move-notice::before {
+    content: ''; position: absolute; z-index: -1; inset: -26px -80px; pointer-events: none;
+    background: radial-gradient(closest-side, #061b21c7, #061b2170 55%, #061b2100);
+  }
+  .shell .turn-banner::after {
+    content: ''; position: absolute; left: 8%; right: 8%; bottom: -8px; height: 2px; border-radius: 2px;
+    background: linear-gradient(90deg, #c4f2df00, #c4f2dfcc, #c4f2df00);
+  }
+  .shell .turn-banner strong { text-shadow: 0 2px 8px #061b21e6, 0 0 22px #9cd5c266; }
+  .shell .turn-banner.fresh { animation: banner-in 450ms ease-out; }
+}
+.shell .stage-alert.move-notice { isolation: isolate; }
+.shell .move-notice strong { color: #f1d9a5; }
+@keyframes banner-in { from { opacity: 0; transform: translateY(-6px) scale(.97); } }
+
+/* Phones: half-transparent HUD; players, timeline and language sit in the top bar (the menu keeps the rest);
+   the turn banner and move notices show on the board in smaller type, replacing the header's turn text. */
+@media (max-width: 700px) {
+  .shell { --glass: linear-gradient(125deg, #d5eee51f, #c8e4db08), #16393f80; }
+  .shell > .topbar { grid-template-columns: auto minmax(0, 1fr) repeat(3, 40px) 44px; gap: 2px; }
+  .shell .topbar .turn-summary { display: none; }
+  .shell .topbar-tools, .shell.mobile-menu-open .topbar-tools { display: contents; }
+  .shell .topbar-tools > :is(.players-toggle, .chronicle-toggle, .language-toggle) { display: inline-flex; grid-row: 1; width: 40px; height: 44px; padding: 8px; }
+  .shell .topbar-tools > .players-toggle { grid-column: 3; }
+  .shell .topbar-tools > .chronicle-toggle { grid-column: 4; }
+  .shell .topbar-tools > .language-toggle { grid-column: 5; }
+  .shell .mobile-menu-button { grid-column: 6; }
+  .shell .topbar-tools > :is(.mobile-menu-info, .mobile-text-button, .mobile-lobby-link, .settings) { display: none; }
+  .shell.mobile-menu-open .topbar-tools > :is(.mobile-menu-info, .mobile-text-button, .mobile-lobby-link, .settings) { display: flex; grid-column: 1 / -1; justify-self: stretch; margin: 0; }
+  .shell.mobile-menu-open .topbar-tools > .mobile-menu-info { display: grid; padding-top: 8px; border-top: 1px solid var(--line); }
+  .shell.mobile-menu-open .topbar-tools > .settings { justify-self: start; }
+  .shell .turn-banner {
+    display: flex; position: absolute; z-index: 1; top: calc(var(--hud-top) + 40px); left: 0; right: 0; margin: 0 auto; width: fit-content; max-width: 86%;
+    flex-direction: row; flex-wrap: wrap; align-items: baseline; justify-content: center; gap: 0 8px; text-align: center; pointer-events: none;
+    color: #f4edda; font-size: 13px; font-weight: 650; line-height: 1.3; text-shadow: 0 2px 6px #061b21e6, 0 0 2px #061b21;
+  }
+  .shell .turn-banner strong { font-size: 17px; font-weight: 750; color: #c4f2df; }
+  .shell .turn-banner.fresh { flex-direction: column; align-items: center; font-size: 14px; animation: banner-in 450ms ease-out; }
+  .shell .turn-banner.fresh strong { font-size: 21px; }
+  .shell:has(.mobile-building-tiers) .turn-banner { top: calc(var(--hud-top) + 92px); }
+  .shell .turn-banner::before, .shell .stage-alert.move-notice::before {
+    content: ''; position: absolute; z-index: -1; inset: -14px -36px; pointer-events: none;
+    background: radial-gradient(closest-side, #061b21b3, #061b2160 55%, #061b2100);
+  }
+  .shell .stage-alert.move-notice { overflow: visible; max-height: none; }
+  .shell .move-notice strong { font-size: 14px; }
+  .shell .move-notice p { font-size: 12.5px; }
+}
+
+/* Phones: every role card fits without sideways scrolling: three per row (four when there are seven or more),
+   with a shorter illustration. */
+@media (max-width: 700px) {
+  .shell .role-hand { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; height: auto; min-width: 0; padding: 0; }
+  .shell .role-hand:has(> :nth-child(7)) { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .shell .role-card, html[lang="en"] .shell .role-card { width: auto; min-width: 0; height: auto; padding: 3px 3px 4px; border-radius: 10px; }
+  .shell .role-card img { height: 58px; border-radius: 7px; }
+  .shell .role-card span, html[lang="en"] .shell .role-card span { font-size: 13px; line-height: 1.25; margin-top: 3px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .shell .role-card small { font-size: 10.5px; }
+  .shell .hand .actions:has(.role-hand) { overflow: visible; }
 }

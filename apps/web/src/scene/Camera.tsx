@@ -5,6 +5,7 @@ import type { ComponentRef } from 'react';
 import { OrbitControls } from '@react-three/drei';
 import { useThree } from '@react-three/fiber';
 import { MOUSE, TOUCH, Vector3 } from 'three';
+import type { PerspectiveCamera } from 'three';
 
 export type BoardView = 'shared' | 'buildings' | 'boats' | 'depot' | 'estates' | 'mine' | 'overview' | `buildings-${1 | 2 | 3 | 4}`;
 export type CameraCommand = { id: number; view: BoardView; island?: { x: number; z: number } } | { id: number; zoom: number };
@@ -19,7 +20,8 @@ export function boardFrame(view: BoardView, aspect: number, mobile = false) {
     boats: { width: 20, depth: 12, x: 0.6, z: -6.5 },
     depot: { width: 10, depth: 12, x: 18, z: -8 },
     estates: { width: 11, depth: 13, x: -17.5, z: 4.5 },
-    mine: { width: 16, depth: 20, x: 0, z: HOME_Z + 0.5 },
+    // An island close-up: its stats, plantations and town fill the view (the private boat sits just below).
+    mine: { width: 11.5, depth: 12.5, x: 0, z: HOME_Z + 0.1 },
     overview: { width: 104, depth: 78, x: 0, z: 1 },
   };
   const tier = view.startsWith('buildings-') ? compactBuildingTiers().find(t => t.cap === Number(view.slice(-1))) : undefined;
@@ -31,11 +33,23 @@ export function boardFrame(view: BoardView, aspect: number, mobile = false) {
 
 /** Left-drag pans, right-drag rotates, wheel zooms toward the pointer; pinch zooms. Keep the camera above the islands. */
 export function Camera({ command, touchRotate = false }: { command: CameraCommand; touchRotate?: boolean }) {
-  const { camera, size, invalidate } = useThree();
+  const { camera, size, invalidate, gl } = useThree();
   const controls = useRef<ComponentRef<typeof OrbitControls>>(null);
   const lastCommand = useRef(-1);
   const currentView = useRef<BoardView>('shared');
   const island = useRef<{ x: number; z: number } | undefined>(undefined);
+  // Desktop's turn banner sits over the board's top: draw the picture a little lower and smaller so framed content
+  // clears it. Raycasting and the target probe use the same projection, so clicks stay aligned.
+  useEffect(() => {
+    const banner = gl?.domElement.closest('.shell')?.querySelector<HTMLElement>('.turn-banner');
+    const shown = banner && getComputedStyle(banner).display !== 'none';
+    const phone = size.width <= 700, shift = shown ? phone ? 20 : 58 : 0;
+    const view = camera as PerspectiveCamera;
+    if (shift) view.setViewOffset(size.width, size.height, 0, -shift, size.width, size.height); else view.clearViewOffset();
+    view.zoom = shift ? phone ? 0.96 : 0.88 : 1;
+    view.updateProjectionMatrix();
+    invalidate();
+  }, [camera, gl, size.width, size.height, invalidate]);
   useEffect(() => {
     const orbit = controls.current;
     if (!orbit) return;
@@ -47,7 +61,8 @@ export function Camera({ command, touchRotate = false }: { command: CameraComman
     } else {
       if ('view' in command) { currentView.current = command.view; island.current = command.island; }
       const frame = boardFrame(currentView.current, size.width / Math.max(1, size.height), size.width <= 700);
-      orbit.target.set(island.current?.x ?? frame.x, 0.4, island.current ? island.current.z + 0.5 : frame.z);
+      // Another island uses the same framing, offset from its own centre.
+      orbit.target.set(island.current?.x ?? frame.x, 0.4, island.current ? island.current.z + frame.z - HOME_Z : frame.z);
       camera.position.copy(orbit.target).add(new Vector3(0, 0.9, 0.436).normalize().multiplyScalar(frame.distance));
     }
     lastCommand.current = command.id;

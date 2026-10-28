@@ -61,6 +61,26 @@ describe('client game store', () => {
     expect(state().latest).toBe(two);
   });
 
+  it('a rewound snapshot replaces newer ones and drops their events', () => {
+    const { state } = ready();
+    state().receive({ ...snapshot(1), events: [{ kind: 'role-selected', revision: 1, index: 0, playerId: 'p1', cardId: 'role-3', role: 'builder' }] as never });
+    expect(state().chronicle).toHaveLength(1);
+    const back = { ...snapshot(0), rewound: true as const };
+    state().receive(back);
+    expect(state().latest).toBe(back);
+    expect(state().chronicle).toHaveLength(0);
+  });
+
+  it('keeps every timeline record and restores the full history after a resume', () => {
+    const { state } = ready();
+    const event = (revision: number) => ({ kind: 'role-selected', revision, index: 0, playerId: 'p1', cardId: 'role-3', role: 'builder' }) as never;
+    for (let r = 1; r <= 80; r++) state().receive({ ...snapshot(r), events: [event(r)] });
+    expect(state().chronicle).toHaveLength(80);
+    state().receive({ ...snapshot(81), events: [event(81)] });
+    state().restoreHistory({ revision: 80, events: Array.from({ length: 80 }, (_, i) => event(i + 1)) });
+    expect(state().chronicle.map(e => e.revision)).toEqual(Array.from({ length: 81 }, (_, i) => i + 1));
+  });
+
   it('STALE_REVISION drops the request without rewriting it; the newer snapshot arrives by broadcast', async () => {
     const { t, state } = ready();
     state().submit('r1', action);
@@ -106,14 +126,14 @@ describe('client game store', () => {
     expect(store.getState().pending).toEqual({});
   });
 
-  it('keeps the newest events for the chronicle, ignoring duplicate snapshots', () => {
+  it('keeps every event for the chronicle, ignoring duplicate snapshots', () => {
     const { state } = ready();
     const withEvents = (revision: number, n: number) => ({ ...snapshot(revision), events: Array.from({ length: n }, (_, index) => ({ kind: 'phase-changed', revision, index })) }) as unknown as PlayerBroadcast;
     state().receive(withEvents(1, 2));
     state().receive(withEvents(1, 2));
     expect(state().chronicle).toHaveLength(2);
     state().receive(withEvents(2, 60));
-    expect(state().chronicle).toHaveLength(50);
+    expect(state().chronicle).toHaveLength(62);
     expect(state().chronicle.at(-1)).toMatchObject({ revision: 2, index: 59 });
   });
 
@@ -123,16 +143,18 @@ describe('client game store', () => {
     expect(store.getState().submit('r1', action)).toBeNull();
   });
 
-  it('bindStore feeds state broadcasts and disconnects from the socket', () => {
+  it('bindStore feeds state broadcasts, history and disconnects from the socket', () => {
     const handlers = new Map<string, (arg?: unknown) => void>();
     const socket = { on: (e: string, h: (arg?: unknown) => void) => handlers.set(e, h), off: vi.fn() } as unknown as LobbySocket;
     const { store, state } = ready();
     const unbind = bindStore(socket, store);
     handlers.get('state')!(snapshot(3));
     expect(state().latest!.revision).toBe(3);
+    handlers.get('history')!({ revision: 3, events: [{ kind: 'role-selected', revision: 1, index: 0 }] });
+    expect(state().chronicle).toHaveLength(1);
     handlers.get('disconnect')!();
     expect(state().connected).toBe(false);
     unbind();
-    expect(socket.off).toHaveBeenCalledTimes(2);
+    expect(socket.off).toHaveBeenCalledTimes(3);
   });
 });

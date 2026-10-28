@@ -113,18 +113,22 @@ describe('lobby', () => {
     fireEvent.change(screen.getByLabelText('创建房间密码'), { target: { value: 'test-room-password' } });
     fireEvent.click(screen.getByText('创建房间'));
     await flush();
-    socket.push('room-state', seats(false, 1));
-    fireEvent.click(screen.getByText('用机器人补足 3 人'));
+    socket.push('room-state', seats(false, 2));
+    const menu = screen.getByLabelText('机器人') as HTMLSelectElement;
+    // Only sizes above the current seat count are offered.
+    expect([...menu.options].map(o => o.text)).toEqual(['用机器人补位…', '补到 3 人', '补到 4 人', '补到 5 人']);
+    fireEvent.change(menu, { target: { value: '4' } });
     await flush();
-    expect(socket.sent.at(-1)!.payload.action).toEqual({ kind: 'fill-bots', roomId: 'r1', seats: 3 });
+    expect(socket.sent.at(-1)!.payload.action).toEqual({ kind: 'fill-bots', roomId: 'r1', seats: 4 });
+    expect(menu.value).toBe('');
     socket.push('room-state', { ...seats(false, 1), seats: [{ playerId: 'p1', displayName: 'Ana' }, { playerId: 'b1', displayName: 'Bot Ana', bot: true }, { playerId: 'b2', displayName: 'Bot Bea', bot: true }] });
     expect(screen.getAllByRole('listitem').map(li => li.querySelector('span')!.textContent)).toEqual(['Ana（房主）（你）', 'Bot Ana（机器人）', 'Bot Bea（机器人）']);
-    expect(screen.queryByText('用机器人补足 3 人')).toBeNull();
+    expect([...(screen.getByLabelText('机器人') as HTMLSelectElement).options].map(o => o.text)).toEqual(['用机器人补位…', '补到 4 人', '补到 5 人']);
     fireEvent.click(screen.getByRole('button', { name: '移除 Bot Bea' }));
     await flush();
     expect(socket.sent.at(-1)!.payload.action).toEqual({ kind: 'remove-bot', roomId: 'r1', playerId: 'b2' });
     socket.push('room-state', { ...seats(false, 1), hostPlayerId: 'p2' });
-    expect(screen.queryByText('添加机器人')).toBeNull();
+    expect(screen.queryByLabelText('机器人')).toBeNull();
   });
 
   it('shows a disconnection message, disables actions, and resumes the saved seat on reconnect', async () => {

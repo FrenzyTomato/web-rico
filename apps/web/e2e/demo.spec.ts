@@ -8,9 +8,10 @@ test('demo opens without room credentials and stays offline and view-only', asyn
   await expect(page.locator('canvas')).toBeVisible();
   await expect(page.getByText('Explore the board, islands and tooltips. Gameplay actions are disabled in this demo.')).toBeVisible();
   await expect(page.locator('.actions button')).toHaveCount(0);
-  await page.getByRole('button', { name: 'Players', exact: true }).click();
-  await expect(page.getByRole('button', { name: 'Check his island' })).toHaveCount(2);
-  await page.getByRole('button', { name: 'Check his island' }).first().click();
+  // Desktop shows every player's stats in a row; the Players button is for phones.
+  await expect(page.getByRole('button', { name: 'Players', exact: true })).toBeHidden();
+  await expect(page.locator('.seat-strip [title="Check his island"]')).toHaveCount(2);
+  await page.locator('.seat-strip [title="Check his island"]').first().click();
   await expect(page.locator('.shell')).toHaveAttribute('data-revision', '185');
   expect(requests).toEqual([]);
   await expect(page.getByRole('link', { name: 'Back to lobby' })).toHaveAttribute('href', '/?lobby=1');

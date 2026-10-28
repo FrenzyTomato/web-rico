@@ -7,6 +7,8 @@ export interface PlayerBroadcast {
   readonly view: PlayerView;
   readonly legalActions: PlayerLegalActions;
   readonly events: readonly PlayerEvent[];
+  /** A role choice was taken back: this snapshot replaces newer ones, whose events no longer apply. */
+  readonly rewound?: true;
 }
 /**
  * Server → room channel `room-state`: who is seated. Display names are public; tokens never appear.
@@ -18,6 +20,8 @@ export interface RoomState {
   readonly seats: readonly { readonly playerId: string; readonly displayName: string; readonly bot?: true }[];
   readonly started: boolean;
 }
+/** Server → one connection `history`, after `resume`: every event this seat may see, oldest first, up to `revision`. */
+export interface PlayerHistory { readonly revision: number; readonly events: readonly PlayerEvent[] }
 /** Acknowledgement for room and resume requests. */
 export type RoomReply<T> = { readonly ok: true; readonly value: T } | { readonly ok: false; readonly code: ProtocolErrorCode };
 /** create-room / join-room: the reconnect token is sent once, only to its owner. */
