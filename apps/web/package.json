@@ -14,6 +14,7 @@
     "@fontsource/cormorant-garamond": "5.3.0",
     "@react-three/drei": "10.7.9",
     "@react-three/fiber": "9.8.1",
+    "@supabase/supabase-js": "2.58.0",
     "@vibe-rico/protocol": "workspace:*",
     "react": "19.3.0",
     "react-dom": "19.3.0",

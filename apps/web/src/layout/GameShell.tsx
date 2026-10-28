@@ -7,7 +7,7 @@ import type { ReactNode } from 'react';
 import { useStore } from 'zustand';
 import { confirmedWorkers } from '@vibe-rico/game-engine';
 import type { Good, RoleCardId } from '@vibe-rico/game-engine';
-import type { RoomState } from '@vibe-rico/protocol';
+import type { RoomReply, RoomState } from '@vibe-rico/protocol';
 import { ActionForm } from '../actions/ActionForm.js';
 import { ActionPanel } from '../actions/ActionPanel.js';
 import { createEventQueue, PULSE_MS } from '../animation/eventQueue.js';
@@ -29,6 +29,7 @@ import { describeEvent } from '../i18n/chronicle.js';
 import { moveNotice } from './moveNotice.js';
 import type { MoveNotice } from './moveNotice.js';
 import { actionView } from './actionView.js';
+import { accountStore } from '../accounts/account.js';
 import { poolKey, poolLooks } from '../scene/workerLooks.js';
 import { GOOD, PHASE, ROLE } from '../i18n/terms.js';
 import { SceneBoundary, webglAvailable } from '../scene/SceneBoundary.js';
@@ -54,8 +55,11 @@ export interface ShellGuide {
 
 
 /** DESIGN.md layout: top bar, players, 3D harbour, turn and chronicle, the viewer's hand and actions. */
-/** `onRewind` asks the server to take back the viewer's role choice (live games only). */
-export function GameShell({ store, roomId, room, lobbyHref, demo = false, guide, onRewind }: { store: GameStore; roomId: string; room: RoomState; lobbyHref?: string; demo?: boolean; guide?: ShellGuide; onRewind?: (() => Promise<unknown>) | undefined }) {
+/**
+ * `onRewind` asks the server to take back the viewer's role choice (live games only).
+ * `onClaim` links this seat to the signed-in account, so it shows in "My games" on every device.
+ */
+export function GameShell({ store, roomId, room, lobbyHref, demo = false, guide, onRewind, onClaim }: { store: GameStore; roomId: string; room: RoomState; lobbyHref?: string; demo?: boolean; guide?: ShellGuide; onRewind?: (() => Promise<unknown>) | undefined; onClaim?: (() => Promise<RoomReply<null>>) | undefined }) {
   const language = useLanguage();
   const [islandRequest, setIslandRequest] = useState<{ id: number; playerId: string }>();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -64,6 +68,8 @@ export function GameShell({ store, roomId, room, lobbyHref, demo = false, guide,
   const [playersOpen, setPlayersOpen] = useState(false);
   const [chronicleOpen, setChronicleOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const signedIn = useStore(accountStore, s => s.linked);
+  const [claimed, setClaimed] = useState<'idle' | 'saved' | 'failed'>('idle');
   // Game over: the results card can be put aside to look around the final map.
   const [showResults, setShowResults] = useState(true);
   const latest = useStore(store, s => s.latest);
@@ -179,6 +185,9 @@ export function GameShell({ store, roomId, room, lobbyHref, demo = false, guide,
         <LanguageToggle iconOnly />
         <button className="mobile-text-button" onClick={() => { setTextOpen(v => !v); setMenuOpen(false); }}>{t('文字界面（完整局面）')}</button>
         {lobbyHref && <a className="mobile-lobby-link back-to-lobby" href={lobbyHref}>{t('返回大厅')}</a>}
+        {onClaim && signedIn && <button className="claim-seat" disabled={claimed === 'saved'}
+          onClick={() => void onClaim().then(r => setClaimed(r.ok ? 'saved' : 'failed'))}>
+          {claimed === 'saved' ? t('已保存到我的账号') : claimed === 'failed' ? t('保存失败，重试') : t('保存到我的账号')}</button>}
         <SettingsPanel settings={settings} onChange={setSettings} iconOnly portalHost={shellRef.current} open={settingsOpen} onOpenChange={open => { setSettingsOpen(open); setPlayersOpen(false); setChronicleOpen(false); }} />
         </div>
       </header>

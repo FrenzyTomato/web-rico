@@ -1,7 +1,7 @@
 import { io } from 'socket.io-client';
 import type { Socket } from 'socket.io-client';
 import { PROTOCOL_VERSION } from '@vibe-rico/protocol';
-import type { Resumed, RoomReply, SeatGranted } from '@vibe-rico/protocol';
+import type { MyGame, Resumed, RoomReply, SeatGranted } from '@vibe-rico/protocol';
 
 /** Split hosting uses a public backend URL; local and Docker builds retain the same-origin proxy. */
 export const createSocket = (): Socket => io(import.meta.env.VITE_SERVER_URL?.trim() || undefined);
@@ -16,9 +16,14 @@ type RoomAction =
   | { kind: 'add-bot'; roomId: string }
   | { kind: 'fill-bots'; roomId: string; seats: number }
   | { kind: 'remove-bot'; roomId: string; playerId: string }
-  | { kind: 'rewind-role'; roomId: string };
-export function sendRoom(socket: LobbySocket, action: Extract<RoomAction, { kind: 'create-room' | 'join-room' }>): Promise<RoomReply<SeatGranted>>;
-export function sendRoom(socket: LobbySocket, action: Exclude<RoomAction, { kind: 'create-room' | 'join-room' }>): Promise<RoomReply<null>>;
+  | { kind: 'rewind-role'; roomId: string }
+  | { kind: 'my-games' }
+  | { kind: 'resume-account'; roomId: string }
+  | { kind: 'claim-seat'; roomId: string }
+  | { kind: 'delete-account' };
+export function sendRoom(socket: LobbySocket, action: Extract<RoomAction, { kind: 'create-room' | 'join-room' | 'resume-account' }>): Promise<RoomReply<SeatGranted>>;
+export function sendRoom(socket: LobbySocket, action: Extract<RoomAction, { kind: 'my-games' }>): Promise<RoomReply<MyGame[]>>;
+export function sendRoom(socket: LobbySocket, action: Exclude<RoomAction, { kind: 'create-room' | 'join-room' | 'resume-account' | 'my-games' }>): Promise<RoomReply<null>>;
 export function sendRoom(socket: LobbySocket, action: RoomAction) {
   return socket.emitWithAck('room', { protocolVersion: PROTOCOL_VERSION, action });
 }

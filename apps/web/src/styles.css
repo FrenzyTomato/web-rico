@@ -673,8 +673,8 @@ html[lang="en"] .role-card span { font-size: 14px; }
   .shell .topbar-tools > .chronicle-toggle { grid-column: 4; }
   .shell .topbar-tools > .language-toggle { grid-column: 5; }
   .shell .mobile-menu-button { grid-column: 6; }
-  .shell .topbar-tools > :is(.mobile-menu-info, .mobile-text-button, .mobile-lobby-link, .settings) { display: none; }
-  .shell.mobile-menu-open .topbar-tools > :is(.mobile-menu-info, .mobile-text-button, .mobile-lobby-link, .settings) { display: flex; grid-column: 1 / -1; justify-self: stretch; margin: 0; }
+  .shell .topbar-tools > :is(.mobile-menu-info, .mobile-text-button, .mobile-lobby-link, .settings, .claim-seat) { display: none; }
+  .shell.mobile-menu-open .topbar-tools > :is(.mobile-menu-info, .mobile-text-button, .mobile-lobby-link, .settings, .claim-seat) { display: flex; grid-column: 1 / -1; justify-self: stretch; margin: 0; }
   .shell.mobile-menu-open .topbar-tools > .mobile-menu-info { display: grid; padding-top: 8px; border-top: 1px solid var(--line); }
   .shell.mobile-menu-open .topbar-tools > .settings { justify-self: start; }
   .shell .turn-banner {
@@ -778,3 +778,25 @@ html[lang="en"] .role-card span { font-size: 14px; }
 .keep-stepper > span { margin-right: 4px; }
 .keep-stepper button { width: 40px; min-height: 40px; margin: 0; padding: 0; font-size: 20px; line-height: 1; border-radius: 10px; }
 .keep-stepper output { min-width: 22px; text-align: center; font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+/* Lobby account: a quiet strip above the nickname; signed in, it lists "My games". */
+.lobby-account { display: grid; gap: 10px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 14px; background: #ffffff05; }
+.lobby-account h2 { margin: 4px 0 0; font-size: 15px; color: var(--parchment); }
+.lobby-account p { margin: 0; font-size: 13px; color: var(--muted); }
+.lobby-account [role='alert'] { color: #f1c7a5; }
+.lobby-account-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.lobby-account-row button { margin: 0; }
+.lobby-account-form, .lobby-account-form form { display: grid; gap: 10px; }
+.lobby-account-form button { margin: 0; }
+.lobby-google { background: #f4edda; color: #1d2b2c; font-weight: 650; border-color: transparent; }
+.lobby-account-or { justify-self: center; font-size: 12px; color: var(--muted); }
+.lobby .lobby-account-link { background: none; border: 0; padding: 4px 0; margin: 0; font-size: 13px; color: var(--accent); text-decoration: underline; justify-self: start; cursor: pointer; }
+.lobby .lobby-account-delete { color: #e9a99a; font-size: 12px; }
+.lobby-account-note { font-size: 13px; }
+.lobby-games { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.lobby-games li { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 10px; border-radius: 10px; background: #d6eee30f; }
+.lobby-games li div { display: grid; min-width: 0; }
+.lobby-games strong { font-size: 14px; }
+.lobby-games span { font-size: 12px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lobby-games button { margin: 0; flex: none; }
+.topbar-tools .claim-seat { margin: 0; padding: 6px 10px; font-size: 12px; border-radius: 9px; }

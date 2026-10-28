@@ -54,7 +54,7 @@ export class PostgresRoomStore implements RoomStore {
     for (const e of events) byRevision.set(e.revision, [...byRevision.get(e.revision) ?? [], e.event]);
     const room: Room = {
       roomId: row.roomId, roomCode: row.roomCode, hostPlayerId: row.hostPlayerId as PlayerId,
-      seats: seats.map(s => ({ playerId: s.playerId as PlayerId, displayName: s.displayName, tokenHash: s.tokenHash, ...(s.bot ? { bot: true as const } : {}) })),
+      seats: seats.map(s => ({ playerId: s.playerId as PlayerId, displayName: s.displayName, tokenHash: s.tokenHash, ...(s.bot ? { bot: true as const } : {}), ...(s.userId ? { userId: s.userId } : {}) })),
       game: row.state === null || row.initialState === null || row.seed === null ? null : {
         // Version guard (PR-059): known upgrades in memory, then strict validation; incompatible saves throw.
         seed: row.seed, initialState: guardSnapshot(row.roomId, row.initialState, this.upgrades), state: guardSnapshot(row.roomId, row.state, this.upgrades),
@@ -86,6 +86,11 @@ export class PostgresRoomStore implements RoomStore {
     });
   }
 
+  async roomIdsForUser(userId: string): Promise<string[]> {
+    const rows = await this.db.selectDistinct({ roomId: schema.seats.roomId }).from(schema.seats).where(eq(schema.seats.userId, userId));
+    return rows.map(r => r.roomId);
+  }
+
   async listRoomIds(): Promise<string[]> {
     return (await this.db.select({ roomId: schema.rooms.roomId }).from(schema.rooms)).map(r => r.roomId);
   }
@@ -106,7 +111,7 @@ function roomColumns(room: Room) {
 }
 async function writeSeats(tx: Tx, room: Room) {
   if (room.seats.length === 0) return;
-  await tx.insert(schema.seats).values(room.seats.map((s, seatIndex) => ({ roomId: room.roomId, seatIndex, playerId: s.playerId, displayName: s.displayName, tokenHash: s.tokenHash, bot: s.bot === true })));
+  await tx.insert(schema.seats).values(room.seats.map((s, seatIndex) => ({ roomId: room.roomId, seatIndex, playerId: s.playerId, displayName: s.displayName, tokenHash: s.tokenHash, bot: s.bot === true, userId: s.userId ?? null })));
 }
 /**
  * Appends commands/events not yet stored. History normally only grows; if the stored rows are not a prefix

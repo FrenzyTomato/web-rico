@@ -1,4 +1,7 @@
 import { CopyInviteLink } from './CopyInviteLink.js';
+import { AccountPanel } from '../accounts/AccountPanel.js';
+import { accountStore, suggestedName } from '../accounts/account.js';
+import { useStore } from 'zustand';
 import { t, useLanguage, LanguageToggle } from '../i18n/language.js';
 import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
@@ -84,6 +87,18 @@ export function Lobby({ socket, onSession = () => {}, game }: {
     };
   }, [socket]);
 
+  // Signed in: pre-fill the nickname from the account once.
+  const session = useStore(accountStore, s => s.session);
+  useEffect(() => { if (session) setName(n => n || suggestedName(session)); }, [session]);
+  /** A seat the server handed this device for one of the account's games. */
+  const rejoin = (granted: SavedSeat) => {
+    setError(null);
+    saveSeat(granted);
+    manualLobby.current = false;
+    history.replaceState(null, '', inviteLink(granted.roomCode));
+    setSeat(granted);
+    sessionRef.current();
+  };
   const enter = async (action: { kind: 'create-room'; displayName: string } | { kind: 'join-room'; roomCode: string; displayName: string }) => {
     setError(null);
     if (action.kind === 'create-room' && passwordRequired && (!createPassword || password !== createPassword)) {
@@ -141,6 +156,7 @@ export function Lobby({ socket, onSession = () => {}, game }: {
       <div className="lobby-notices">{notices}</div>
       {!seat ? (
         <section className="lobby-entry">
+          <AccountPanel socket={socket} connected={connected} onRejoin={rejoin} />
           {savedGame && <div className="lobby-resume">
             <div><strong>{t('返回之前的房间')}</strong><p>{t('房间 {0}', [savedGame.roomCode])}</p></div>
             <a className="lobby-resume-link" href={inviteLink(savedGame.roomCode)}>{t('继续游戏')}</a>

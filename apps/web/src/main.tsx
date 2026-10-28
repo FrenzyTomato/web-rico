@@ -10,6 +10,7 @@ import { bindStore, socketTransport } from './network/commands.js';
 import { createSocket, lobbyLink, sendRoom } from './network/socket.js';
 import { createGameStore } from './state/gameStore.js';
 import { startAnalytics } from './analytics.js';
+import { bindAccount } from './accounts/account.js';
 
 startAnalytics();
 
@@ -20,10 +21,12 @@ function liveApp() {
   const socket = createSocket();
   const gameStore = createGameStore(socketTransport(socket));
   bindStore(socket, gameStore);
+  bindAccount(socket);
   const onSession = () => gameStore.getState().sessionReady();
   return <Lobby socket={socket} onSession={onSession} game={(seat, room) => (
     <>
-      <GameShell store={gameStore} roomId={seat.roomId} room={room} lobbyHref={lobbyLink()} onRewind={() => sendRoom(socket, { kind: 'rewind-role', roomId: seat.roomId })} />
+      <GameShell store={gameStore} roomId={seat.roomId} room={room} lobbyHref={lobbyLink()} onRewind={() => sendRoom(socket, { kind: 'rewind-role', roomId: seat.roomId })}
+        onClaim={() => sendRoom(socket, { kind: 'claim-seat', roomId: seat.roomId })} />
       {import.meta.env.DEV && <ScenarioTools socket={socket} roomId={seat.roomId} />}
     </>
   )} />;

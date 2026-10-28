@@ -31,18 +31,18 @@ export class Lobby {
   constructor(private readonly store: RoomStore, private readonly random: LobbyRandom = cryptoRandom) {}
 
   /** The creator is the host and first seat. Code collisions retry with a fresh code. The token is returned once. */
-  async createRoom(displayName: string): Promise<LobbyResult<{ roomId: string; roomCode: string; playerId: PlayerId; token: string }>> {
+  async createRoom(displayName: string, userId?: string): Promise<LobbyResult<{ roomId: string; roomCode: string; playerId: PlayerId; token: string }>> {
     const playerId = createId('player', this.random.id());
     const { token, tokenHash } = issueToken();
     for (;;) {
       const room: Room = { roomId: this.random.id(), roomCode: this.random.roomCode(), hostPlayerId: playerId,
-        seats: [{ playerId, displayName, tokenHash }], game: null };
+        seats: [{ playerId, displayName, tokenHash, ...(userId ? { userId } : {}) }], game: null };
       if (await this.store.create(room)) return { ok: true, value: { roomId: room.roomId, roomCode: room.roomCode, playerId, token } };
     }
   }
 
   /** Display names may repeat; identity is the server-generated playerId. */
-  async joinRoom(roomCode: string, displayName: string): Promise<LobbyResult<{ roomId: string; playerId: PlayerId; token: string }>> {
+  async joinRoom(roomCode: string, displayName: string, userId?: string): Promise<LobbyResult<{ roomId: string; playerId: PlayerId; token: string }>> {
     const stored = await this.store.findByCode(roomCode);
     if (!stored) return fail('ROOM_NOT_FOUND');
     const { room, revision } = stored;
@@ -50,9 +50,43 @@ export class Lobby {
     if (room.seats.length >= MAX_SEATS) return fail('ROOM_FULL');
     const playerId = createId('player', this.random.id());
     const { token, tokenHash } = issueToken();
-    const next: Room = { ...room, seats: [...room.seats, { playerId, displayName, tokenHash }] };
+    const next: Room = { ...room, seats: [...room.seats, { playerId, displayName, tokenHash, ...(userId ? { userId } : {}) }] };
     if (await this.store.update(next, revision) === 'stale') return fail('STALE_REVISION');
     return { ok: true, value: { roomId: room.roomId, playerId, token } };
+  }
+
+  /**
+   * Account rejoin (docs/ACCOUNTS_PLAN.md): the account's seat in this room gets a fresh reconnect token, so the
+   * device signing in takes it over and older stored tokens for that seat stop working.
+   */
+  async rotateAccountSeat(roomId: string, userId: string): Promise<LobbyResult<{ roomCode: string; playerId: PlayerId; token: string }>> {
+    const stored = await this.store.get(roomId);
+    if (!stored) return fail('ROOM_CLOSED');
+    const seat = stored.room.seats.find(s => s.userId === userId);
+    if (!seat) return fail('UNAUTHORIZED');
+    const { token, tokenHash } = issueToken();
+    const seats = stored.room.seats.map(s => s === seat ? { ...s, tokenHash } : s);
+    if (await this.store.update({ ...stored.room, seats }, stored.revision) === 'stale') return fail('STALE_REVISION');
+    return { ok: true, value: { roomCode: stored.room.roomCode, playerId: seat.playerId, token } };
+  }
+
+  /** Links a seat the caller already controls to their account; one account holds at most one seat per room. */
+  async claimSeat(roomId: string, playerId: PlayerId, userId: string): Promise<LobbyResult<null>> {
+    const stored = await this.store.get(roomId);
+    if (!stored) return fail('ROOM_CLOSED');
+    const { room, revision } = stored;
+    if (room.seats.some(s => s.userId === userId && s.playerId !== playerId)) return fail('ILLEGAL_COMMAND');
+    const seats = room.seats.map(s => s.playerId === playerId && !s.bot ? { ...s, userId } : s);
+    if (await this.store.update({ ...room, seats }, revision) === 'stale') return fail('STALE_REVISION');
+    return { ok: true, value: null };
+  }
+
+  /** Account deletion, one room at a time (run in that room's queue): the account's seat becomes a guest seat. */
+  async unlinkSeat(roomId: string, userId: string): Promise<void> {
+    const stored = await this.store.get(roomId);
+    if (!stored?.room.seats.some(s => s.userId === userId)) return;
+    const seats = stored.room.seats.map(s => s.userId === userId ? (({ userId: _, ...rest }) => rest)(s) : s);
+    await this.store.update({ ...stored.room, seats }, stored.revision);
   }
 
   /** Host only, before start: adds one bot seat. */

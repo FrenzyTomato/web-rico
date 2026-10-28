@@ -81,8 +81,16 @@ export const roomRequest = z.strictObject({
     z.strictObject({ kind: z.literal('remove-bot'), roomId: z.string(), playerId: z.string() }),
     // Takes back the sender's role choice before anything follows it (apps/server/src/rooms/rewind.ts).
     z.strictObject({ kind: z.literal('rewind-role'), roomId: z.string() }),
+    // Signed-in accounts (docs/ACCOUNTS_PLAN.md); identity comes from the verified access token, never the payload.
+    z.strictObject({ kind: z.literal('my-games') }),
+    z.strictObject({ kind: z.literal('resume-account'), roomId: z.string() }),
+    z.strictObject({ kind: z.literal('claim-seat'), roomId: z.string() }),
+    z.strictObject({ kind: z.literal('delete-account') }),
   ]),
 });
+/** Sets or clears this connection's signed-in account: a Supabase access token, or null to sign out. */
+export const authRequest = z.strictObject({ protocolVersion: z.literal(PROTOCOL_VERSION), accessToken: z.string().nullable() });
+export type AuthRequest = z.infer<typeof authRequest>;
 /** Reclaims a seat with its reconnect token (PROTOCOL.md "Rooms and recovery"). */
 export const resumeRequest = z.strictObject({ protocolVersion: z.literal(PROTOCOL_VERSION), roomId: z.string(), token: z.string() });
 export type GameplayRequest = z.infer<typeof gameplayRequest>;
@@ -102,3 +110,4 @@ function parser<T>(schema: z.ZodType<T>) {
 export const parseGameplayRequest = parser(gameplayRequest);
 export const parseRoomRequest = parser(roomRequest);
 export const parseResumeRequest = parser(resumeRequest);
+export const parseAuthRequest = parser(authRequest);

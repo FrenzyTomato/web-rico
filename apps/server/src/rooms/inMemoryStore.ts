@@ -22,6 +22,9 @@ export class InMemoryRoomStore implements RoomStore {
     return 'ok';
   }
   async listRoomIds(): Promise<string[]> { return [...this.#rooms.keys()]; }
+  async roomIdsForUser(userId: string): Promise<string[]> {
+    return [...this.#rooms.values()].filter(r => r.room.seats.some(s => s.userId === userId)).map(r => r.room.roomId);
+  }
   async delete(roomId: string, expectedRevision: number): Promise<'ok' | 'stale'> {
     const current = this.#rooms.get(roomId);
     if (!current || current.revision !== expectedRevision) return 'stale';

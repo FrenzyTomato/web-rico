@@ -1,4 +1,4 @@
-import { bigint, boolean, foreignKey, integer, jsonb, pgTable, primaryKey, text, unique } from 'drizzle-orm/pg-core';
+import { bigint, boolean, foreignKey, index, integer, jsonb, pgTable, primaryKey, text, unique } from 'drizzle-orm/pg-core';
 import type { GameEvent, GameState } from '@vibe-rico/game-engine';
 
 /**
@@ -26,8 +26,11 @@ export const seats = pgTable('seats', {
   displayName: text('display_name').notNull(),
   tokenHash: text('token_hash').notNull().unique(),
   bot: boolean('bot').notNull().default(false),
+  // Supabase user id when a signed-in player owns the seat (docs/ACCOUNTS_PLAN.md).
+  userId: text('user_id'),
 }, t => [
   primaryKey({ columns: [t.roomId, t.playerId] }),
+  index('seats_user_id').on(t.userId),
   unique('seats_room_seat_index').on(t.roomId, t.seatIndex),
   foreignKey({ columns: [t.roomId], foreignColumns: [rooms.roomId] }).onDelete('cascade'),
 ]);

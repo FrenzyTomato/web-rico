@@ -20,6 +20,9 @@ One machine runs two containers: the game service (web client + Socket.IO + API 
 | `HOST`, `PORT`, `WEB_ROOT` | baked into the image | Listener `0.0.0.0:3000` inside the container, and the static client root. |
 | `JEV_API_KEY` | `.env` | Optional. TypeSafe Jev key for bot seats; without it bots play on the code value alone ([BOT_STRATEGY.md](BOT_STRATEGY.md)). |
 | `JEV_MODEL` | `.env` | Optional. Overrides the pinned Jev model (`jev-1.14.0`). |
+| `SUPABASE_URL` | `.env` | Optional. Enables sign-in: the server checks Supabase access tokens against this project ([ACCOUNTS_PLAN.md](ACCOUNTS_PLAN.md)). |
+| `SUPABASE_SERVICE_ROLE_KEY` | `.env` | Optional, secret. Lets players delete their account. Server only; never put it in Vercel. |
+| `SUPABASE_JWT_SECRET` | `.env` | Only for Supabase projects still on legacy shared-secret tokens; new projects use public keys and don't need it. |
 | `VIBE_RICO_DEV_TOOLS` | **never in production** | Enables full-state developer tools (local development only). |
 
 ## First start
@@ -76,6 +79,16 @@ Share `https://game.example.com/` invite links. localhost without TLS is fine fo
 Compose defaults `CORS_ORIGINS` to `https://webri.co`. Override it with a comma-separated list in `.env` if needed; origins must match exactly (no trailing slash). Direct server launches default to no cross-origin browser access.
 
 Set Vercel’s public build variable `VITE_SERVER_URL=https://api.webri.co` and redeploy. Configure Caddy on the Droplet to reverse proxy `api.webri.co` to `127.0.0.1:3000`. After pulling backend changes, run `docker compose up -d --build`. Keep the existing database password and volume.
+
+### Sign-in with Supabase (optional)
+
+Accounts are optional; without these settings everyone plays as a guest. Setup:
+1. **Create the project:** at supabase.com, create a project in the **Sydney (ap-southeast-2)** region.
+2. **Email codes:** in **Authentication → Sign In / Providers**, keep **Email** enabled. In **Authentication → Emails → Magic Link**, make the template show the code, e.g. `Your code: {{ .Token }}`, since the lobby asks for the 6-digit code rather than a link.
+3. **Google:** in Google Cloud Console, create an OAuth client (Web application) whose authorised redirect URI is the callback shown on Supabase's Google provider page (`https://<project>.supabase.co/auth/v1/callback`). Paste its client ID and secret into **Authentication → Sign In / Providers → Google**.
+4. **URLs:** in **Authentication → URL Configuration**, set Site URL to `https://webri.co` and add `https://webri.co/?lobby=1` and `http://localhost:5173/?lobby=1` as redirect URLs.
+5. **Vercel** (Config, not secret): `VITE_SUPABASE_URL` = the project URL, `VITE_SUPABASE_ANON_KEY` = the anon / publishable key. Redeploy.
+6. **Droplet `.env`:** `SUPABASE_URL` = the project URL, `SUPABASE_SERVICE_ROLE_KEY` = the service role / secret key. Then `docker compose up -d --build`, which also applies the `0002_account_seats` migration.
 
 ### Visitor analytics (Cloudflare, free)
 

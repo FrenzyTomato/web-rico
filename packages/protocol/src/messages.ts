@@ -22,6 +22,16 @@ export interface RoomState {
 }
 /** Server → one connection `history`, after `resume`: every event this seat may see, oldest first, up to `revision`. */
 export interface PlayerHistory { readonly revision: number; readonly events: readonly PlayerEvent[] }
+/** One room in the signed-in player's "My games" list. */
+export interface MyGame {
+  readonly roomId: string;
+  readonly roomCode: string;
+  readonly status: 'lobby' | 'playing' | 'ended';
+  /** Display names in seat order; `you` is this account's seat name. */
+  readonly players: readonly string[];
+  readonly you: string;
+  readonly round: number | null;
+}
 /** Acknowledgement for room and resume requests. */
 export type RoomReply<T> = { readonly ok: true; readonly value: T } | { readonly ok: false; readonly code: ProtocolErrorCode };
 /** create-room / join-room: the reconnect token is sent once, only to its owner. */

@@ -8,6 +8,8 @@ export interface Seat {
   readonly tokenHash: string;
   /** Played by the server's bot runner (docs/BOT_STRATEGY.md). */
   readonly bot?: true;
+  /** The signed-in account that owns this seat (Supabase user id); guests and bots have none. */
+  readonly userId?: string;
 }
 export interface Room {
   readonly roomId: string;
@@ -51,4 +53,6 @@ export interface RoomStore {
   delete(roomId: string, expectedRevision: number): Promise<'ok' | 'stale'>;
   /** Every stored room, for recovery after a restart (PR-058). */
   listRoomIds(): Promise<string[]>;
+  /** Rooms with a seat linked to this account. */
+  roomIdsForUser(userId: string): Promise<string[]>;
 }

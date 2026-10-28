@@ -15,6 +15,13 @@
       "when": 1793141203334,
       "tag": "0001_bot_seats",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793192275424,
+      "tag": "0002_account_seats",
+      "breakpoints": true
     }
   ]
 }
