@@ -77,6 +77,15 @@ Compose defaults `CORS_ORIGINS` to `https://webri.co`. Override it with a comma-
 
 Set Vercel’s public build variable `VITE_SERVER_URL=https://api.webri.co` and redeploy. Configure Caddy on the Droplet to reverse proxy `api.webri.co` to `127.0.0.1:3000`. After pulling backend changes, run `docker compose up -d --build`. Keep the existing database password and volume.
 
+### Visitor analytics (Cloudflare, free)
+
+Daily visits come from Cloudflare Web Analytics; the domain does not need to move to Cloudflare.
+1. In the Cloudflare dashboard, open **Analytics & Logs → Web Analytics**, choose **Add a site**, enter `webri.co`, and pick the manual JavaScript snippet.
+2. Copy the `token` value from the snippet (`data-cf-beacon='{"token": "…"}'`).
+3. In the Vercel project, add the environment variable `VITE_CF_BEACON_TOKEN` with that token (Production), then redeploy.
+
+The web app ([analytics.ts](../apps/web/src/analytics.ts)) loads the beacon only when the variable is set, so local development sends nothing. Results appear under Web Analytics after a few minutes.
+
 ### Room creation password
 
 The password gate is disabled by default. To enable it, set `VITE_ROOM_CREATION_PASSWORD_ENABLED=true` and configure `VITE_ROOM_CREATION_PASSWORD` in `apps/web/.env` for local development and in the Vercel project environment variables for Production (and Preview if used). Restart Vite locally and rebuild/redeploy on Vercel after changing it. The lobby requires an exact password match to create a room; joining and resuming are unaffected. While enabled, missing password configuration blocks creation. Set `VITE_ROOM_CREATION_PASSWORD_ENABLED=false` (or omit it) to hide the field and allow creation without a password; the stored password can remain unchanged. This is a frontend-only gate: the value is public in the JavaScript bundle and does not protect the backend room API.

@@ -9,6 +9,9 @@ import { Lobby } from './lobby/Lobby.js';
 import { bindStore, socketTransport } from './network/commands.js';
 import { createSocket, lobbyLink, sendRoom } from './network/socket.js';
 import { createGameStore } from './state/gameStore.js';
+import { startAnalytics } from './analytics.js';
+
+startAnalytics();
 
 const Demo = lazy(() => import('./demo/Demo.js').then(m => ({ default: m.Demo })));
 const Tutorial = lazy(() => import('./tutorial/Tutorial.js').then(m => ({ default: m.Tutorial })));
