@@ -1,5 +1,5 @@
 import { createGame, createId, getLegalCommands, RULESET } from '@vibe-rico/game-engine';
-import type { GameState, GameCommand, Role } from '@vibe-rico/game-engine';
+import type { BuildingType, GameState, GameCommand, Role } from '@vibe-rico/game-engine';
 
 export const learner = createId('player', 'alice');
 export function initialTutorialGame(): GameState {
@@ -7,8 +7,18 @@ export function initialTutorialGame(): GameState {
   if (!result.ok) throw Error(result.error.message);
   return result.state;
 }
-const rounds: readonly (readonly Role[])[] = [['planter', 'builder', 'recruiter'], ['recruiter', 'trader', 'craftsman'], ['trader', 'captain']];
-export const tutorialComplete = (state: GameState) => state.roundNumber === 3 && state.roleSelectionIndex === 2 && state.phase.kind === 'role-selection';
+/**
+ * The lesson, one list per round (Governor first): you take a quarry, everyone builds (you a Small Fruit Depot), two
+ * Recruiters staff your fruit estate and depot, a Craftsman produces, you sell fruit (Bruno's fruit is then shut out),
+ * a third Recruiter staffs your quarry, you build with the quarry and Builder discounts, a Craftsman produces again,
+ * and you finish as Captain.
+ */
+const rounds: readonly (readonly Role[])[] = [['planter', 'builder', 'recruiter'], ['recruiter', 'craftsman', 'trader'], ['recruiter', 'builder', 'craftsman'], ['captain']];
+export const tutorialComplete = (state: GameState) => state.roundNumber === 4 && state.roleSelectionIndex === 1 && state.phase.kind === 'role-selection';
+/** What each player buys, in order of preference; the chooser always takes the Builder discount. */
+const builds: Record<string, readonly BuildingType[]> = {
+  alice: ['small-fruit-depot', 'small-warehouse'], bruno: ['small-fruit-depot', 'small-market'], chen: ['small-market'],
+};
 
 /** Guided choices only. The engine still validates and executes every player/bot move at runtime. */
 export function nextTutorialCommand(state: GameState): GameCommand | null {
@@ -17,7 +27,6 @@ export function nextTutorialCommand(state: GameState): GameCommand | null {
   if (!legal) throw Error('No tutorial decision');
   const actorId = legal.actorId;
   const me = state.players.find(p => p.playerId === actorId)!;
-  const roleIndex = (state.roundNumber - 1) * 3 + state.roleSelectionIndex + 1;
   let command: GameCommand;
   switch (legal.phase) {
     case 'role-selection': {
@@ -28,21 +37,28 @@ export function nextTutorialCommand(state: GameState): GameCommand | null {
       break;
     }
     case 'planter-choice': {
-      const corn = state.estateMarket.find(t => t.kind === 'corn');
-      if (actorId === 'alice' && !corn) throw Error('Lesson needs corn');
-      command = { kind: 'plant', actorId, choice: { kind: 'estate', tileId: actorId === 'alice' ? corn!.instanceId : state.estateMarket.find(t => t.kind === (actorId === 'chen' ? 'corn' : 'fruit'))?.instanceId ?? state.estateMarket[0]!.instanceId } };
+      // You take the quarry (the chooser's privilege); Bruno prefers corn and Chen sugar, else the first estate.
+      const want = actorId === learner ? null : actorId === 'bruno' ? 'corn' : 'sugar';
+      const estate = state.estateMarket.find(t => t.kind === want) ?? state.estateMarket[0]!;
+      command = { kind: 'plant', actorId, choice: want === null ? { kind: 'quarry' } : { kind: 'estate', tileId: estate.instanceId } };
       break;
     }
-    case 'builder-choice':
-      command = { kind: 'build', actorId, purchase: { buildingTypeId: actorId === 'bruno' ? 'small-fruit-depot' : 'small-market', useAdvantage: actorId === 'bruno', useSchool: false } };
+    case 'builder-choice': {
+      const owned = new Set(me.buildings.map(b => b.buildingTypeId));
+      const type = builds[actorId]!.find(t => !owned.has(t) && legal.purchases.some(p => p.buildingTypeId === t));
+      const offer = type && legal.purchases.filter(p => p.buildingTypeId === type).sort((x, y) => x.price - y.price)[0];
+      command = { kind: 'build', actorId, purchase: offer ? { buildingTypeId: offer.buildingTypeId, useAdvantage: offer.useAdvantage, useSchool: false } : null };
       break;
+    }
     case 'recruiter-advantage': command = { kind: 'recruit-worker', actorId, accept: true }; break;
     case 'recruiter-placement': {
       let remaining = legal.totalWorkers;
-      // The learner staffs corn, then Small Market. Opponents first staff fruit, then add buildings.
-      const preferred = roleIndex <= 3 && actorId !== learner ? me.countryside.map(t => t.instanceId) : [
-        ...me.countryside.filter(t => t.kind === 'corn').map(t => t.instanceId),
-        ...me.buildings.map(b => b.instanceId), ...me.countryside.filter(t => t.kind !== 'corn').map(t => t.instanceId),
+      // You staff the fruit estate, then the Small Fruit Depot, then the quarry. Opponents fill estates, then buildings.
+      const preferred = actorId !== learner ? [...me.countryside.map(t => t.instanceId), ...me.buildings.map(b => b.instanceId)] : [
+        ...me.countryside.filter(t => t.kind === 'fruit').map(t => t.instanceId),
+        ...me.buildings.filter(b => b.buildingTypeId === 'small-fruit-depot').map(b => b.instanceId),
+        ...me.countryside.filter(t => t.kind !== 'fruit').map(t => t.instanceId),
+        ...me.buildings.filter(b => b.buildingTypeId !== 'small-fruit-depot').map(b => b.instanceId),
       ];
       const counts = new Map<string, number>();
       for (const key of preferred) {
@@ -59,14 +75,19 @@ export function nextTutorialCommand(state: GameState): GameCommand | null {
       command = { kind: 'produce', actorId, production: { accept: true, useFactory: false } };
       break;
     case 'craftsman-bonus':
-      command = { kind: 'take-production-bonus', actorId, good: 'corn' };
+      command = { kind: 'take-production-bonus', actorId, good: legal.goods.find(g => g !== null) ?? null };
       break;
-    case 'trader-choice':
-      command = { kind: 'trade', actorId, sale: actorId === 'alice' && me.goods.corn > 0 ? { good: 'corn', useAdvantage: false, useSmallMarket: true, useLargeMarket: false } : null };
+    case 'trader-choice': {
+      // You sell fruit at the best price on offer; the bots keep their goods, so the guide can show fruit is now shut out.
+      const sale = actorId === learner ? legal.sales.filter(o => o.good === 'fruit').sort((x, y) => y.price - x.price)[0] : undefined;
+      command = { kind: 'trade', actorId, sale: sale ? { good: sale.good, useAdvantage: sale.useAdvantage, useSmallMarket: sale.useSmallMarket, useLargeMarket: sale.useLargeMarket } : null };
       break;
-    case 'captain-loading':
-      command = { kind: 'load', actorId, shipment: legal.loads[0]!.shipment, useHarbor: false };
+    }
+    case 'captain-loading': {
+      const load = legal.loads.find(l => l.shipment.good === 'fruit') ?? legal.loads[0]!;
+      command = { kind: 'load', actorId, shipment: load.shipment, useHarbor: false };
       break;
+    }
     case 'captain-retention': {
       const good = (Object.keys(legal.available) as (keyof typeof legal.available)[]).find(g => legal.available[g] > 0);
       command = { kind: 'retain', actorId, retained: { corn: 0, fruit: 0, sugar: 0, tobacco: 0, coffee: 0, ...(good ? { [good]: 1 } : {}) }, warehouseTypes: [] }; break;

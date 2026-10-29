@@ -16,18 +16,18 @@ export function GameView({ view, names }: { view: PlayerView; names: Readonly<Re
         <p>{t("第 ")}{view.roundNumber}{t(" 轮 · 总督 ")}{name(view.governorPlayerId)}{t(" · 阶段 ")}{PHASE[phase.kind]}
           {'actorId' in phase && t(" · 等待 {0}", [name(phase.actorId)])}</p>
         <p>{t("我的运货分：")}{view.viewer.earnedVp}</p>
-        {view.endTriggers.length > 0 && <p>{t("游戏将在本阶段后结束：")}{view.endTriggers.map(t => END_REASON[t.reason]).join('、')}</p>}
+        {view.endTriggers.length > 0 && <p>{t("游戏将在本阶段后结束：")}{view.endTriggers.map(trigger => END_REASON[trigger.reason]).join(t('、'))}</p>}
       </section>
       <section aria-label={t("角色")}>
-        <ul>{view.roleCards.map(c => <li key={c.instanceId}>{ROLE[c.kind]}：{c.accumulatedCoins}{t(" 金币")}{c.selectedBy && `（${name(c.selectedBy)}）`}</li>)}</ul>
+        <ul>{view.roleCards.map(c => <li key={c.instanceId}>{ROLE[c.kind]}{t('：')}{c.accumulatedCoins}{t(" 金币")}{c.selectedBy && t('（{0}）', [name(c.selectedBy)])}</li>)}</ul>
       </section>
       <section aria-label={t("公共区域")}>
         <p>{t("货物供应：")}{goods(view.supply.goods)}</p>
-        <p>{t("工人供应 ")}{view.supply.workerCount}{t(" · 殖民船 ")}{view.supply.workRegisterCount}{t(" · 采石场 ")}{view.supply.quarryCount}{t(" · 剩余分数 ")}{view.supply.vpRemaining}{t("（超出 ")}{view.supply.vpOverflow}）</p>
-        <p>{t("种植园市场：")}{view.estateMarket.map(t => TILE[t.kind]).join('、') || t("空")}{t(" · 弃牌 ")}{view.estateDiscard.length}</p>
-        <p>{t("建筑市场：")}{(Object.entries(view.supply.buildingStock) as [keyof typeof BUILDING, number][]).filter(([, n]) => n > 0).map(([b, n]) => `${BUILDING[b]}×${n}`).join('、')}</p>
+        <p>{t("工人供应 ")}{view.supply.workerCount}{t(" · 招募池 ")}{view.supply.workRegisterCount}{t(" · 采石场 ")}{view.supply.quarryCount}{t(" · 剩余分数 ")}{view.supply.vpRemaining}{t("（超出 ")}{view.supply.vpOverflow}{t('）')}</p>
+        <p>{t("种植园市场：")}{view.estateMarket.map(tile => TILE[tile.kind]).join(t('、')) || t("空")}{t(" · 弃牌 ")}{view.estateDiscard.length}</p>
+        <p>{t("建筑市场：")}{(Object.entries(view.supply.buildingStock) as [keyof typeof BUILDING, number][]).filter(([, n]) => n > 0).map(([b, n]) => `${BUILDING[b]}×${n}`).join(t('、'))}</p>
         <p>{t("货船：")}{view.ships.map((s, i) => `${t('货船 {0}', [i + 1])}[${s.capacity}] ${s.goodType ? GOOD[s.goodType] : t("空")} ${s.loadedCount}/${s.capacity}`).join(' · ')}</p>
-        <p>{t("交易所：")}{view.tradingHouse.map(g => GOOD[g]).join('、') || t("空")}（{view.tradingHouse.length}/4）</p>
+        <p>{t("交易所：")}{view.tradingHouse.map(g => GOOD[g]).join(t('、')) || t("空")}{t('（{0}）', [`${view.tradingHouse.length}/4`])}</p>
       </section>
       <section aria-label={t("玩家")}>
         {view.players.map(p => (

@@ -29,7 +29,7 @@ export function allowedTargets(step: TutorialStep, draft: WorkerDraft | null, go
   const a = step.action;
   switch (a.kind) {
     case 'choose-role': return [{ kind: 'role', id: a.roleCardId }];
-    case 'plant': return a.choice.kind === 'estate' ? [{ kind: 'estate', id: a.choice.tileId }] : [];
+    case 'plant': return a.choice.kind === 'estate' ? [{ kind: 'estate', id: a.choice.tileId }] : a.choice.kind === 'quarry' ? [{ kind: 'quarry' }] : [];
     case 'build': return a.purchase ? [{ kind: 'building', type: a.purchase.buildingTypeId }] : [];
     case 'take-production-bonus': return a.good ? [{ kind: 'good', good: a.good }] : [];
     case 'trade': return !a.sale ? [] : good === a.sale.good ? [{ kind: 'depot' }] : [{ kind: 'crate', good: a.sale.good, index: 0 }];
@@ -54,11 +54,25 @@ export function allowsTarget(step: TutorialStep, draft: WorkerDraft | null, good
   return allowedTargets(step, draft, good).some(t => targetKey(t) === targetKey(whole));
 }
 
+/** After a role is picked: the learner's first move in that role's phase, or null when the phase passes them by. */
+export function learnerFollowUp(game: GameState): Action | null {
+  let state = game;
+  for (let i = 0; i < 40 && state.phase.kind !== 'role-selection'; i++) {
+    const step = nextStep(state);
+    if (!step) return null;
+    if (step.command.actorId === learner) return step.action;
+    const result = applyCommand(state, step.command);
+    if (!result.ok) return null;
+    state = result.state;
+  }
+  return null;
+}
+
 /** A move that has been applied, kept so the guide can explain it and its follow-up. */
 export interface TutorialMove { step: TutorialStep; events: readonly PlayerEvent[] }
 export interface TutorialState {
   /**
-   * intro: opening pages before any move; action: learner's move; result: the learner checks what their move added to their island;
+   * intro: opening pages before any move; action: learner's move; result: the learner checks what their move added to their island, or reads about the role they picked;
    * opponent: preview of a scripted move; opponent-result: that move has been applied.
    */
   generation: number; index: number; stage: 'intro' | 'action' | 'result' | 'opponent' | 'opponent-result' | 'finished' | 'disposed';
@@ -67,7 +81,8 @@ export interface TutorialState {
   opponentMove(generation: number, index: number): boolean;
   next(generation: number, index: number): void; begin(generation: number): void; reset(): void; dispose(): void;
 }
-const ISLAND_CHANGES: readonly Action['kind'][] = ['plant', 'build'];
+/** The learner's moves followed by a pause: new estates and buildings on their island, and role picks to explain. */
+const PAUSE_AFTER: readonly Action['kind'][] = ['plant', 'build', 'choose-role'];
 const stageFor = (step: TutorialStep | null) => !step ? 'finished' as const : step.command.actorId === learner ? 'action' as const : 'opponent' as const;
 const fresh = () => {
   const game = initialTutorialGame(), step = nextStep(game);
@@ -90,8 +105,11 @@ export function createTutorialController() {
         if (s.generation !== generation || s.stage !== 'action' || !s.step || s.step.command.actorId !== learner || s.step.id !== stepId || revision !== s.snapshot?.revision || !sameAction(action, s.step.action)) return false;
         const applied = execute();
         if (!applied) return false;
-        // New estates and buildings land on the learner's island: pause there. Other results are explained with the next move.
-        if (ISLAND_CHANGES.includes(s.step.action.kind)) { set({ ...applied, index: s.index + 1, stage: 'result' }); return true; }
+        // Pause on the learner's island for new estates and buildings, and on the role explanation. Others are explained with the next move.
+        // The learner's move can also end a Recruiter turn or the loading: pause on the refilled hiring pool or the ships.
+        const ended = (s.step.action.kind === 'allocate-workers' && applied.game.phase.kind !== 'recruiter-placement')
+          || (s.step.action.kind === 'load' && applied.game.phase.kind !== 'captain-loading');
+        if (PAUSE_AFTER.includes(s.step.action.kind) || ended) { set({ ...applied, index: s.index + 1, stage: 'result' }); return true; }
         const step = nextStep(applied.game);
         set({ ...applied, index: s.index + 1, step: step ?? s.step, stage: stageFor(step) });
         return true;

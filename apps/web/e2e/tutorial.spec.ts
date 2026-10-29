@@ -23,22 +23,25 @@ for (const mobile of [false, true]) test(`simulated tutorial plays every turn wi
   await expect(page.locator('.role-hand .role-card:enabled')).toContainText('Planter');
   await expect(coach).toContainText('Choose Planter');
   await page.locator('.role-hand .role-card:enabled').click();
-  // The guide explains the role just chosen alongside the follow-up it unlocks.
+  // The guide stops to explain the role just chosen over two pages (estates, then quarries), then the follow-up.
   await expect(coach).toContainText('You chose Planter');
-  await expect(coach).toContainText('Take Corn');
-  // Click the upper model on the board; the normal action panel confirms it.
-  await page.waitForFunction(() => (window as unknown as { __sceneTargets?: () => Target[] }).__sceneTargets?.().some(t => t.key.startsWith('estate:estate-corn-') && t.actionable));
+  await coach.getByRole('button', { name: 'Next', exact: true }).click();
+  await expect(coach).toContainText('Planter: quarries');
+  await coach.getByRole('button', { name: 'Got it', exact: true }).click();
+  await expect(coach).toContainText('Take a quarry');
+  // Click the quarry stack on the board (the Planter privilege); the normal action panel confirms it. No estate is offered.
+  await page.waitForFunction(() => (window as unknown as { __sceneTargets?: () => Target[] }).__sceneTargets?.().some(t => t.key === 'quarry' && t.actionable));
   await page.waitForTimeout(1000); // Let the guided camera settle before projecting the target.
   const targets = await sceneTargets(page);
-  expect(targets.filter(t => t.key.startsWith('estate:') && t.actionable)).toHaveLength(1);
-  const corn = targets.find(t => t.key.startsWith('estate:estate-corn-') && t.actionable)!;
+  expect(targets.filter(t => t.key.startsWith('estate:') && t.actionable)).toHaveLength(0);
+  const quarry = targets.find(t => t.key === 'quarry' && t.actionable)!;
   const boardCanvas = (await page.locator('canvas').boundingBox())!;
-  const cornPoint = { x: boardCanvas.x + corn.x, y: boardCanvas.y + corn.y - 40 };
-  if (mobile) await page.touchscreen.tap(cornPoint.x, cornPoint.y);
-  else await page.mouse.click(cornPoint.x, cornPoint.y);
+  const quarryPoint = { x: boardCanvas.x + quarry.x, y: boardCanvas.y + quarry.y - 40 };
+  if (mobile) await page.touchscreen.tap(quarryPoint.x, quarryPoint.y);
+  else await page.mouse.click(quarryPoint.x, quarryPoint.y);
   // Object hints stay closed in the tutorial, so the guide is the only tooltip.
-  if (!mobile) { await page.mouse.move(cornPoint.x, cornPoint.y); await page.waitForTimeout(300); await expect(page.locator('.scene .model-tooltip')).toHaveCount(0); }
-  await page.getByRole('group', { name: 'Actions for selected piece' }).getByRole('button', { name: /^Plant Corn/ }).click();
+  if (!mobile) { await page.mouse.move(quarryPoint.x, quarryPoint.y); await page.waitForTimeout(300); await expect(page.locator('.scene .model-tooltip')).toHaveCount(0); }
+  await page.getByRole('group', { name: 'Actions for selected piece' }).getByRole('button', { name: /^Take quarry/ }).click();
   await expect(coach).toHaveAttribute('data-tutorial-stage', 'result');
   await expect(coach).toContainText('Check your island');
   await coach.getByRole('button', { name: 'Next', exact: true }).click();
@@ -62,13 +65,14 @@ for (const mobile of [false, true]) test(`simulated tutorial plays every turn wi
     previousRevision = revision;
     if (stage === 'finished') break;
     if (stage === 'result') {
-      await expect(coach).toContainText('Check your island');
-      await coach.getByRole('button', { name: 'Next', exact: true }).click();
+      // Either the island check after a plant or build, or the pages explaining a role the learner chose.
+      await coach.getByRole('button', { name: /^(Next|Got it)$/ }).click();
     } else if (stage === 'opponent' || stage === 'opponent-result') {
       if (stage === 'opponent' && kind === 'load') botLoads.push(actor!);
       // Learners cannot act during an opponent's move.
       await expect(page.locator('.role-hand .role-card:enabled')).toHaveCount(0);
-      await coach.getByRole('button', { name: 'Next', exact: true }).click();
+      // A bot's role pick waits for the learner to read what it means.
+      await coach.getByRole('button', { name: /^(Next|Got it)$/ }).click();
     } else if (kind === 'choose-role') {
       const card = page.locator('.role-hand .role-card:enabled');
       await expect(card).toHaveCount(1);
@@ -94,7 +98,7 @@ for (const mobile of [false, true]) test(`simulated tutorial plays every turn wi
       await confirm.click();
     } else {
       if (kind === 'build' && !checkedBuild) {
-        await page.waitForFunction(() => (window as unknown as { __sceneTargets?: () => Target[] }).__sceneTargets?.().some(t => t.key === 'building:small-market' && t.actionable));
+        await page.waitForFunction(() => (window as unknown as { __sceneTargets?: () => Target[] }).__sceneTargets?.().some(t => t.key === 'building:small-fruit-depot' && t.actionable));
         const buildings = await sceneTargets(page);
         expect(buildings.find(t => t.key === 'building:small-sugar-mill')!.actionable).toBe(false);
         checkedBuild = true;
@@ -109,8 +113,9 @@ for (const mobile of [false, true]) test(`simulated tutorial plays every turn wi
     await expect(coach).not.toHaveAttribute('data-tutorial-index', index!);
   }
   await expect(coach).toContainText('Ready to play!');
-  expect(roleChoices).toEqual(['Planter', 'Craftsman', 'Captain']);
-  expect(botLoads).toEqual(['bruno', 'chen']);
+  expect(roleChoices).toEqual(['Planter', 'Trader', 'Builder', 'Captain']);
+  // Bruno's fruit follows yours onto the same ship, Chen's corn takes another, then Bruno's corn joins it.
+  expect(botLoads).toEqual(['bruno', 'chen', 'bruno']);
   expect(requests).toEqual([]);
   expect(await page.evaluate(() => Object.keys(localStorage).filter(k => /tutorial/i.test(k)))).toEqual([]);
   await page.screenshot({ path: `/tmp/rico-simulated-tutorial-${mobile ? 'mobile' : 'desktop'}.png` });

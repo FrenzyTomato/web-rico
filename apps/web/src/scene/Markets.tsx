@@ -38,7 +38,7 @@ export function SupplyRow({ supply }: { supply: Supply }) {
   const goods = Object.entries(supply.goods) as [keyof Goods, number][];
   return <group>{goods.map(([good, count], i) => <group key={good} position={[0, 0, i * 1.4]}>
     <Model name={GOODS_MODEL[good]} width={1.15} height={1.1} muted={count === 0} />
-    <Label position={[1.45, 0.1, 0.25]} height={0.68} text={`${GOOD[good]}：${count}`} />
+    <Label position={[1.45, 0.1, 0.25]} height={0.68} text={`${GOOD[good]}${t('：')}${count}`} />
   </group>)}</group>;
 }
 export function WorkerSupply({ supply }: { supply: Supply }) {
@@ -57,7 +57,7 @@ export function BuildingMarket({ stock }: { stock: Supply['buildingStock'] }) {
       <Selectable hint={buildingHint(type)} target={{ kind: 'building', type }} size={[2.3, 1.8]}>
         <Model name={BUILDING_MODEL[type]} width={2.3} depth={1.8} height={2.2} muted={stock[type] === 0} />
         <Label position={[0, 0.1, 0.98]} height={0.68} maxWidth={2.45} text={BUILDING[type]} suffix={`×${stock[type]}`} />
-        <Label position={[0, 0.1, 1.3]} height={0.55} maxWidth={2.45} text={`🪙 ${price}　 👤 ${BUILDINGS[type].workerSlots}`} />
+        <Label position={[0, 0.1, 1.3]} height={0.55} maxWidth={2.45} text={`🪙 ${price}   👤 ${BUILDINGS[type].workerSlots}`} />
       </Selectable>
     </group>)}
     {tier.start > 0 && <mesh position={[tier.start - 1.8, 0.035, (tier.depth - 4) / 2]} dispose={null} geometry={box(0.025, 0.02, 9)} material={material('#aa946b')} />}

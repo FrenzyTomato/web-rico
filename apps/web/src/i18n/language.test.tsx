@@ -47,14 +47,16 @@ function game(state: GameState) {
 function allText(element: HTMLElement) {
   return [element.textContent, ...Array.from(element.querySelectorAll('[aria-label], [title]')).flatMap(e => [e.getAttribute('aria-label'), e.getAttribute('title')])].join(' ');
 }
+/** Chinese characters, full-width punctuation (，：（）、) and the curly quotes a Chinese font draws full width. */
+const NOT_ENGLISH = /[\p{Script=Han}\u3000-\u303f\uff00-\uffef“”]/u;
 function singleLanguage(text: string, locale: 'en' | 'zh') {
   // The Isles of Merchants brand is intentionally identical in both languages.
-  expect(text.replaceAll('Isles of Merchants', '')).not.toMatch(locale === 'en' ? /\p{Script=Han}/u : /[A-Za-z]/);
+  expect(text.replaceAll('Isles of Merchants', '')).not.toMatch(locale === 'en' ? NOT_ENGLISH : /[A-Za-z]/);
 }
 
 it('has English-only translations with matching interpolation placeholders', () => {
   for (const [source, translation] of Object.entries(EN)) {
-    expect(translation).not.toMatch(/\p{Script=Han}/u);
+    expect(translation).not.toMatch(NOT_ENGLISH);
     expect(translation.match(/\{\d+\}/g)?.sort() ?? []).toEqual(source.match(/\{\d+\}/g)?.sort() ?? []);
   }
 });

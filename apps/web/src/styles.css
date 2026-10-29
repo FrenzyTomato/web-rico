@@ -584,11 +584,52 @@ html[lang="en"] .role-card span { font-size: 14px; }
 /* Taps pass through to the board beneath, so the guide never blocks the target it describes. */
 .shell .tutorial-coach { z-index: 3; width: min(340px, calc(100% - 28px)); pointer-events: none; }
 .tutorial-coach :is(button, a) { pointer-events: auto; }
+/* Long pages scroll inside the guide rather than running under the hand; intro pages block nothing, so they take the wheel. */
+.shell .tutorial-coach { max-height: max(160px, calc(100dvh - var(--board-top) - var(--hud-bottom) - 12px)); overflow-y: auto; }
+.tutorial-coach[data-tutorial-stage='intro'] { pointer-events: auto; }
+/* Next / Start stays in view while the page scrolls, on a solid strip so text scrolling underneath doesn't show through. */
+.tutorial-coach-actions { position: sticky; bottom: -17px; margin: 0 -19px -17px; padding: 4px 19px 15px; background: #183a40; border-radius: 0 0 16px 16px; }
 .tutorial-coach strong { display: block; margin-top: 2px; }
 .tutorial-coach small { font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; }
 .tutorial-coach .tutorial-coach-last { color: #c9dbd2; }
+.tutorial-coach .tutorial-coach-privilege { color: #f0d7a7; }
+.tutorial-coach .tutorial-coach-next { font-weight: 600; }
 .tutorial-coach button, .tutorial-coach .back-to-lobby { margin-top: 2px; }
 .tutorial-coach .back-to-lobby { color: var(--parchment); }
+.tutorial-diagram { display: block; width: 100%; height: auto; margin: 10px 0 2px; color: #9fc9bb; font-family: inherit; }
+.tutorial-diagram .label { fill: #edf3e9; font-size: 12px; font-weight: 600; }
+.tutorial-diagram .note { fill: #f0d7a7; font-size: 11px; }
+.tutorial-diagram .step { fill: #f0d7a7; }
+.tutorial-diagram .step-number { fill: #16393f; font-size: 11px; font-weight: 700; }
+.tutorial-diagram .rd-card { fill: #e2fff01f; stroke: #cfe9df66; }
+.tutorial-diagram .rd-card.picked { fill: #f0d7a7; stroke: #f0d7a7; }
+.tutorial-diagram .rd-player { fill: #e2fff01f; stroke: #cfe9df99; }
+.tutorial-diagram .rd-player.chooser { stroke: #f0d7a7; stroke-width: 2; }
+.tutorial-diagram .initial { fill: #edf3e9; font-size: 10px; font-weight: 700; }
+.tutorial-diagram .arrow { stroke: currentColor; stroke-width: 1.5; }
+.tutorial-diagram .loop { stroke-dasharray: 3 3; }
+.tutorial-diagram .rd-pool { fill: #e2fff014; stroke: #cfe9df80; stroke-dasharray: 4 3; }
+.tutorial-diagram .rd-worker { fill: #e9e2cf; }
+.tutorial-diagram .rd-slot { fill: none; stroke: #cfe9dfa0; }
+.tutorial-diagram .rd-slot.filled { fill: #e2fff026; }
+.tutorial-diagram .rd-warning { fill: #f2a68a; font-size: 10px; font-weight: 600; }
+.tutorial-diagram .rd-worker.outlined { stroke: #16393f; stroke-width: 1.2; }
+.tutorial-diagram .rd-op.small { font-size: 15px; }
+.tutorial-diagram .rd-good { stroke: #16393f55; }
+.tutorial-diagram .rd-good.corn { fill: #e8a33d; }
+.tutorial-diagram .rd-good.fruit { fill: #f2df6b; }
+.tutorial-diagram .rd-good.sugar { fill: #f1ede3; }
+.tutorial-diagram .rd-good.tobacco { fill: #a5713f; }
+.tutorial-diagram .rd-good.coffee { fill: #5e3d2b; }
+.tutorial-diagram .rd-hull { fill: #8a5a35; stroke: #c48a58; }
+.tutorial-diagram .rd-cross { stroke: #f2a68a; stroke-width: 2.5; }
+.tutorial-diagram .rd-bonus { fill: #f0d7a7; }
+.tutorial-diagram .rd-op { fill: #edf3e9; font-size: 18px; font-weight: 700; }
+.tutorial-diagram .rd-chip { fill: #e2fff01a; stroke: #cfe9df66; }
+.tutorial-diagram .rd-chip.pay { fill: #f0d7a7; stroke: #f0d7a7; }
+.tutorial-diagram .rd-num { fill: #edf3e9; font-size: 18px; font-weight: 700; }
+.tutorial-diagram .rd-chip-label { fill: #c9dbd2; font-size: 10px; }
+.tutorial-diagram :is(.rd-num, .rd-chip-label).pay { fill: #16393f; }
 .role-card.tutorial-role-target { outline: 2px solid var(--accent); outline-offset: -2px; }
 @media (max-width: 700px) {
   /* Phones: the bottom slot hints use, so the top of the board stays clear for targets. */
@@ -600,6 +641,8 @@ html[lang="en"] .role-card span { font-size: 14px; }
   .tutorial-coach[data-tutorial-stage='action'] :is(small, .tutorial-coach-last) { display: none; }
   .tutorial-coach p { margin: 5px 0; font-size: 12px; line-height: 1.45; }
   .tutorial-coach small { font-size: 10px; }
+  .tutorial-coach-actions { bottom: -10px; margin: 0 -12px -10px; padding: 4px 12px 8px; border-radius: 0 0 12px 12px; }
+  .tutorial-diagram { max-height: 120px; margin: 6px 0 0; }
 }
 
 /* Desktop: player stats in a column under the view shortcuts, and whose turn it is written large on the board. */
@@ -770,7 +813,7 @@ html[lang="en"] .role-card span { font-size: 14px; }
   .shell:has(.final-result) > .hand { display: none; }
 }
 
-/* Live state under a role's rules: workers on the ship, goods in the trading depot. */
+/* Live state under a role's rules: workers in the hiring pool, goods in the trading depot. */
 .model-tooltip .role-hint-now { margin: 8px 0 0; padding-top: 8px; border-top: 1px solid #e2fff024; color: #f1d9a5; font-weight: 600; }
 
 /* Retention steppers: tap-sized − / + around the count. */

@@ -48,7 +48,7 @@ export function describeOptions(legal: LegalAction, view: Pick<PlayerView, 'role
     case 'trader-choice':
       return [
         ...legal.sales.map(s => ({
-          label: t("出售 {0}（{1} 金币{2}{3}{4}）", [GOOD[s.good], s.price, s.useAdvantage ? t("，商人特权") : '', s.useSmallMarket ? `，${BUILDING['small-market']}` : '', s.useLargeMarket ? `，${BUILDING['large-market']}` : '']),
+          label: t("出售 {0}（{1} 金币{2}{3}{4}）", [GOOD[s.good], s.price, s.useAdvantage ? t("，商人特权") : '', s.useSmallMarket ? t('，{0}', [BUILDING['small-market']]) : '', s.useLargeMarket ? t('，{0}', [BUILDING['large-market']]) : '']),
           action: a({ kind: 'trade', sale: { good: s.good, useAdvantage: s.useAdvantage, useSmallMarket: s.useSmallMarket, useLargeMarket: s.useLargeMarket } }) })),
         { label: t("不出售"), action: a({ kind: 'trade', sale: null }) },
       ];

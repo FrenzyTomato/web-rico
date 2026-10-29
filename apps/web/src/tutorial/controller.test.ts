@@ -36,8 +36,9 @@ describe('continuous tutorial simulation', () => {
       expect(c.getState().snapshot!.revision).toBe(before.snapshot!.revision + 1);
     }
     expect(c.getState().stage).toBe('finished');
-    expect(commands.filter(c => c.kind === 'choose-role')).toHaveLength(8);
-    expect(commands.filter(c => c.actorId === 'alice' && c.kind === 'choose-role')).toHaveLength(3);
+    // Three full rounds and the learner's closing Captain; the learner picks Planter, Trader, Builder and Captain.
+    expect(commands.filter(c => c.kind === 'choose-role')).toHaveLength(10);
+    expect(commands.filter(c => c.actorId === 'alice' && c.kind === 'choose-role')).toHaveLength(4);
     expect(commands.at(-1)!.actorId).not.toBe('alice');
     expect(c.getState().game!.phase.kind).toBe('role-selection');
     expect(c.getState().history.length).toBeGreaterThan(20);
@@ -53,7 +54,10 @@ describe('continuous tutorial simulation', () => {
     expect(first.submit(0, 'another-step', 0, first.step!.action)).toBe(false);
     expect(first.submit(0, first.step!.id, 0, first.step!.action)).toBe(true);
     expect(first.submit(0, first.step!.id, 0, first.step!.action)).toBe(false);
-    expect(c.getState()).toMatchObject({ stage: 'action', index: 1, previous: { step: first.step } });
+    // The learner's role pick pauses on its explanation before the follow-up.
+    expect(c.getState()).toMatchObject({ stage: 'result', index: 1, previous: { step: first.step } });
+    advance(c);
+    expect(c.getState().stage).toBe('action');
     advance(c); // learner planting
     expect(c.getState().stage).toBe('result'); // checking their island
     advance(c);
@@ -85,16 +89,17 @@ describe('continuous tutorial simulation', () => {
     const { result, unmount } = renderHook(() => useBoardActions(s.snapshot, true, [], () => {},
       (target, draft, good) => allowedTargets(step, draft, good).some(t => targetKey(t) === targetKey(target))));
     const me = s.snapshot!.view.players[0]!;
-    const corn = me.countryside.find(t => t.kind === 'corn')!, fruit = me.countryside.find(t => t.kind === 'fruit')!, market = me.buildings[0]!;
+    // Round 2: the fruit estate keeps its worker and the new one goes to the Small Fruit Depot, not the quarry.
+    const fruit = me.countryside.find(t => t.kind === 'fruit')!, quarry = me.countryside.find(t => t.kind === 'quarry')!, depot = me.buildings[0]!;
     const before = structuredClone(result.current.draft);
-    act(() => result.current.select({ kind: 'worker', id: corn.instanceId, index: 0 }));
+    act(() => result.current.select({ kind: 'worker', id: fruit.instanceId, index: 0 }));
     expect(result.current.selected).toBeNull(); expect(result.current.draft).toEqual(before);
     expect(allowedTargets(step, result.current.draft, null)).toEqual([{ kind: 'worker', id: 'pool', index: 0 }]);
     act(() => result.current.select(allowedTargets(step, result.current.draft, null)[0]!));
     const holding = structuredClone(result.current.draft);
-    act(() => result.current.select({ kind: 'tile', id: fruit.instanceId }));
+    act(() => result.current.select({ kind: 'tile', id: quarry.instanceId }));
     expect(result.current.draft).toEqual(holding);
-    act(() => result.current.select({ kind: 'owned-building', id: market.instanceId }));
+    act(() => result.current.select({ kind: 'owned-building', id: depot.instanceId }));
     expect(result.current.canConfirm).toBe(true);
     expect(sameAction(step.action, step.action)).toBe(true);
     unmount();
